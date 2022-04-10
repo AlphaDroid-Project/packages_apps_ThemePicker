@@ -82,6 +82,9 @@ java_defaults {
         "androidx.lifecycle_lifecycle-viewmodel-ktx",
         "androidx.recyclerview_recyclerview",
         "SystemUICustomizationLib",
+        "kotlinx_coroutines_android",
+        "kotlinx_coroutines",
+        "vendor_support",
     ],
 
     jni_libs: [
