@@ -55,7 +55,7 @@ android_app {
     static_libs: [
         "guava",
         "monet",
-	"renderscript_toolkit",
+        "renderscript_toolkit",
         "wallpaper-common-deps",
         "SettingsLibSettingsTheme",
         "SystemUIFlagsLib",
@@ -102,20 +102,9 @@ android_app {
         "WallpaperPicker2",
     ],
     required: [
-        "PixelThemesStub",
         "default_permissions_com.android.wallpaper",
         "privapp_whitelist_com.android.wallpaper"
     ],
-}
-
-android_app_import {
-    name: "PixelThemesStub",
-    apk: "PixelThemesStub.apk",
-    presigned: true,
-    product_specific: true,
-    dex_preopt: {
-        enabled: false,
-    },
 }
 
 prebuilt_etc {
