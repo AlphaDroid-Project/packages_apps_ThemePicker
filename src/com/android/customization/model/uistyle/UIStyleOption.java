@@ -20,7 +20,6 @@ import static com.android.customization.model.ResourceConstants.SETTINGS_PACKAGE
 import static com.android.customization.model.ResourceConstants.SYSUI_PACKAGE;
 import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_ANDROID;
 import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_SETTINGS;
-import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_SYSUI;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -117,8 +116,7 @@ public class UIStyleOption implements CustomizationOption<UIStyleOption> {
         UIStyleManager uiStyleManager = (UIStyleManager) manager;
         OverlayManagerCompat overlayManager = uiStyleManager.getOverlayManager();
         if (mIsDefault) {
-            return overlayManager.getEnabledPackageName(SYSUI_PACKAGE, OVERLAY_CATEGORY_UI_STYLE_SYSUI) == null &&
-                    overlayManager.getEnabledPackageName(SETTINGS_PACKAGE, OVERLAY_CATEGORY_UI_STYLE_SETTINGS) == null &&
+            return overlayManager.getEnabledPackageName(SETTINGS_PACKAGE, OVERLAY_CATEGORY_UI_STYLE_SETTINGS) == null &&
                     overlayManager.getEnabledPackageName(ANDROID_PACKAGE, OVERLAY_CATEGORY_UI_STYLE_ANDROID) == null;
         }
         for (Map.Entry<String, String> overlayEntry : getOverlayPackages().entrySet()) {
@@ -190,8 +188,6 @@ public class UIStyleOption implements CustomizationOption<UIStyleOption> {
 
     private String determinePackage(String category) {
        switch(category) {
-           case OVERLAY_CATEGORY_UI_STYLE_SYSUI:
-               return SYSUI_PACKAGE;
            case OVERLAY_CATEGORY_UI_STYLE_SETTINGS:
                return SETTINGS_PACKAGE;
            case OVERLAY_CATEGORY_UI_STYLE_ANDROID:

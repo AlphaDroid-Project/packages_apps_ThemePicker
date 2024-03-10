@@ -69,7 +69,6 @@ public interface ResourceConstants {
     String OVERLAY_CATEGORY_ICON_THEMEPICKER = "android.theme.customization.icon_pack.themepicker";
     String OVERLAY_CATEGORY_UI_STYLE_ANDROID = "android.theme.customization.style.android";
     String OVERLAY_CATEGORY_UI_STYLE_SETTINGS = "android.theme.customization.style.settings";
-    String OVERLAY_CATEGORY_UI_STYLE_SYSUI = "android.theme.customization.style.systemui";
 
     /**
      * Global Android theme category (default theme prebundled with the OS)

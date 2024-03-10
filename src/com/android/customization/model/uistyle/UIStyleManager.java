@@ -17,7 +17,6 @@ package com.android.customization.model.uistyle;
 
 import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_ANDROID;
 import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_SETTINGS;
-import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_SYSUI;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -47,7 +46,7 @@ public class UIStyleManager implements CustomizationManager<UIStyleOption> {
     private UIStyleOptionProvider mProvider;
     private static final String TAG = "UIStyleManager";
     private static final String KEY_STATE_CURRENT_SELECTION = "UIStyleManager.currentSelection";
-    private static final String[] mCurrentCategories = new String[]{OVERLAY_CATEGORY_UI_STYLE_ANDROID, OVERLAY_CATEGORY_UI_STYLE_SETTINGS, OVERLAY_CATEGORY_UI_STYLE_SYSUI};
+    private static final String[] mCurrentCategories = new String[]{OVERLAY_CATEGORY_UI_STYLE_ANDROID, OVERLAY_CATEGORY_UI_STYLE_SETTINGS};
 
     UIStyleManager(Context context, OverlayManagerCompat overlayManager, UIStyleOptionProvider provider) {
         mContext = context;

@@ -18,7 +18,6 @@ package com.android.customization.model.uistyle;
 import static com.android.customization.model.ResourceConstants.ANDROID_PACKAGE;
 import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_ANDROID;
 import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_SETTINGS;
-import static com.android.customization.model.ResourceConstants.OVERLAY_CATEGORY_UI_STYLE_SYSUI;
 import static com.android.customization.model.ResourceConstants.UI_STYLE_BACKGROUND_COLOR_LIGHT_NAME;
 import static com.android.customization.model.ResourceConstants.UI_STYLE_BACKGROUND_COLOR_DARK_NAME;
 
@@ -48,15 +47,12 @@ public class UIStyleOptionProvider {
     private PackageManager mPm;
     private final List<String> mOverlayPackages;
     private final List<UIStyleOption> mOptions = new ArrayList<>();
-    private final List<String> mSysUiStylesOverlayPackages = new ArrayList<>();
     private final List<String> mSettingsStylesOverlayPackages = new ArrayList<>();
 
     public UIStyleOptionProvider(Context context, OverlayManagerCompat manager) {
         mContext = context;
         mPm = context.getPackageManager();
         String[] targetPackages = ResourceConstants.getPackagesToOverlay(context);
-        mSysUiStylesOverlayPackages.addAll(manager.getOverlayPackagesForCategory(
-                OVERLAY_CATEGORY_UI_STYLE_SYSUI, UserHandle.myUserId(), targetPackages));
         mSettingsStylesOverlayPackages.addAll(manager.getOverlayPackagesForCategory(
                 OVERLAY_CATEGORY_UI_STYLE_SETTINGS, UserHandle.myUserId(), targetPackages));
         mOverlayPackages = new ArrayList<>();
@@ -91,10 +87,6 @@ public class UIStyleOptionProvider {
                 Log.w(TAG, String.format("Couldn't load UI style overlay details for %s, will skip it",
                         overlayPackage), e);
             }
-        }
-
-        for (String overlayPackage : mSysUiStylesOverlayPackages) {
-            addOrUpdateOption(optionsByPrefix, overlayPackage, OVERLAY_CATEGORY_UI_STYLE_SYSUI);
         }
 
         for (String overlayPackage : mSettingsStylesOverlayPackages) {
@@ -142,7 +134,6 @@ public class UIStyleOptionProvider {
             Log.w(TAG, "Didn't find system default ui style package, will skip option", e);
         }
         option.addOverlayPackage(OVERLAY_CATEGORY_UI_STYLE_ANDROID, null);
-        option.addOverlayPackage(OVERLAY_CATEGORY_UI_STYLE_SYSUI, null);
         option.addOverlayPackage(OVERLAY_CATEGORY_UI_STYLE_SETTINGS, null);
         mOptions.add(option);
     }
