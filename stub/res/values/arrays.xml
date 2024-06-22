@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="color_bundles" translatable="false">
+        <item>default</item>
+        <item>coldblue</item>
+        <item>cometsunks_c</item>
+        <item>dizziestindigo</item>
+        <item>pipipink</item>
+        <item>holillusion</item>
+        <item>notimpurple</item>
+        <item>dematorange</item>
+        <item>cometsunks_a</item>
+        <item>nexodus</item>
+        <item>movemint</item>
+        <item>cometsunks_b</item>
+    </array>
+</resources>

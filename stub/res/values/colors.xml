@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Side A colors -->
+    <color name="color_secondary_default">#ffffffff</color>
+    <color name="color_secondary_pipipink">#fffabec8</color>
+    <color name="color_secondary_holillusion">#ff33b5e5</color>
+    <color name="color_secondary_notimpurple">#ff8522ff</color>
+    <color name="color_secondary_dematorange">#fff9a372</color>
+    <color name="color_secondary_cometsunks_a">#ffd17875</color>
+    <color name="color_secondary_nexodus">#ff2fb3d2</color>
+    <color name="color_secondary_movemint">#ff23ff95</color>
+    <color name="color_secondary_cometsunks_b">#ff856da5</color>
+    <color name="color_secondary_dizziestindigo">#ff445ccf</color>
+    <color name="color_secondary_coldblue">#ff2e86cd</color>
+    <color name="color_secondary_cometsunks_c">#ff1d857b</color>
+</resources>

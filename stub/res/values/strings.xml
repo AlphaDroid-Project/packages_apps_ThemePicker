@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Side A colors -->
+    <string name="default_color_name">@*android:string/system_locale_title</string>
+    <string name="bundle_name_default">@string/default_color_name</string>
+    <string name="color_style_default" translatable="false">VIBRANT</string>
+
+    <string name="coldblue_color_name" translatable="false">Cold Evening Blue</string>
+    <string name="bundle_name_coldblue">@string/coldblue_color_name</string>
+    <string name="color_style_coldblue" translatable="false">SPRITZ</string>
+
+    <string name="cometsunks_c_color_name" translatable="false">Comet Sunks C</string>
+    <string name="bundle_name_cometsunks_c">@string/cometsunks_c_color_name</string>
+    <string name="color_style_cometsunks_c" translatable="false">SPRITZ</string>
+
+    <string name="dizziestindigo_color_name" translatable="false">Dizziest Indigo</string>
+    <string name="bundle_name_dizziestindigo">@string/dizziestindigo_color_name</string>
+    <string name="color_style_dizziestindigo" translatable="false">TONAL_SPOT</string>
+
+    <string name="pipipink_color_name" translatable="false">PiPiPink</string>
+    <string name="bundle_name_pipipink">@string/pipipink_color_name</string>
+    <string name="color_style_pipipink" translatable="false">RAINBOW</string>
+
+    <string name="holillusion_color_name" translatable="false">Holillusion Cyan</string>
+    <string name="bundle_name_holillusion">@string/holillusion_color_name</string>
+    <string name="color_style_holillusion" translatable="false">RAINBOW</string>
+
+    <string name="notimpurple_color_name" translatable="false">Not Impressive Purple</string>
+    <string name="bundle_name_notimpurple">@string/notimpurple_color_name</string>
+    <string name="color_style_notimpurple" translatable="false">RAINBOW</string>
+
+    <string name="dematorange_color_name" translatable="false">Dematerialized Orange</string>
+    <string name="bundle_name_dematorange">@string/dematorange_color_name</string>
+    <string name="color_style_dematorange" translatable="false">RAINBOW</string>
+
+    <string name="cometsunks_a_color_name" translatable="false">Comet Sunks A</string>
+    <string name="bundle_name_cometsunks_a">@string/cometsunks_a_color_name</string>
+    <string name="color_style_cometsunks_a" translatable="false">RAINBOW</string>
+
+    <string name="nexodus_color_name" translatable="false">Nexodus</string>
+    <string name="bundle_name_nexodus">@string/nexodus_color_name</string>
+    <string name="color_style_nexodus" translatable="false">FRUIT_SALAD</string>
+
+    <string name="movemint_color_name" translatable="false">Move Mint</string>
+    <string name="bundle_name_movemint">@string/movemint_color_name</string>
+    <string name="color_style_movemint" translatable="false">VIBRANT</string>
+
+    <string name="cometsunks_b_color_name" translatable="false">Comet Sunks B</string>
+    <string name="bundle_name_cometsunks_b">@string/cometsunks_b_color_name</string>
+    <string name="color_style_cometsunks_b" translatable="false">VIBRANT</string>
+
+</resources>
