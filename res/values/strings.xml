@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_color_customization_title">About Color Customization</string>
+    <string name="about_color_customization_desc">Changes to colors apply system-wide and may affect how apps appear.</string>
+
+    <string name="use_wallpaper_colors_title">Use Wallpaper Colors</string>
+    <string name="use_wallpaper_colors_desc">Extract colors from your wallpaper</string>
+
+    <string name="custom_seed_color_title">Custom Seed Color</string>
+
+    <string name="fidelity_title">Fidelity</string>
+    <string name="fidelity_desc">Enable fidelity feature for color tones</string>
+
+    <string name="contrast_level_title">Contrast Level</string>
+    <string name="chroma_boost_title">Chroma Boost</string>
+
+    <string name="theme_style_title">Theme Style</string>
+    <string name="theme_style_desc">Defines how colors are generated from the seed</string>
+
+    <!-- Advanced Settings -->
+    <string name="enable_advanced_settings_title">Enable Advanced Settings</string>
+    <string name="enable_advanced_settings_desc">Allow advanced color customizations</string>
+
+    <string name="accent1_title">Accent 1 (Primary)</string>
+    <string name="accent1_desc">Main accent color used throughout the system</string>
+
+    <string name="accent2_title">Accent 2 (Secondary)</string>
+    <string name="accent2_desc">Secondary accent for complementary elements</string>
+
+    <string name="accent3_title">Accent 3 (Tertiary)</string>
+    <string name="accent3_desc">Tertiary accent for additional contrast</string>
+
+    <string name="neutral1_title">Neutral 1 (Surface)</string>
+    <string name="neutral1_desc">Primary neutral for backgrounds and surfaces</string>
+
+    <string name="neutral2_title">Neutral 2 (Variant)</string>
+    <string name="neutral2_desc">Secondary neutral for subtle variations</string>
+
+    <string name="reset_all_overrides">Reset All Overrides</string>
+
+    <string name="about_advanced_settings_title">About Advanced Settings</string>
+    <string name="about_advanced_settings_desc">Each palette override replaces the automatically generated palette with your custom seed color. Leave unset to use theme style generation.</string>
+    
+    <!-- Lockscreen -->
+    <string name="lockscreen_customize_title">Lockscreen appearance</string>
+    <string name="lockscreen_customize_summary">Customize lockscreen appearance</string>
+    <string name="lockscreen_widgets_title">Lockscreen Widgets</string>
+    <string name="lockscreen_widgets_enabled_title">Enable Lockscreen Widgets</string>
+    <string name="lockscreen_widgets_enabled_summary">Allow widgets on lockscreen</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="widget_removed">Widget removed</string>
+    <string name="undo">Undo</string>
+    <string name="selected_widgets_empty">No widgets selected</string>
+    <string name="selected_widgets_guide">Long press to drag and drop, tap widget to remove.</string>
+    <string name="widget_torch">Torch</string>
+    <string name="widget_wifi">Wi-Fi</string>
+    <string name="widget_data">Data</string>
+    <string name="widget_ringer">Ringer</string>
+    <string name="widget_bluetooth">Bluetooth</string>
+    <string name="widget_hotspot">Hotspot</string>
+    <string name="pick_widgets">Pick Widgets</string>
+    <string name="selected_widgets">Selected Widgets</string>
+    <string name="widgets_title">Widgets</string>
+    <string name="weather_prev">Mostly Cloudy</string>
+    <string name="no_space_available">No space available for more widgets</string>
+    <string name="back">Back</string>
+    <string name="temperature_prev">27°</string>
+</resources>
