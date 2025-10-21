@@ -26,6 +26,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.PathShape
 import android.os.UserHandle
+import android.provider.Settings
 import android.util.Log
 import android.util.PathParser
 import com.android.customization.model.ResourceConstants
@@ -38,6 +39,8 @@ import com.android.axion.themepicker.data.model.IconShapeOption
 import com.android.axion.themepicker.data.model.OverlayOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONException
+import org.json.JSONObject
 
 class CommonOverlayProvider(
     private val context: Context,
@@ -167,7 +170,14 @@ class CommonOverlayProvider(
                     UserHandle.myUserId()
                 )
             }
+
             activeOverlay = option.packageName
+
+            val persisted = persistOverlay(option)
+            if (!persisted) {
+                Log.w(TAG, "Overlay applied but not persisted: ${option.packageName}")
+            }
+
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error applying overlay: ${option.packageName}", e)
@@ -326,6 +336,42 @@ class CommonOverlayProvider(
 
     private fun getFontFamily(overlayPackage: String, overlayRes: Resources, configName: String): String {
         return overlayRes.getString(overlayRes.getIdentifier(configName, "string", overlayPackage))
+    }
+
+    private fun persistOverlay(option: OverlayOption): Boolean {
+        val resolver = context.contentResolver
+        val userId = UserHandle.myUserId()
+
+        val value = Settings.Secure.getStringForUser(
+            resolver,
+            Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+            userId
+        )
+
+        val json = try {
+            if (value.isNullOrEmpty()) JSONObject() else JSONObject(value)
+        } catch (e: JSONException) {
+            Log.e(TAG, "Error parsing current settings value:\n${e.message}")
+            return false
+        }
+
+        try {
+            json.remove(category)
+            option.packageName?.let { pkg ->
+                json.put(category, pkg)
+            }
+            Settings.Secure.putStringForUser(
+                resolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                json.toString(),
+                userId
+            )
+
+            return true
+        } catch (e: JSONException) {
+            Log.e(TAG, "Error adding new settings value:\n${e.message}")
+            return false
+        }
     }
 
     companion object {
