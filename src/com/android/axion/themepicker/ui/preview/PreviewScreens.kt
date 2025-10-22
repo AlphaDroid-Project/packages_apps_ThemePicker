@@ -61,6 +61,7 @@ import com.android.axion.themepicker.data.model.EffectConfig
 import com.android.axion.themepicker.data.model.WallpaperSettings
 import com.android.axion.themepicker.data.model.ZoomProperties
 import com.android.axion.themepicker.utils.colors.ColorUtils
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
 import com.android.axion.themepicker.utils.wallpaper.BitmapProcessor
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
@@ -224,6 +225,7 @@ private fun CommonWallpaperPreview(
     topEndAction: @Composable ((Color, Color) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val ratio = context.scaleRatio
     val activity = context as? Activity
 
     val statusBarColor = remember { ColorUtils.getStatusBarColor(activity) }
@@ -351,14 +353,14 @@ private fun CommonWallpaperPreview(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .padding(top = 32.dp)
+                .padding(16.dp * ratio)
+                .padding(top = 48.dp * ratio)
                 .align(Alignment.TopCenter)
         ) {
             IconButton(
                 onClick = onBack,
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(48.dp * ratio)
                     .background(overlayColor, CircleShape)
             ) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = contentOnStatusBar)
@@ -367,13 +369,13 @@ private fun CommonWallpaperPreview(
             if (topEndAction != null) {
                 topEndAction(overlayColor, contentOnStatusBar)
             } else {
-                Spacer(modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.size(48.dp * ratio))
             }
 
             IconButton(
                 onClick = onCheck,
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(48.dp * ratio)
                     .background(overlayColor, CircleShape)
             ) {
                 Icon(Icons.Default.Check, contentDescription = "Apply", tint = contentOnStatusBar)
@@ -394,7 +396,7 @@ private fun CommonWallpaperPreview(
                                 colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f))
                             )
                         )
-                        .padding(bottom = 60.dp),
+                        .padding(bottom = 60.dp * ratio),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -405,9 +407,9 @@ private fun CommonWallpaperPreview(
                             Icons.Default.Pinch,
                             contentDescription = null,
                             tint = Color.White.copy(alpha = 0.7f),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp * ratio)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp * ratio))
                         Text(
                             "Pinch to crop",
                             style = MaterialTheme.typography.bodyMedium,

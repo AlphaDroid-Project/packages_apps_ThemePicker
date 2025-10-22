@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_color_customization_title">About Color Customization</string>
-    <string name="about_color_customization_desc">Changes to colors apply system-wide and may affect how apps appear.</string>
+    <string name="about_color_customization_desc">Changes to colors apply system-wide to all apps the support Material You theming and may affect how apps appear.</string>
 
     <string name="use_wallpaper_colors_title">Use Wallpaper Colors</string>
     <string name="use_wallpaper_colors_desc">Extract colors from your wallpaper</string>
@@ -66,4 +66,8 @@
     <string name="no_space_available">No space available for more widgets</string>
     <string name="back">Back</string>
     <string name="temperature_prev">27°</string>
+
+    <!-- Effects -->
+    <string name="effects_beta_notice_title">AxEffects Beta™</string>
+    <string name="effects_beta_notice_desc">Effects are temporary and won\’t persist. Apply a new wallpaper to remove them.</string>
 </resources>

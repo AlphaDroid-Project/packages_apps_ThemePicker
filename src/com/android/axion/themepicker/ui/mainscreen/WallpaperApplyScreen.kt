@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.data.model.EffectConfig
 import com.android.axion.themepicker.data.model.Screen
@@ -56,11 +57,13 @@ import com.android.axion.themepicker.data.model.WallpaperSettings
 import com.android.axion.themepicker.data.model.ZoomProperties
 import com.android.axion.themepicker.ui.app.WallpaperMiniPreviewsHeight
 import com.android.axion.themepicker.ui.app.WallpaperMiniPreviewsWidth
+import com.android.axion.themepicker.ui.components.FooterCard
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.preferences.ToggleButton
 import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
@@ -78,6 +81,7 @@ fun WallpaperApplyScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val scale = context.scaleRatio
     val processor = remember { BitmapProcessor(context) }
     val metrics = context.resources.displayMetrics
 
@@ -214,7 +218,7 @@ fun WallpaperApplyScreen(
             actionIcon = Icons.Default.Check
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(32.dp * scale))
 
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -227,8 +231,8 @@ fun WallpaperApplyScreen(
                 onClick = { lockscreenSelected = !lockscreenSelected },
                 isLockscreen = true,
                 modifier = Modifier.size(
-                    WallpaperMiniPreviewsWidth,
-                    WallpaperMiniPreviewsHeight
+                    WallpaperMiniPreviewsWidth * scale,
+                    WallpaperMiniPreviewsHeight  * scale
                 )
             )
 
@@ -243,8 +247,8 @@ fun WallpaperApplyScreen(
                 },
                 isLockscreen = false,
                 modifier = Modifier.size(
-                    WallpaperMiniPreviewsWidth,
-                    WallpaperMiniPreviewsHeight
+                    WallpaperMiniPreviewsWidth * scale,
+                    WallpaperMiniPreviewsHeight * scale
                 )
             )
         }
@@ -252,6 +256,21 @@ fun WallpaperApplyScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         WallpaperZoomIndicator(zoomSettings)
+        
+        val padding = 16.dp * scale
+        
+        Box(
+            modifier = Modifier
+                .fillMaxWidth() 
+                .padding(start = padding, end = padding, top = padding),
+            contentAlignment = Alignment.Center
+        ) {
+            FooterCard(
+                title = stringResource(id = R.string.effects_beta_notice_title),
+                description = stringResource(id = R.string.effects_beta_notice_desc),
+                modifier = Modifier.wrapContentWidth()
+            )
+        }
 
         WallpaperEffectToggles(
             atmosphereEnabled = atmosphereEnabled,
@@ -350,13 +369,14 @@ fun WallpaperPreviewBox(
 @Composable
 fun WallpaperZoomIndicator(zoomProperties: ZoomProperties) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
 
     if (zoomProperties.isZoomed()) {
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 32.dp, vertical = 8.dp)
+                .padding(horizontal = 32.dp * scale, vertical = 8.dp * scale)
         ) {
             Surface(
                 color = colors.secondaryContainer,
@@ -364,7 +384,7 @@ fun WallpaperZoomIndicator(zoomProperties: ZoomProperties) {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp * scale, vertical = 6.dp * scale)
                 ) {
                     Icon(
                         Icons.Default.CropFree,
@@ -391,11 +411,12 @@ fun WallpaperEffectToggles(
     onAtmosphereToggle: () -> Unit,
     onGlassToggle: () -> Unit
 ) {
+    val scale = LocalContext.current.scaleRatio
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 32.dp)
+            .padding(horizontal = 32.dp * scale, vertical = 32.dp * scale)
     ) {
         ToggleButton(
             icon = Icons.Default.WaterDrop,

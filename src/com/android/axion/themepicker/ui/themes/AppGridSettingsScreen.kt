@@ -29,16 +29,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.ui.app.PreviewsPage
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.iconpack.GridOption
 import com.android.axion.themepicker.ui.iconpack.LauncherSettingsViewModel
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import kotlinx.coroutines.delay
@@ -51,6 +52,7 @@ fun AppGridSettingsScreen(
     launcherViewModel: LauncherSettingsViewModel = viewModel()
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
     val availableGrids by launcherViewModel.availableGridOptions.collectAsState()
     val selectedGrid by launcherViewModel.selectedGrid.collectAsState()
     val isLoadingSelection by launcherViewModel.isLoadingSelection.collectAsState()
@@ -80,50 +82,50 @@ fun AppGridSettingsScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp * scale),
             contentAlignment = Alignment.Center
         ) {
             PreviewsPage(
                 isHome = true,
                 refreshKey = selectedGrid?.name ?: "default",
                 modifier = Modifier
-                    .size(204.dp, 420.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .size(162.dp * scale, 360.dp * scale)
+                    .clip(RoundedCornerShape(16.dp * scale))
             )
         }
 
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 24.dp),
+                .padding(start = 16.dp * scale, end = 16.dp * scale, top = 24.dp * scale),
             colors = CardDefaults.cardColors(
                 containerColor = colors.surfaceContainerLowest
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp * scale),
             shape = MaterialTheme.shapes.extraLarge
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(20.dp * scale)
             ) {
                 Text(
                     text = "Home screen Layout",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp * scale)
                 )
 
                 if (isLoadingGrids) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(100.dp),
+                            .height(100.dp * scale),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(32.dp),
-                            strokeWidth = 3.dp
+                            modifier = Modifier.size(32.dp * scale),
+                            strokeWidth = 3.dp * scale
                         )
                     }
                 } else {
@@ -131,12 +133,12 @@ fun AppGridSettingsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(120.dp),
+                                .height(120.dp * scale),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(28.dp),
-                                strokeWidth = 3.dp
+                                modifier = Modifier.size(28.dp * scale),
+                                strokeWidth = 3.dp * scale
                             )
                         }
                     } else {
@@ -148,8 +150,8 @@ fun AppGridSettingsScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    .padding(bottom = 8.dp * scale),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp * scale)
                             ) {
                                 chunk.forEach { grid ->
                                     GridChip(
@@ -185,22 +187,23 @@ private fun GridChip(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
     val backgroundColor = if (isSelected) colors.primary else colors.surfaceContainerHigh
     val borderColor = if (isSelected) colors.primary else colors.outline.copy(alpha = 0.3f)
     val textColor = if (isSelected) colors.onPrimary else colors.onSurface
 
     Box(
         modifier = modifier
-            .height(40.dp)
-            .clip(RoundedCornerShape(20.dp))
+            .height(40.dp * scale)
+            .clip(RoundedCornerShape(20.dp * scale))
             .background(backgroundColor)
             .border(
-                width = if (isSelected) 2.dp else 1.dp,
+                width = if (isSelected) 2.dp * scale else 1.dp * scale,
                 color = borderColor,
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(20.dp * scale)
             )
             .clickable(enabled = !isLoading, onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp * scale, vertical = 8.dp * scale),
         contentAlignment = Alignment.Center
     ) {
         Text(

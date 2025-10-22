@@ -20,7 +20,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -29,14 +29,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.text.font.*
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.data.model.LayoutScreen
+import com.android.axion.themepicker.data.model.LayoutPreferenceItem
 import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.ui.themes.FontScreen
 import com.android.axion.themepicker.ui.themes.SystemIconsScreen
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.rememberDrawablePainter
 import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
@@ -94,6 +97,7 @@ private fun LayoutRootScreen(
     mainScreenViewModel: MainScreenViewModel
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
     val appIcons by layoutScreenViewModel.appIcons.collectAsState()
 
     Column(
@@ -108,58 +112,123 @@ private fun LayoutRootScreen(
             onActionClick = null
         )
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp * scale, vertical = 16.dp * scale),
+            verticalArrangement = Arrangement.spacedBy(12.dp * scale),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(layoutScreenViewModel.preferenceItems) { item ->
-                Card(
-                    modifier = Modifier
-                        .aspectRatio(1.1f)
-                        .clip(MaterialTheme.shapes.extraLarge)
-                        .clickable {
-                            layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
-                        },
-                    colors = CardDefaults.cardColors(
-                        containerColor = colors.surfaceContainerLowest
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            items(layoutScreenViewModel.preferenceItems.size) { index ->
+                val item = layoutScreenViewModel.preferenceItems[index]
+                
+                when (item.title) {
+                    "App Grid" -> AppGridCard(item, appIcons, scale, layoutScreenViewModel, mainScreenViewModel)
+                    "System Icons" -> SystemIconsCard(item, scale, layoutScreenViewModel, mainScreenViewModel)
+                    "Font" -> FontCard(item, scale, layoutScreenViewModel, mainScreenViewModel)
+                    "Shape" -> ShapeCard(item, scale, layoutScreenViewModel, mainScreenViewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppGridCard(
+    item: LayoutPreferenceItem,
+    appIcons: List<android.graphics.drawable.Drawable>,
+    scale: Float,
+    layoutScreenViewModel: LayoutScreenViewModel,
+    mainScreenViewModel: MainScreenViewModel
+) {
+    val colors = LocalAxColorScheme.current
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp * scale))
+            .clickable {
+                layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp * scale),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+            ) {
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = item.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp * scale))
+            
+            Box(
+                modifier = Modifier
+                    .size(48.dp * scale)
+                    .clip(RoundedCornerShape(12.dp * scale))
+                    .background(colors.primaryContainer.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp * scale),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            when (item.title) {
-                                "App Grid" -> AppGridIllustration(appIcons)
-                                "System Icons" -> SystemIconsIllustration()
-                                "Font" -> FontIllustration()
-                                "Shape" -> ShapeIllustration()
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp * scale)) {
+                        repeat(2) { index ->
+                            if (appIcons.size > index) {
+                                androidx.compose.foundation.Image(
+                                    painter = rememberDrawablePainter(drawable = appIcons[index]),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(16.dp * scale)
+                                        .clip(RoundedCornerShape(4.dp * scale))
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp * scale)
+                                        .clip(RoundedCornerShape(4.dp * scale))
+                                        .background(colors.primary.copy(alpha = 0.3f))
+                                )
                             }
                         }
-
-                        Column(modifier = Modifier.padding(top = 8.dp)) {
-                            Text(
-                                text = item.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = item.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant
-                            )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp * scale)) {
+                        repeat(2) { index ->
+                            val iconIndex = index + 2
+                            if (appIcons.size > iconIndex) {
+                                androidx.compose.foundation.Image(
+                                    painter = rememberDrawablePainter(drawable = appIcons[iconIndex]),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(16.dp * scale)
+                                        .clip(RoundedCornerShape(4.dp * scale))
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp * scale)
+                                        .clip(RoundedCornerShape(4.dp * scale))
+                                        .background(colors.primary.copy(alpha = 0.3f))
+                                )
+                            }
                         }
                     }
                 }
@@ -169,104 +238,215 @@ private fun LayoutRootScreen(
 }
 
 @Composable
-private fun AppGridIllustration(appIcons: List<android.graphics.drawable.Drawable>) {
+private fun SystemIconsCard(
+    item: LayoutPreferenceItem,
+    scale: Float,
+    layoutScreenViewModel: LayoutScreenViewModel,
+    mainScreenViewModel: MainScreenViewModel
+) {
     val colors = LocalAxColorScheme.current
-    val icons = appIcons.take(3)
-    val placeholderTint = colors.primary.copy(alpha = 0.3f)
-
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp * scale))
+            .clickable {
+                layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        if (icons.isEmpty()) {
-            repeat(3) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp * scale),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp * scale)
+            ) {
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+            }
+            
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Android,
+                    imageVector = Icons.Default.Wifi,
                     contentDescription = null,
-                    tint = placeholderTint,
-                    modifier = Modifier.size(36.dp)
+                    tint = colors.primary,
+                    modifier = Modifier.size(20.dp * scale)
+                )
+                Icon(
+                    imageVector = Icons.Default.BatteryFull,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(20.dp * scale)
+                )
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(20.dp * scale)
+                )
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(20.dp * scale)
                 )
             }
-        } else {
-            icons.forEach { drawable ->
-                androidx.compose.foundation.Image(
-                    painter = rememberDrawablePainter(drawable = drawable),
-                    contentDescription = null,
+        }
+    }
+}
+
+@Composable
+private fun FontCard(
+    item: LayoutPreferenceItem,
+    scale: Float,
+    layoutScreenViewModel: LayoutScreenViewModel,
+    mainScreenViewModel: MainScreenViewModel
+) {
+    val colors = LocalAxColorScheme.current
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp * scale)
+            .clip(RoundedCornerShape(28.dp * scale))
+            .clickable {
+                layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp * scale)
+        ) {
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart),
+                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+            ) {
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = item.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 8.dp * scale),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp * scale)
+            ) {
+                Text(
+                    text = "Aa",
+                    style = MaterialTheme.typography.displayLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary
+                )
+                Text(
+                    text = "A is for Axion :)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShapeCard(
+    item: LayoutPreferenceItem,
+    scale: Float,
+    layoutScreenViewModel: LayoutScreenViewModel,
+    mainScreenViewModel: MainScreenViewModel
+) {
+    val colors = LocalAxColorScheme.current
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp * scale)
+            .clip(RoundedCornerShape(28.dp * scale))
+            .clickable {
+                layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp * scale)
+        ) {
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart),
+                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
+            ) {
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = item.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 16.dp * scale),
+                horizontalArrangement = Arrangement.spacedBy(12.dp * scale),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .size(36.dp * scale)
+                        .clip(RoundedCornerShape(10.dp * scale))
+                        .background(colors.primary.copy(alpha = 0.4f))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(36.dp * scale)
+                        .clip(CircleShape)
+                        .background(colors.primary.copy(alpha = 0.6f))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(36.dp * scale)
+                        .clip(RoundedCornerShape(50))
+                        .background(colors.primary.copy(alpha = 0.3f))
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun SystemIconsIllustration() {
-    val colors = LocalAxColorScheme.current
-    val icons = listOf(
-        Icons.Default.Wifi,
-        Icons.Default.BatteryFull,
-        Icons.Default.Notifications,
-        Icons.Default.Settings
-    )
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        icons.forEach {
-            Icon(
-                imageVector = it,
-                contentDescription = null,
-                tint = colors.primary,
-                modifier = Modifier.size(28.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun FontIllustration() {
-    val colors = LocalAxColorScheme.current
-    Column(horizontalAlignment = Alignment.Start) {
-        Text(
-            text = "Aa",
-            style = MaterialTheme.typography.headlineMedium,
-            color = colors.primary
-        )
-        Text(
-            text = "A is for Axion :)",
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun ShapeIllustration() {
-    val colors = LocalAxColorScheme.current
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(26.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(colors.primary.copy(alpha = 0.4f))
-        )
-        Box(
-            modifier = Modifier
-                .size(26.dp)
-                .clip(CircleShape)
-                .background(colors.primary.copy(alpha = 0.6f))
-        )
-        Box(
-            modifier = Modifier
-                .size(26.dp)
-                .clip(RoundedCornerShape(50))
-                .background(colors.primary.copy(alpha = 0.3f))
-        )
     }
 }

@@ -183,17 +183,22 @@ fun applyWallpaper(
     lockscreenSelected: Boolean,
     homescreenSelected: Boolean
 ) {
-    val wallpaperManager = WallpaperManager.getInstance(context)
+    WallpaperManager.getInstance(context).apply {
+        try {
+            homescreenBitmap?.takeIf { homescreenSelected }?.let { bitmap ->
+                val flags = if (lockscreenSelected)
+                    WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
+                else
+                    WallpaperManager.FLAG_SYSTEM
+                setBitmap(bitmap, null, false, flags)
+            }
 
-    try {
-        if (homescreenSelected && homescreenBitmap != null) {
-            wallpaperManager.setBitmap(homescreenBitmap, null, false, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+            lockscreenBitmap?.takeIf { lockscreenSelected }?.let { bitmap ->
+                setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
+            }
+        } catch (e: Exception) {
+            Log.e("WallpaperApply", "Error applying wallpaper", e)
         }
-        if (lockscreenSelected && lockscreenBitmap != null) {
-            wallpaperManager.setBitmap(lockscreenBitmap, null, false, WallpaperManager.FLAG_LOCK)
-        }
-    } catch (e: Exception) {
-        Log.e("WallpaperApply", "Error applying wallpaper", e)
     }
 }
 

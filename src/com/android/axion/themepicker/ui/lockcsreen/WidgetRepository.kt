@@ -39,6 +39,8 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
+import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 
 private const val KEY_WIDGETS = "lockscreen_widgets_extras"
 private const val KEY_ENABLED = "lockscreen_widgets_enabled"
@@ -60,11 +62,12 @@ data class WidgetItem(
         onRemove: () -> Unit,
         showRemove: Boolean = true
     ) {
+        val colors = LocalAxColorScheme.current
         val spacing = (if (isPreview) padding * 0.5f else padding) * scale
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(surfaceVariant(), shape),
+                .background(colors.surfaceContainerLowest, shape),
             contentAlignment = alignment
         ) {
             Row(
@@ -77,7 +80,7 @@ data class WidgetItem(
                 Icon(
                     imageVector = WidgetIcon(name),
                     contentDescription = WidgetLabel(name),
-                    tint = onSurface(),
+                    tint = colors.onSurface,
                     modifier = Modifier.size(iconSize * scale)
                 )
                 if (!small) {
@@ -85,7 +88,7 @@ data class WidgetItem(
                     Text(
                         text = WidgetLabel(name),
                         fontSize = 14.sp * scale,
-                        color = onSurface(),
+                        color = colors.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Visible,
                         modifier = Modifier

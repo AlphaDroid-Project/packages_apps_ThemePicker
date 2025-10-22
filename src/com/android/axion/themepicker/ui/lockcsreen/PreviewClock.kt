@@ -49,20 +49,13 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import androidx.core.graphics.drawable.toBitmap
 import com.android.axion.themepicker.R
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.systemui.customization.R as customR
 import kotlinx.coroutines.*
 import kotlin.math.*
 import java.text.SimpleDateFormat
 import java.util.*
 import org.json.JSONObject
-
-val Context.scaleRatio: Float
-    get() {
-        val displayMetrics = resources.displayMetrics
-        val sw = minOf(displayMetrics.widthPixels, displayMetrics.heightPixels) / displayMetrics.density
-        val ratio = sw / 420f
-        return ratio
-    }
 
 val Context.previewScale: Float
     get() {

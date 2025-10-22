@@ -25,12 +25,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
+
+val OptionSize = 72.dp
 
 @Composable
 fun PieIcon() {
+    val scale = LocalContext.current.scaleRatio
     val isDark = isSystemInDarkTheme()
     val colors = if (!isDark) {
         listOf(
@@ -50,9 +55,9 @@ fun PieIcon() {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(78.dp)
+            .size(OptionSize * scale)
             .background(LocalAxColorScheme.current.surfaceContainerLowest, shape = CircleShape)
-            .padding(12.dp)
+            .padding(12.dp * scale)
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
             var startAngle = 0f
@@ -71,12 +76,13 @@ fun PieIcon() {
 
 @Composable
 fun OptionIcon(icon: ImageVector) {
+    val scale = LocalContext.current.scaleRatio
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(78.dp)
+            .size(OptionSize * scale)
             .background(LocalAxColorScheme.current.surfaceContainerLowest, shape = CircleShape)
-            .padding(12.dp)
+            .padding(12.dp * scale)
     ) {
         Icon(icon, contentDescription = null, tint = LocalAxColorScheme.current.textPrimary)
     }

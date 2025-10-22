@@ -45,6 +45,7 @@ import com.android.axion.themepicker.ui.preview.CalculatorPreview
 import com.android.axion.themepicker.ui.preview.QuickSettingsPreview
 import com.android.axion.themepicker.ui.preview.WorkspacePreview
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +53,8 @@ import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 fun ColorsSettingsScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel()
 ) {
+    val scale = LocalContext.current.scaleRatio
+
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val pagerState = rememberPagerState(
         initialPage = 0, 
@@ -67,8 +70,8 @@ fun ColorsSettingsScreen(
 
         HorizontalPager(
             state = pagerState,
-            pageSize = PageSize.Fixed(204.dp),
-            modifier = Modifier.height(420.dp).padding(top = 16.dp)
+            pageSize = PageSize.Fixed(162.dp * scale),
+            modifier = Modifier.height(320.dp * scale).padding(top = 16.dp * scale)
         ) { page ->
             when (page) {
                 0 -> WorkspacePreview()
@@ -80,7 +83,7 @@ fun ColorsSettingsScreen(
         ColorsSettings(
             tabIndex = selectedTab,
             onColorModeChanged = { selectedTab = it },
-            modifier = Modifier.wrapContentSize().padding(top = 16.dp, bottom = 24.dp)
+            modifier = Modifier.wrapContentSize().padding(top = 16.dp * scale, bottom = 24.dp * scale)
         )
     }
 }
@@ -97,7 +100,7 @@ fun ColorsSettings(
         ColorsTabs(tabIndex = tabIndex, onColorModeChanged = onColorModeChanged)
         Column(
             modifier = Modifier
-                .padding(top = 16.dp)
+                .padding(top = 16.dp * LocalContext.current.scaleRatio)
         ) {
             when (tabIndex) {
                 0 -> BasicColorsSettings()
@@ -113,13 +116,14 @@ fun ColorsTabs(
     onColorModeChanged: (Int) -> Unit
 ) {
     val context = LocalContext.current
+    val scale = context.scaleRatio
     val colors = LocalAxColorScheme.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
-            .padding(start = 16.dp, end = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .height(40.dp * scale)
+            .padding(start = 16.dp * scale, end = 16.dp * scale),
+        horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
         verticalAlignment = Alignment.CenterVertically
     ) {
         listOf("Color Customization", "Advanced").forEachIndexed { index, title ->
@@ -128,11 +132,11 @@ fun ColorsTabs(
                     .weight(1f)
                     .background(
                         color = if (tabIndex == index) colors.primary else colors.surfaceContainerLowest,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp * scale)
                     )
                     .clickable { onColorModeChanged(index) }
-                    .clip(RoundedCornerShape(12.dp))
-                    .padding(vertical = 8.dp),
+                    .clip(RoundedCornerShape(12.dp * scale))
+                    .padding(vertical = 8.dp * scale),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

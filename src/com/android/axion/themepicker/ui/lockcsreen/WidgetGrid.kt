@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import com.android.axion.themepicker.draganddrop.DragAndDropGrid
+import com.android.axion.themepicker.utils.math.scaleRatio
 import kotlinx.coroutines.*
 import kotlin.math.*
 import java.util.*
@@ -61,7 +62,7 @@ fun WidgetGrid(
     onPickWidget: () -> Unit
 ) {
     val context = LocalContext.current
-    val scale = if (isPreview) context.previewScale - 0.2f else context.scaleRatio
+    val scale = if (isPreview) context.previewScale - 0.18f else context.scaleRatio
     val widgetSlot = scale * WidgetSlot
     val spacing = scale * WidgetSpacing
 

@@ -49,12 +49,12 @@ import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.components.ThumbnailCard
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.loadAllCategories
 import com.android.axion.themepicker.utils.wallpaper.rememberBitmap
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperGalleryViewModel
 
-private val ThumbnailBitmapSize = 90.dp
 private val ThumbnailSize = 120.dp
 private val ThumbnailPadding = 4.dp
 private val ThumbnailPaddingVertical = 8.dp
@@ -180,15 +180,16 @@ private fun OverviewContent(
     onWallpaperSelected: (WallpaperInfo) -> Unit
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
 
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp * scale),
         modifier = Modifier.fillMaxSize()
     ) {
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp * scale),
+                horizontalArrangement = Arrangement.spacedBy(8.dp * scale)
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     QuickActionCard(
@@ -209,7 +210,7 @@ private fun OverviewContent(
 
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp * scale),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -244,7 +245,8 @@ private fun OverviewContent(
             GalleryGrid(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 1000.dp),
+                    .heightIn(max = 1000.dp)
+                    .padding(horizontal = 12.dp * scale),
                 items = latestWallpapers.take(16),
                 itemContent = { wallpaper -> 
                     WallpaperThumbnail(
@@ -295,8 +297,9 @@ private fun GalleryGrid(
     modifier: Modifier = Modifier,
     itemContent: @Composable (item: Any) -> Unit
 ) {
+    val scale = LocalContext.current.scaleRatio
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = ThumbnailSize),
+        columns = GridCells.Adaptive(minSize = ThumbnailSize * scale),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
@@ -314,12 +317,13 @@ private fun QuickActionCard(
     onClick: () -> Unit
 ) {
     val colors = LocalAxColorScheme.current
-    val shape = RoundedCornerShape(16.dp)
+    val scale = LocalContext.current.scaleRatio
+    val shape = RoundedCornerShape(16.dp * scale)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(ThumbnailSize)
+            .height(ThumbnailSize * scale)
             .clickable { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
@@ -327,7 +331,7 @@ private fun QuickActionCard(
         )
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp * scale),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -338,9 +342,9 @@ private fun QuickActionCard(
                     imageVector = icon,
                     contentDescription = text,
                     tint = colors.textPrimary,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp * scale)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp * scale))
                 Text(
                     text = text,
                     color = colors.textPrimary,
@@ -354,22 +358,24 @@ private fun QuickActionCard(
 @Composable
 private fun CategoryCard(category: WallpaperCategory, onClick: () -> Unit) {
     val firstWallpaper = category.wallpapers.firstOrNull()
+    val scale = LocalContext.current.scaleRatio
     ThumbnailCard(
         drawableRes = firstWallpaper?.drawableRes,
         contentDescription = category.title,
-        size = ThumbnailSize,
-        modifier = Modifier.padding(horizontal = ThumbnailPadding, vertical = ThumbnailPaddingVertical),
+        size = ThumbnailSize * scale,
+        modifier = Modifier.padding(horizontal = ThumbnailPadding * scale, vertical = ThumbnailPaddingVertical * scale),
         onClick = onClick
     )
 }
 
 @Composable
 private fun WallpaperThumbnail(wallpaper: WallpaperInfo, onClick: () -> Unit) {
+    val scale = LocalContext.current.scaleRatio
     ThumbnailCard(
         drawableRes = wallpaper.drawableRes,
         contentDescription = wallpaper.title,
-        size = ThumbnailSize,
-        modifier = Modifier.padding(horizontal = ThumbnailPadding, vertical = ThumbnailPaddingVertical),
+        size = ThumbnailSize * scale,
+        modifier = Modifier.padding(horizontal = ThumbnailPadding * scale, vertical = ThumbnailPaddingVertical * scale),
         onClick = onClick
     )
 }

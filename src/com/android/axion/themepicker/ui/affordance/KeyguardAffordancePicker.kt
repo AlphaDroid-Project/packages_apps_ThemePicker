@@ -183,7 +183,9 @@ private fun AffordanceButton(
     val showIcon = affordance != null && affordanceKey != "none"
     val buttonSize = if (isPreview) 48.dp else 64.dp
     val iconSize = if (isPreview) 18.dp else 28.dp
-
+    
+    val hide = !showIcon && isPreview
+    
     Box(
         modifier = Modifier
             .size(buttonSize * scale)
@@ -204,7 +206,7 @@ private fun AffordanceButton(
             ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        if (showIcon && affordance != null) {
+        if (showIcon) {
             Icon(
                 imageVector = affordance.icon,
                 contentDescription = affordance.label,
@@ -215,7 +217,7 @@ private fun AffordanceButton(
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add affordance",
-                tint = Color.White,
+                tint = if (hide) Color.Transparent else Color.White,
                 modifier = Modifier.size(iconSize * scale)
             )
         }

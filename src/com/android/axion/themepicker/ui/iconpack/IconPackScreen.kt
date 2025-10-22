@@ -36,6 +36,7 @@ import com.android.axion.themepicker.ui.app.PreviewsPage
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.preferences.IconButtonCircle
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 
 @Composable
@@ -45,6 +46,7 @@ fun IconPackScreen(
 ) {
     val colors = LocalAxColorScheme.current
     val context = LocalContext.current
+    val scale = context.scaleRatio
     val installedIconPacks by launcherSettingsViewModel.installedIconPacks.collectAsState()
     val selectedPack by launcherSettingsViewModel.selectedIconPack
     val themedIconsEnabled by launcherSettingsViewModel.themedIconsEnabled
@@ -62,23 +64,23 @@ fun IconPackScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp),
+                .padding(top = 24.dp * scale),
             contentAlignment = Alignment.Center
         ) {
             PreviewsPage(
                 isHome = true,
                 refreshKey = "$selectedPack-$themedIconsEnabled",
                 modifier = Modifier
-                    .size(204.dp, 420.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .size(204.dp * scale, 420.dp * scale)
+                    .clip(RoundedCornerShape(16.dp * scale))
             )
         }
 
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp * scale),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 12.dp, top = 48.dp)
+                .padding(start = 12.dp * scale, top = 48.dp * scale)
         ) {
             item {
                 IconButtonCircle(

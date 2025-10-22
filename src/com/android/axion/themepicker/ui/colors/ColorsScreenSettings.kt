@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.android.axion.themepicker.ui.components.FooterCard
 import com.android.axion.themepicker.data.model.ColorsSettingsData
 import com.android.axion.themepicker.data.model.PaletteItem
 import com.android.axion.themepicker.ui.dialogs.ColorPickerDialog
@@ -112,7 +113,7 @@ fun BasicColorsSettings() {
             })
         }
 
-        AboutCard(
+        FooterCard(
             title = stringResource(id = R.string.about_color_customization_title),
             description = stringResource(id = R.string.about_color_customization_desc)
         )
@@ -539,33 +540,6 @@ private fun ChromaSlider(settings: ColorsSettingsData, onSettingsChange: (Colors
         ) {
             Text("0", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
             Text("100", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-private fun AboutCard(title: String, description: String) {
-    val colors = LocalAxColorScheme.current
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colors.secondaryContainer)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(Icons.Default.Info, contentDescription = null, tint = colors.onSecondaryContainer)
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onSecondaryContainer
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSecondaryContainer
-                )
-            }
         }
     }
 }

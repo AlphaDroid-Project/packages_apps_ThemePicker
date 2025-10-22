@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.*
 import androidx.core.graphics.drawable.toBitmap
 import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.Screen.EntryPoint
+import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 import kotlinx.coroutines.*
 import kotlin.math.*
