@@ -2,34 +2,44 @@ package com.android.axion.themepicker.utils.effects
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.renderscript.Allocation
-import android.renderscript.Element
-import android.renderscript.RenderScript
-import android.renderscript.ScriptIntrinsicBlur
 import android.util.Log
+import com.google.android.renderscript.Toolkit
 import kotlin.math.*
 
 fun applyAtmosphereEffect(context: Context, bitmap: Bitmap): Bitmap {
     return try {
-        val rs = RenderScript.create(context)
-        var currentBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-        val iterations = 20
-        
-        for (i in 0 until iterations) {
-            val input = Allocation.createFromBitmap(rs, currentBitmap)
-            val output = Allocation.createTyped(rs, input.type)
-            val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-            script.setRadius(25f)
-            script.setInput(input)
-            script.forEach(output)
-            output.copyTo(currentBitmap)
-            input.destroy()
-            output.destroy()
-            script.destroy()
+        val source = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+
+        val downscaled = Bitmap.createScaledBitmap(
+            source,
+            (source.width * 0.5f).toInt(),
+            (source.height * 0.5f).toInt(),
+            true
+        )
+
+        val radius = 100
+        val blur = 25
+
+        val iterations = radius / blur
+        val remainingRadius = radius % blur
+
+        var result = if (remainingRadius > 0) {
+            Toolkit.blur(downscaled, remainingRadius)
+        } else {
+            downscaled
         }
-        
-        rs.destroy()
-        currentBitmap
+
+        repeat(iterations) {
+            result = Toolkit.blur(result, blur)
+        }
+
+        val output = Bitmap.createScaledBitmap(result, source.width, source.height, true)
+
+        if (result != downscaled) result.recycle()
+        downscaled.recycle()
+        source.recycle()
+
+        output
     } catch (e: Exception) {
         Log.e("WallpaperEffect", "Error applying atmosphere effect", e)
         bitmap
