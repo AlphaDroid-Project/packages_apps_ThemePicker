@@ -118,12 +118,17 @@ fun ColorsTabs(
     val context = LocalContext.current
     val scale = context.scaleRatio
     val colors = LocalAxColorScheme.current
+    val shape = RoundedCornerShape(12.dp * scale)
+    val padding = 16.dp * scale
+    val space = 8.dp * scale
+    val heihgt = 40.dp * scale
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp * scale)
-            .padding(start = 16.dp * scale, end = 16.dp * scale),
-        horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
+            .height(heihgt)
+            .padding(horizontal = padding)
+            .clip(shape),
+        horizontalArrangement = Arrangement.spacedBy(space),
         verticalAlignment = Alignment.CenterVertically
     ) {
         listOf("Color Customization", "Advanced").forEachIndexed { index, title ->
@@ -132,11 +137,11 @@ fun ColorsTabs(
                     .weight(1f)
                     .background(
                         color = if (tabIndex == index) colors.primary else colors.surfaceContainerLowest,
-                        shape = RoundedCornerShape(12.dp * scale)
+                        shape = shape
                     )
                     .clickable { onColorModeChanged(index) }
-                    .clip(RoundedCornerShape(12.dp * scale))
-                    .padding(vertical = 8.dp * scale),
+                    .clip(shape)
+                    .padding(vertical = space),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

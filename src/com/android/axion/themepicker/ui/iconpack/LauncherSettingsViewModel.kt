@@ -70,11 +70,17 @@ class LauncherSettingsViewModel(application: Application) : AndroidViewModel(app
     private var themedIconUri: Uri? = null
     private var iconPackUri: Uri? = null
     private var gridUri: Uri? = null
+    private var iconSizeUri: Uri? = null
+    private var fontSizeUri: Uri? = null
 
     private val _installedIconPacks = MutableStateFlow<List<IconPackItem>>(emptyList())
     val installedIconPacks: StateFlow<List<IconPackItem>> = _installedIconPacks.asStateFlow()
     val selectedIconPack = mutableStateOf("")
     val themedIconsEnabled = mutableStateOf(false)
+    private val _iconSize = MutableStateFlow(100)
+    val iconSize: StateFlow<Int> = _iconSize
+    private val _fontSize = MutableStateFlow(100)
+    val fontSize: StateFlow<Int> = _fontSize
     
     private val _availableGridOptions = MutableStateFlow<List<GridOption>>(emptyList())
     val availableGridOptions: StateFlow<List<GridOption>> = _availableGridOptions.asStateFlow()
@@ -92,6 +98,8 @@ class LauncherSettingsViewModel(application: Application) : AndroidViewModel(app
                     themedIconUri -> updateThemedIconState(it)
                     iconPackUri -> updateIconPackState(it)
                     gridUri -> loadGridOptions()
+                    iconSizeUri -> updateIconSize(it)
+                    fontSizeUri -> updateFontSize(it)
                 }
             }
         }
@@ -102,6 +110,8 @@ class LauncherSettingsViewModel(application: Application) : AndroidViewModel(app
             setupContentUris()
             themedIconUri?.let { updateThemedIconState(it) }
             iconPackUri?.let { updateIconPackState(it) }
+            iconSizeUri?.let { updateIconSize(it) }
+            fontSizeUri?.let { updateFontSize(it) }
             loadGridOptions()
             observeProviderChanges()
         }
@@ -123,6 +133,8 @@ class LauncherSettingsViewModel(application: Application) : AndroidViewModel(app
             themedIconUri = buildUri("icon_themed")
             iconPackUri = buildUri("icon_pack")
             gridUri = buildUri("default_grid")
+            fontSizeUri = buildUri("font_size")
+            iconSizeUri = buildUri("icon_size")
         } else {
             Log.w(TAG, "Launcher authority not found - customizations unavailable")
         }
@@ -221,6 +233,50 @@ class LauncherSettingsViewModel(application: Application) : AndroidViewModel(app
         gridUri?.let { uri ->
             contentResolver.registerContentObserver(uri, true, contentObserver)
         }
+        fontSizeUri?.let { uri ->
+            contentResolver.registerContentObserver(uri, true, contentObserver)
+        }
+        iconSizeUri?.let { uri ->
+            contentResolver.registerContentObserver(uri, true, contentObserver)
+        }
+    }
+
+    private fun updateIconSize(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            var size = 100
+            cursor?.use {
+                if (it.moveToNext()) {
+                    val idx = it.getColumnIndex("icon_size")
+                    if (idx != -1) {
+                        size = it.getString(idx)?.toIntOrNull() ?: 100
+                    }
+                }
+            }
+            withContext(Dispatchers.Main) {
+                _iconSize.value = size
+            }
+            Log.d(TAG, "Fetched icon size: $size")
+        }
+    }
+
+    private fun updateFontSize(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            var size = 100
+            cursor?.use {
+                if (it.moveToNext()) {
+                    val idx = it.getColumnIndex("font_size")
+                    if (idx != -1) {
+                        size = it.getString(idx)?.toIntOrNull() ?: 100
+                    }
+                }
+            }
+            withContext(Dispatchers.Main) {
+                _fontSize.value = size
+            }
+            Log.d(TAG, "Fetched font size: $size")
+        }
     }
 
     private fun updateThemedIconState(uri: Uri) {
@@ -307,6 +363,32 @@ class LauncherSettingsViewModel(application: Application) : AndroidViewModel(app
 
     fun setGrid(grid: GridOption) {
         setGrid(grid.name)
+    }
+
+    fun setIconSize(size: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            iconSizeUri?.let { uri ->
+                val values = ContentValues().apply {
+                    put("icon_size", size)
+                }
+                contentResolver.update(uri, values, null, null)
+                _iconSize.value = size
+                Log.d(TAG, "Set icon size: $size")
+            }
+        }
+    }
+
+    fun setFontSize(size: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            fontSizeUri?.let { uri ->
+                val values = ContentValues().apply {
+                    put("font_size", size)
+                }
+                contentResolver.update(uri, values, null, null)
+                _fontSize.value = size
+                Log.d(TAG, "Set font size: $size")
+            }
+        }
     }
 
     fun resetIconPack() {

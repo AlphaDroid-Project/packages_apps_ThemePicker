@@ -21,6 +21,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -143,32 +145,25 @@ fun AppGridSettingsScreen(
                         }
                     } else {
                         val sortedGrids = availableGrids.sortedWith(GridOption.DESCENDING_COMPARATOR)
-                        
-                        Log.d("AppGridSettingsScreen", "sortedGrids=${sortedGrids}")
-
-                        sortedGrids.chunked(4).forEach { chunk ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp * scale),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp * scale)
-                            ) {
-                                chunk.forEach { grid ->
-                                    GridChip(
-                                        grid = grid,
-                                        isSelected = selectedGrid?.name == grid.name,
-                                        isLoading = isLoadingSelection,
-                                        onClick = {
-                                            if (!isLoadingSelection) {
-                                                launcherViewModel.selectGrid(grid)
-                                            }
-                                        },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                                repeat(4 - chunk.size) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(4),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 240.dp * scale),
+                            verticalArrangement = Arrangement.spacedBy(8.dp * scale),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
+                        ) {
+                            items(sortedGrids) { grid ->
+                                GridChip(
+                                    grid = grid,
+                                    isSelected = selectedGrid?.name == grid.name,
+                                    isLoading = isLoadingSelection,
+                                    onClick = {
+                                        if (!isLoadingSelection) {
+                                            launcherViewModel.selectGrid(grid)
+                                        }
+                                    }
+                                )
                             }
                         }
                     }

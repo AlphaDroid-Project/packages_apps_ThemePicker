@@ -102,15 +102,27 @@ fun BasicColorsSettings() {
             })
             
             Divider()
-            ContrastSlider(settings, onSettingsChange = {
-                settings = it
-                applyColorSettings(context, settings)
-            })
+            SliderCard(
+                title = stringResource(R.string.contrast_level_title),
+                value = settings.contrastLevel,
+                onValueChangeFinished = {
+                    settings = settings.copy(contrastLevel = it)
+                    applyColorSettings(context, settings)
+                },
+                valueRange = -1f..1f,
+                defaultValue = 0f
+            )
             Divider()
-            ChromaSlider(settings, onSettingsChange = {
-                settings = it
-                applyColorSettings(context, settings)
-            })
+            SliderCard(
+                title = stringResource(R.string.chroma_boost_title),
+                value = settings.chromaBoost,
+                onValueChangeFinished = {
+                    settings = settings.copy(chromaBoost = it)
+                    applyColorSettings(context, settings)
+                },
+                valueRange = 0f..100f,
+                defaultValue = 0f
+            )
         }
 
         FooterCard(
@@ -477,69 +489,5 @@ private fun FidelityPreference(settings: ColorsSettingsData, onSettingsChange: (
             checked = settings.fidelity,
             onCheckedChange = { enabled -> onSettingsChange(settings.copy(fidelity = enabled)) }
         )
-    }
-}
-
-@Composable
-private fun ContrastSlider(settings: ColorsSettingsData, onSettingsChange: (ColorsSettingsData) -> Unit) {
-    val colors = LocalAxColorScheme.current
-    var sliderValue by remember { mutableStateOf(settings.contrastLevel) }
-    val onSettingsChangeState by rememberUpdatedState(onSettingsChange)
-
-    Column {
-        Text(
-            text = stringResource(R.string.contrast_level_title),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Slider(
-            value = sliderValue,
-            onValueChange = { sliderValue = it },
-            onValueChangeFinished = {
-                onSettingsChangeState(settings.copy(contrastLevel = sliderValue))
-            },
-            valueRange = 0f..1f,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("0.0", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-            Text("1.0", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-private fun ChromaSlider(settings: ColorsSettingsData, onSettingsChange: (ColorsSettingsData) -> Unit) {
-    val colors = LocalAxColorScheme.current
-    var sliderValue by remember { mutableStateOf(settings.chromaBoost) }
-    val onSettingsChangeState by rememberUpdatedState(onSettingsChange)
-
-    Column {
-        Text(
-            text = stringResource(R.string.chroma_boost_title),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Slider(
-            value = sliderValue,
-            onValueChange = { sliderValue = it },
-            onValueChangeFinished = {
-                onSettingsChangeState(settings.copy(chromaBoost = sliderValue))
-            },
-            valueRange = 0f..100f,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("0", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-            Text("100", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-        }
     }
 }

@@ -64,8 +64,8 @@ fun ScreenOptions(
     val context = LocalContext.current
     val options = if (isHome) listOf(
         OptionCircle("Colors", null),
-        OptionCircle("Icon Pack", Icons.Default.Brush),
-        OptionCircle("Layout", Icons.Default.GridView)
+        OptionCircle("Layout", Icons.Default.GridView),
+        OptionCircle("Apperance", Icons.Default.Brush)
     ) else listOf(
         OptionCircle("Widgets", Icons.Default.Widgets),
         OptionCircle("Shortcuts", Icons.Default.Shortcut),
@@ -87,8 +87,8 @@ fun ScreenOptions(
                             if (isHome) {
                                 when (name) {
                                     "Colors" -> mainScreenViewModel.onOpenColorsSettings()
-                                    "Icon Pack" -> mainScreenViewModel.onOpenIconPack()
-                                    "Layout" -> mainScreenViewModel.onOpenLayout()
+                                    "Layout" -> mainScreenViewModel.onOpenIconPack()
+                                    "Apperance" -> mainScreenViewModel.onOpenLayout()
                                 }
                             } else {
                                 when (name) {
@@ -112,7 +112,7 @@ fun ScreenOptions(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     if (option.icon == null) PieIcon()
                     else OptionIcon(option.icon)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         option.name,
                         style = MaterialTheme.typography.bodySmall,

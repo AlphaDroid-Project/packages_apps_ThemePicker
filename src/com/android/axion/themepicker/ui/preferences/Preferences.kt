@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlin.math.*
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 
 @Composable
 fun PreferenceCard(
@@ -54,6 +55,8 @@ fun PreferenceCard(
     onClick: (() -> Unit)? = null
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,7 +65,7 @@ fun PreferenceCard(
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp * scale),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -91,7 +94,7 @@ fun PreferenceCard(
                 color != null -> {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(48.dp * scale)
                             .clip(CircleShape)
                             .background(color)
                     )
@@ -106,44 +109,94 @@ fun SliderCard(
     title: String,
     description: String? = null,
     value: Float,
-    onValueChange: (Float) -> Unit,
-    onValueChangeFinished: (() -> Unit)? = null,
+    onValueChange: ((Float) -> Unit) = {},
+    onValueChangeFinished: ((Float) -> Unit) = {},
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    steps: Int = 0
+    steps: Int = 0,
+    defaultValue: Float
 ) {
     val colors = LocalAxColorScheme.current
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    val scale = LocalContext.current.scaleRatio
+
+    var internalValue by remember { mutableStateOf(value) }
+
+    LaunchedEffect(value) {
+        internalValue = value
+    }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Column {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
+
             description?.let {
+                Spacer(modifier = Modifier.height(4.dp * scale))
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+
+            Spacer(modifier = Modifier.height(4.dp * scale))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
+            ) {
+                Text(
+                    text = "Value: ${internalValue.toInt()}%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Reset to default",
+                    tint = colors.onSurfaceVariant,
+                    modifier = Modifier
+                        .size(14.dp * scale)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    internalValue = defaultValue
+                                    onValueChange(defaultValue)
+                                    onValueChangeFinished(defaultValue)
+                                }
+                            )
+                        }
+                )
+            }
+
             Slider(
-                value = value,
-                onValueChange = onValueChange,
-                onValueChangeFinished = onValueChangeFinished ?: {},
+                value = internalValue,
+                onValueChange = {
+                    internalValue = it
+                    onValueChange(it)
+                },
+                onValueChangeFinished = { onValueChangeFinished(internalValue) },
                 valueRange = valueRange,
                 steps = steps,
                 modifier = Modifier.fillMaxWidth()
             )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(valueRange.start.toString(), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-                Text(valueRange.endInclusive.toString(), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                Text(
+                    valueRange.start.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant
+                )
+                Text(
+                    valueRange.endInclusive.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant
+                )
             }
         }
     }
@@ -156,6 +209,7 @@ fun PreferenceGroupCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -163,8 +217,8 @@ fun PreferenceGroupCard(
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(16.dp * scale),
+            verticalArrangement = Arrangement.spacedBy(12.dp * scale),
             content = content
         )
     }

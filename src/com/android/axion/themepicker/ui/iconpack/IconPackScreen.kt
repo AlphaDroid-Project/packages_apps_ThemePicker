@@ -20,8 +20,7 @@ import android.net.Uri
 import androidx.compose.foundation.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -35,6 +34,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.ui.app.PreviewsPage
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.preferences.IconButtonCircle
+import com.android.axion.themepicker.ui.preferences.PreferenceGroupCard
+import com.android.axion.themepicker.ui.preferences.SliderCard
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
@@ -50,6 +51,13 @@ fun IconPackScreen(
     val installedIconPacks by launcherSettingsViewModel.installedIconPacks.collectAsState()
     val selectedPack by launcherSettingsViewModel.selectedIconPack
     val themedIconsEnabled by launcherSettingsViewModel.themedIconsEnabled
+    val iconSize by launcherSettingsViewModel.iconSize.collectAsState()
+    val fontSize by launcherSettingsViewModel.fontSize.collectAsState()
+    
+    val sidePadding = 16.dp * scale
+    val verticalPadding = 16.dp * scale
+    val previewHeight = 320.dp * scale
+    val previewWidth = 162.dp * scale
 
     Column(
         modifier = Modifier
@@ -63,15 +71,14 @@ fun IconPackScreen(
 
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp * scale),
+                .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             PreviewsPage(
                 isHome = true,
-                refreshKey = "$selectedPack-$themedIconsEnabled",
+                refreshKey = "$selectedPack-$themedIconsEnabled-$fontSize-$iconSize",
                 modifier = Modifier
-                    .size(204.dp * scale, 420.dp * scale)
+                    .size(previewWidth, previewHeight)
                     .clip(RoundedCornerShape(16.dp * scale))
             )
         }
@@ -80,7 +87,7 @@ fun IconPackScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp * scale),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 12.dp * scale, top = 48.dp * scale)
+                .padding(horizontal = sidePadding, vertical = verticalPadding)
         ) {
             item {
                 IconButtonCircle(
@@ -136,6 +143,50 @@ fun IconPackScreen(
                             launcherSettingsViewModel.setThemedIcons(false)
                         }
                     }
+                )
+            }
+        }
+        
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = sidePadding, vertical = verticalPadding)
+        ) {
+            PreferenceGroupCard {
+                val iconSize by launcherSettingsViewModel.iconSize.collectAsState()
+                val fontSize by launcherSettingsViewModel.fontSize.collectAsState()
+
+                var iconSizeValue by remember { mutableStateOf(iconSize.toFloat()) }
+                var fontSizeValue by remember { mutableStateOf(fontSize.toFloat()) }
+
+                LaunchedEffect(iconSize) {
+                    iconSizeValue = iconSize.toFloat()
+                }
+                LaunchedEffect(fontSize) {
+                    fontSizeValue = fontSize.toFloat()
+                }
+
+                SliderCard(
+                    title = "Icon Size",
+                    value = iconSizeValue,
+                    defaultValue = 100f,
+                    onValueChangeFinished = {
+                        launcherSettingsViewModel.setIconSize(it.toInt())
+                    },
+                    valueRange = 50f..150f
+                )
+
+                Divider()
+
+                SliderCard(
+                    title = "Font Size",
+                    value = fontSizeValue,
+                    defaultValue = 100f,
+                    onValueChangeFinished = {
+                        launcherSettingsViewModel.setFontSize(it.toInt())
+                    },
+                    valueRange = 50f..150f
                 )
             }
         }

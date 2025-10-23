@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.utils.math.scaleRatio
 
 @Composable
 fun ToggleButton(
@@ -60,6 +61,8 @@ fun ToggleButton(
     primaryTint: Color? = null
 ) {
     val colors = LocalAxColorScheme.current
+    val ratio = LocalContext.current.scaleRatio
+    val iconSize = 32.dp * ratio
 
     val scale by animateFloatAsState(
         targetValue = if (enabled) 1.1f else 1f,
@@ -83,7 +86,7 @@ fun ToggleButton(
     ) {
         Box(
             modifier = Modifier
-                .size(64.dp)
+                .size(iconSize * 2)
                 .clip(CircleShape)
                 .background(
                     backgroundColor ?: if (enabled) colors.primary.copy(alpha = 0.2f)
@@ -93,7 +96,7 @@ fun ToggleButton(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(24.dp * ratio),
                     color = primaryTint ?: contentColorFor(backgroundColor ?: Color.Gray),
                     strokeWidth = 2.dp
                 )
@@ -103,7 +106,7 @@ fun ToggleButton(
                         Image(
                             bitmap = bitmap,
                             contentDescription = label,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(iconSize)
                         )
                     }
                     icon != null -> {
@@ -112,14 +115,14 @@ fun ToggleButton(
                             contentDescription = label,
                             tint = primaryTint ?: if (enabled) colors.primary
                             else colors.secondary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(iconSize)
                         )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp * ratio))
 
         Text(
             text = label,
@@ -145,14 +148,21 @@ fun IconButtonCircle(
     onClick: () -> Unit
 ) {
     val colors = LocalAxColorScheme.current
+    val scale = LocalContext.current.scaleRatio
+    val buttonSize = 72.dp * scale
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
+        modifier = Modifier
+            .clickable (
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick
+            )
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(78.dp)
+                .size(buttonSize)
                 .background(
                     color = colors.surfaceContainerLowest,
                     shape = CircleShape
@@ -162,7 +172,7 @@ fun IconButtonCircle(
                     color = if (selected) colors.primary else Color.Transparent,
                     shape = CircleShape
                 )
-                .padding(12.dp)
+                .padding(12.dp * scale)
         ) {
             when {
                 bitmap != null -> Image(bitmap = bitmap, contentDescription = label)
@@ -174,7 +184,7 @@ fun IconButtonCircle(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(6.dp * scale))
 
         Text(
             text = label,

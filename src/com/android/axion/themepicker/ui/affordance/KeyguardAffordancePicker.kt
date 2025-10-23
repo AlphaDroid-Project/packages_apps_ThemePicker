@@ -185,6 +185,7 @@ private fun AffordanceButton(
     val iconSize = if (isPreview) 18.dp else 28.dp
     
     val hide = !showIcon && isPreview
+    val unselected = !selected && !hide
     
     Box(
         modifier = Modifier
@@ -195,8 +196,8 @@ private fun AffordanceButton(
                 shape = CircleShape
             )
             .border(
-                width = if (!selected && showIcon) 1.dp else 0.dp,
-                color = if (!selected && showIcon) Color.White else Color.Transparent,
+                width = if (unselected) 1.dp else 0.dp,
+                color = if (unselected) Color.White else Color.Transparent,
                 shape = CircleShape
             )
             .clickable(
