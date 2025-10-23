@@ -94,23 +94,22 @@ class MainActivity : ComponentActivity() {
         if (intent == null || isLaunchExtra) return
         val action = intent.action
         val data: Uri? = intent.data
-        if ((action == Intent.ACTION_ATTACH_DATA || action == Intent.ACTION_SET_WALLPAPER) && data != null) {
-            wallpaperShareIntent = true
-            try {
-                val inputStream: InputStream? = contentResolver.openInputStream(data)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                inputStream?.close()
+        if (data == null) return
+        wallpaperShareIntent = true
+        try {
+            val inputStream: InputStream? = contentResolver.openInputStream(data!!)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
 
-                bitmap?.let {
-                    val customWallpaper = WallpaperInfo(
-                        id = "intent_wallpaper_${System.currentTimeMillis()}",
-                        title = "Shared Wallpaper",
-                        drawableRes = -1
-                    )
-                    mainViewModel.onUserUpload(customWallpaper, it)
-                }
-            } catch (e: Exception) {
+            bitmap?.let {
+                val customWallpaper = WallpaperInfo(
+                    id = "shared_wallpaper_${System.currentTimeMillis()}",
+                    title = "Shared Wallpaper",
+                    drawableRes = -1
+                )
+                mainViewModel.onUserUpload(customWallpaper, it)
             }
+        } catch (e: Exception) {
         }
     }
 

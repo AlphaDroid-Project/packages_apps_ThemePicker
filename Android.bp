@@ -19,6 +19,8 @@ android_app {
     optimize: {
         enabled: true,
     },
+    
+    use_embedded_native_libs: true,
 
     static_libs: [
         "androidx.activity_activity-compose",
@@ -44,6 +46,10 @@ android_app {
         "gson-prebuilt-jar-2.9.1",
         "hilt_android",
         "ThemePickerLib"
+    ],
+
+    jni_libs: [
+        "librenderscript-toolkit",
     ],
 
     kotlincflags: [

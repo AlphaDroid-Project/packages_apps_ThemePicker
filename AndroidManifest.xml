@@ -26,6 +26,8 @@
     <application
         android:label="Axion ThemePicker"
         android:allowBackup="false"
+        android:extractNativeLibs="false"
+        android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:directBootAware="true"
         android:largeHeap="false">
@@ -34,10 +36,12 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.SET_WALLPAPER" />
                 <action android:name="android.intent.action.ATTACH_DATA" />
+                <action android:name="android.intent.action.GET_CONTENT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
