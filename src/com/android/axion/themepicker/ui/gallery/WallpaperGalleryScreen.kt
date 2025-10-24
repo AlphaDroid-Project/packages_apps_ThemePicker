@@ -23,6 +23,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.*
@@ -324,7 +325,10 @@ private fun QuickActionCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(ThumbnailSize * scale)
-            .clickable { onClick() },
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = colors.surfaceContainerLowest

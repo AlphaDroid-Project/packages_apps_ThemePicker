@@ -19,7 +19,6 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.os.*
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -64,6 +63,7 @@ import com.android.axion.themepicker.utils.colors.ColorUtils
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
 import com.android.axion.themepicker.utils.wallpaper.BitmapProcessor
+import com.android.axion.themepicker.utils.wallpaper.centerCrop
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 import com.android.axion.themepicker.ui.carousel.WallpaperCarouselCard
@@ -96,16 +96,22 @@ fun WallpaperPreviewScreen(
         } else drawable?.toBitmap() 
     }
     
+    val cbitmap = remember(sourceBitmap) {
+        centerCrop(context, sourceBitmap)
+    }
+
     var showInfoDialog by rememberSaveable { mutableStateOf(false) }
     var zoomProperties by remember { mutableStateOf(ZoomProperties()) }
 
+    if (cbitmap == null) return
+
     CommonWallpaperPreview(
-        sourceBitmap = sourceBitmap,
+        sourceBitmap = cbitmap,
         zoomProperties = zoomProperties,
         onBack = mainScreenViewModel::goBack,
         onCheck = {
             scope.launch {
-                sourceBitmap?.let { bitmap ->
+                cbitmap?.let { bitmap ->
                     val updatedSettings = settings.copy(
                         zoomProperties = zoomProperties
                     )
@@ -162,8 +168,10 @@ fun EditCurrentWallpaperScreen(
     val scope = rememberCoroutineScope()
     
     val wallBitmap = getCurrentWallpaperBitmap(context, true)
-
-    var defaultBitmap by remember { mutableStateOf(wallBitmap) }
+    
+    val cbitmap = remember(wallBitmap) {
+        centerCrop(context, wallBitmap)
+    }
 
     var atmosphereEnabled by rememberSaveable { mutableStateOf(settings.atmosphere) }
     var glassEnabled by rememberSaveable { mutableStateOf(settings.glass) }
@@ -176,8 +184,10 @@ fun EditCurrentWallpaperScreen(
         }
     }
 
+    if (cbitmap == null) return
+
     CommonWallpaperPreview(
-        sourceBitmap = defaultBitmap,
+        sourceBitmap = cbitmap,
         zoomProperties = zoomProperties,
         atmosphereEnabled = atmosphereEnabled,
         glassEnabled = glassEnabled,
@@ -186,7 +196,7 @@ fun EditCurrentWallpaperScreen(
         onBack = mainScreenViewModel::goBack,
         onCheck = {
             scope.launch {
-                defaultBitmap?.let { bitmap ->
+                cbitmap?.let { bitmap ->
                     val updatedSettings = settings.copy(
                         atmosphere = atmosphereEnabled,
                         glass = glassEnabled,
@@ -252,7 +262,6 @@ private fun CommonWallpaperPreview(
     ) {
         if (sourceBitmap != null) {
             val painter = BitmapPainter(sourceBitmap.asImageBitmap())
-            
             Image(
                 painter = painter,
                 contentDescription = "Wallpaper",
@@ -299,7 +308,7 @@ private fun CommonWallpaperPreview(
                         translationX = offset.x,
                         translationY = offset.y
                     ),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.FillBounds
             )
 
             if (scale > 1f) {

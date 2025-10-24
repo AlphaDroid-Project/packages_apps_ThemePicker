@@ -65,6 +65,7 @@ import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
+import com.android.axion.themepicker.utils.wallpaper.centerCrop
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 import com.android.axion.themepicker.utils.wallpaper.BitmapProcessor
@@ -293,6 +294,7 @@ fun WallpaperPreviewBox(
     isLockscreen: Boolean = true
 ) {
     val colors = LocalAxColorScheme.current
+    val context = LocalContext.current
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
@@ -336,8 +338,8 @@ fun WallpaperPreviewBox(
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(13.dp)),
                             wallpaperDrawable = BitmapDrawable(
-                                LocalContext.current.resources,
-                                bitmap
+                                context.resources,
+                                centerCrop(context, bitmap)
                             )
                         )
                     }

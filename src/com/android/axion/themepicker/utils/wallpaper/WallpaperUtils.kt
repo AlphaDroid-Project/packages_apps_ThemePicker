@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2025 AxionOS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.axion.themepicker.utils.wallpaper
 
 import android.app.WallpaperManager
@@ -10,6 +25,8 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.Matrix
+import android.graphics.Paint
 import android.os.*
 import android.view.View
 import android.util.Log
@@ -465,4 +482,46 @@ fun loadAllCategories(context: Context): List<WallpaperCategory> {
     return categories
 }
 
+fun centerCrop(context: Context, bmp: Bitmap?): Bitmap? {
+    if (bmp == null) return null
+
+    val displayMetrics = context.resources.displayMetrics
+    val targetWidth = displayMetrics.widthPixels
+    val targetHeight = displayMetrics.heightPixels
+
+    val srcWidth = bmp.width.toFloat()
+    val srcHeight = bmp.height.toFloat()
+
+    val scale = maxOf(
+        targetWidth / srcWidth,
+        targetHeight / srcHeight
+    )
+
+    val scaledWidth = scale * srcWidth
+    val scaledHeight = scale * srcHeight
+
+    val left = (scaledWidth - targetWidth) / 2f
+    val top = (scaledHeight - targetHeight) / 2f
+
+    val matrix = Matrix().apply {
+        setScale(scale, scale)
+    }
+
+    val scaledBmp = Bitmap.createBitmap(
+        bmp, 0, 0, bmp.width, bmp.height, matrix, true
+    )
+
+    val croppedBmp = Bitmap.createBitmap(
+        scaledBmp,
+        left.toInt().coerceAtLeast(0),
+        top.toInt().coerceAtLeast(0),
+        targetWidth.coerceAtMost(scaledBmp.width - left.toInt()),
+        targetHeight.coerceAtMost(scaledBmp.height - top.toInt())
+    )
+
+    if (scaledBmp != bmp) scaledBmp.recycle()
+
+    return croppedBmp
+}
+        
 private data class Quad(val width: Int, val height: Int, val left: Int, val top: Int)
