@@ -366,6 +366,8 @@ class CommonOverlayProvider(
                 json.toString(),
                 userId
             )
+            
+            Typeface.changeFont(context.resources)
 
             return true
         } catch (e: JSONException) {

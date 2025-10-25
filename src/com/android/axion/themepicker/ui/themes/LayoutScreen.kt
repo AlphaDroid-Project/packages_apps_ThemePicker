@@ -103,7 +103,7 @@ private fun LayoutRootScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.surfaceContainerLow)
+            .background(colors.surfaceContainerHigh)
     ) {
         ExpressiveHeader(
             title = "Appearance",
@@ -149,7 +149,7 @@ private fun AppGridCard(
                 layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
             },
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainer
+            containerColor = colors.surfaceContainerLowest
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -254,7 +254,7 @@ private fun SystemIconsCard(
                 layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
             },
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainer
+            containerColor = colors.surfaceContainerLowest
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -328,7 +328,7 @@ private fun FontCard(
                 layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
             },
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainer
+            containerColor = colors.surfaceContainerLowest
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -395,7 +395,7 @@ private fun ShapeCard(
                 layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
             },
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainer
+            containerColor = colors.surfaceContainerLowest
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
