@@ -16,6 +16,7 @@
 package com.android.axion.themepicker.ui.gallery
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.util.Log
@@ -39,10 +40,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.res.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.GalleryState
 import com.android.axion.themepicker.data.model.WallpaperCategory
 import com.android.axion.themepicker.data.model.WallpaperInfo
@@ -50,15 +53,11 @@ import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.components.ThumbnailCard
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
-import com.android.axion.themepicker.utils.math.scaleRatio
+import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.utils.wallpaper.loadAllCategories
 import com.android.axion.themepicker.utils.wallpaper.rememberBitmap
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperGalleryViewModel
-
-private val ThumbnailSize = 120.dp
-private val ThumbnailPadding = 4.dp
-private val ThumbnailPaddingVertical = 8.dp
 
 @Composable
 fun WallpaperGalleryScreen(
@@ -78,11 +77,14 @@ fun WallpaperGalleryScreen(
     var latestWallpapers by remember { mutableStateOf<List<WallpaperInfo>>(emptyList()) }
 
     val currentState = galleryState
+    val overviewTitle = stringResource(R.string.header_wallpaper_gallery)
+    val collectionsTitle = stringResource(R.string.header_collections)
+
     val headerTitle by remember(currentState) {
         derivedStateOf {
             when (currentState) {
-                is GalleryState.Overview -> "Wallpaper Gallery"
-                is GalleryState.CategoryList -> "Wallpapers"
+                is GalleryState.Overview -> overviewTitle
+                is GalleryState.CategoryList -> collectionsTitle
                 is GalleryState.CategoryDetail -> currentState.category.title
             }
         }
@@ -94,7 +96,7 @@ fun WallpaperGalleryScreen(
         latestWallpapers = loadedCategories
             .flatMap { it.wallpapers }
             .asReversed()
-            .take(16)
+            .take(12)
     }
 
     BackHandler(enabled = true) {
@@ -110,7 +112,7 @@ fun WallpaperGalleryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 24.dp)
+                .padding(bottom = 24.sdp)
         ) {
             ExpressiveHeader(
                 title = headerTitle,
@@ -181,82 +183,282 @@ private fun OverviewContent(
     onWallpaperSelected: (WallpaperInfo) -> Unit
 ) {
     val colors = LocalAxColorScheme.current
-    val scale = LocalContext.current.scaleRatio
+    val context = LocalContext.current
 
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(24.dp * scale),
+        verticalArrangement = Arrangement.spacedBy(32.sdp),
+        contentPadding = PaddingValues(bottom = 16.sdp),
         modifier = Modifier.fillMaxSize()
     ) {
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp * scale),
-                horizontalArrangement = Arrangement.spacedBy(8.dp * scale)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.sdp),
+                verticalArrangement = Arrangement.spacedBy(16.sdp)
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    QuickActionCard(
-                        text = "Edit Current",
-                        icon = Icons.Default.Edit,
-                        onClick = onEditCurrent
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    QuickActionCard(
-                        text = "My Photos",
-                        icon = Icons.Default.Photo,
-                        onClick = onSelectPhoto
-                    )
-                }
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp * scale),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Latest Wallpapers",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.textPrimary
+                ExpressiveMainCard(
+                    text = stringResource(R.string.edit_current_wallpaper),
+                    description = stringResource(R.string.customize_active_wallpaper),
+                    icon = Icons.Default.Edit,
+                    onClick = onEditCurrent
                 )
 
                 Row(
-                    modifier = Modifier.wrapContentSize().clickable { onMoreClick() },
-                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.sdp)
                 ) {
-                    Text(
-                        text = "See More",
-                        fontSize = 18.sp,
-                        color = colors.textPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = "Back",
-                        tint = colors.textPrimary
-                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        ExpressiveActionCard(
+                            text = stringResource(R.string.my_photos),
+                            icon = Icons.Default.Photo,
+                            onClick = onSelectPhoto
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        ExpressiveActionCard(
+                            text = stringResource(R.string.live_wallpapers),
+                            icon = Icons.Default.ViewInAr,
+                            onClick = { launchLiveWallpaperPicker(context) }
+                        )
+                    }
                 }
             }
         }
 
         item {
-            GalleryGrid(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 1000.dp)
-                    .padding(horizontal = 12.dp * scale),
-                items = latestWallpapers.take(16),
-                itemContent = { wallpaper -> 
-                    WallpaperThumbnail(
-                        wallpaper = wallpaper as WallpaperInfo, 
-                        onClick = { onWallpaperSelected(wallpaper) }
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.sdp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.sdp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.sdp)) {
+                        CategoryHeader(text = stringResource(R.string.latest_wallpapers))
+                        CategorySubHeader(text = stringResource(R.string.recently_added_designs))
+                    }
+
+                    TextButton(
+                        onClick = onMoreClick,
+                        contentPadding = PaddingValues(horizontal = 12.sdp, vertical = 8.sdp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.view_all),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.textPrimary
+                        )
+                        Spacer(modifier = Modifier.width(4.sdp))
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = null,
+                            tint = colors.textPrimary,
+                            modifier = Modifier.size(18.sdp)
+                        )
+                    }
+                }
+
+                GalleryGrid(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 1000.sdp)
+                        .padding(horizontal = 12.sdp),
+                    items = latestWallpapers.take(12),
+                    itemContent = { wallpaper -> 
+                        ExpressiveWallpaperThumbnail(
+                            wallpaper = wallpaper as WallpaperInfo,
+                            index = latestWallpapers.indexOf(wallpaper),
+                            onClick = { onWallpaperSelected(wallpaper) },
+                            modifier = Modifier.padding(8.sdp)
+                        )
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpressiveMainCard(
+    text: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    val colors = LocalAxColorScheme.current
+    val shape = RoundedCornerShape(28.sdp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "card_scale"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.sdp)
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            }
+            .clickable(
+                indication = null,
+                interactionSource = interactionSource
+            ) { onClick() },
+        shape = shape,
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize().padding(24.sdp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.sdp)
+                ) {
+                    Text(
+                        text = text,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.textPrimary,
+                        letterSpacing = (-0.5).sp
+                    )
+                    CategorySubHeader(
+                        text = description
                     )
                 }
-            )
+                
+                Surface(
+                    modifier = Modifier.size(56.sdp),
+                    shape = CircleShape,
+                    color = colors.surfaceContainerLow
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = colors.textPrimary,
+                            modifier = Modifier.size(28.sdp)
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun ExpressiveActionCard(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    val colors = LocalAxColorScheme.current
+    val shape = RoundedCornerShape(24.sdp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "action_scale"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            }
+            .clickable(
+                indication = null,
+                interactionSource = interactionSource
+            ) { onClick() },
+        shape = shape,
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize().padding(20.sdp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.sdp, Alignment.CenterVertically)
+            ) {
+                Surface(
+                    modifier = Modifier.size(48.sdp),
+                    shape = CircleShape,
+                    color = colors.surfaceContainerLow
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = colors.textPrimary,
+                            modifier = Modifier.size(24.sdp)
+                        )
+                    }
+                }
+                Text(
+                    text = text,
+                    color = colors.textPrimary,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+private fun launchLiveWallpaperPicker(context: Context) {
+    try {
+        val intent = Intent().apply {
+            setClassName(
+                "com.android.wallpaper.livepicker",
+                "com.android.wallpaper.livepicker.LiveWallpaperActivity"
+            )
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Log.e("WallpaperGallery", "Failed to launch live wallpaper picker", e)
     }
 }
 
@@ -265,15 +467,27 @@ private fun CategoryListContent(
     categories: List<WallpaperCategory>,
     onCategoryClick: (WallpaperCategory) -> Unit
 ) {
-    GalleryGrid(
-        items = categories,
-        itemContent = { category -> 
-            CategoryCard(
-                category = category as WallpaperCategory,
+    val colors = LocalAxColorScheme.current
+    val size = categories.size
+
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(24.sdp),
+        contentPadding = PaddingValues(vertical = 16.sdp, horizontal = 20.sdp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item {
+            CategorySubHeader(
+                text = pluralStringResource(R.plurals.curated_categories, size, size)
+            )
+        }
+
+        items(categories) { category ->
+            ExpressiveCategoryCard(
+                category = category,
                 onClick = { onCategoryClick(category) }
             )
         }
-    )
+    }
 }
 
 @Composable
@@ -281,15 +495,44 @@ private fun CategoryDetailContent(
     category: WallpaperCategory,
     onWallpaperSelected: (WallpaperInfo) -> Unit
 ) {
-    GalleryGrid(
-        items = category.wallpapers,
-        itemContent = { wallpaper -> 
-            WallpaperThumbnail(
-                wallpaper = wallpaper as WallpaperInfo, 
-                onClick = { onWallpaperSelected(wallpaper) }
-            )
+    val colors = LocalAxColorScheme.current
+
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(24.sdp),
+        contentPadding = PaddingValues(bottom = 16.sdp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item {
+            Column(
+                modifier = Modifier.padding(horizontal = 20.sdp)
+            ) {
+                val size = category.wallpapers.size
+                CategorySubHeader(
+                    text = pluralStringResource(R.plurals.wallpaper_count, size, size)
+                )
+            }
         }
-    )
+
+        item {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 120.sdp * 1.2f),
+                horizontalArrangement = Arrangement.spacedBy(8.sdp),
+                verticalArrangement = Arrangement.spacedBy(8.sdp),
+                contentPadding = PaddingValues(horizontal = 12.sdp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 5000.sdp)
+            ) {
+                itemsIndexed(category.wallpapers) { index, wallpaper ->
+                    ExpressiveWallpaperThumbnail(
+                        wallpaper = wallpaper,
+                        index = index,
+                        onClick = { onWallpaperSelected(wallpaper) }
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -298,9 +541,8 @@ private fun GalleryGrid(
     modifier: Modifier = Modifier,
     itemContent: @Composable (item: Any) -> Unit
 ) {
-    val scale = LocalContext.current.scaleRatio
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = ThumbnailSize * scale),
+        columns = GridCells.Adaptive(minSize = 120.sdp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
@@ -312,74 +554,202 @@ private fun GalleryGrid(
 }
 
 @Composable
-private fun QuickActionCard(
-    text: String,
-    icon: ImageVector,
+private fun ExpressiveCategoryCard(
+    category: WallpaperCategory,
     onClick: () -> Unit
 ) {
     val colors = LocalAxColorScheme.current
-    val scale = LocalContext.current.scaleRatio
-    val shape = RoundedCornerShape(16.dp * scale)
+    val shape = RoundedCornerShape(24.sdp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "category_scale"
+    )
+
+    val firstWallpaper = category.wallpapers.firstOrNull()
+    val context = LocalContext.current
+    val bitmap = firstWallpaper?.drawableRes?.let { 
+        rememberBitmap(it, 180.sdp, 180.sdp) 
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(ThumbnailSize * scale)
+            .height(180.sdp)
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            }
             .clickable(
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() }
+                interactionSource = interactionSource
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
         )
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize().padding(16.dp * scale),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.25f),
+                                Color.Black.copy(alpha = 0.5f)
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.sdp)
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = text,
-                    tint = colors.textPrimary,
-                    modifier = Modifier.size(32.dp * scale)
-                )
-                Spacer(modifier = Modifier.height(8.dp * scale))
-                Text(
-                    text = text,
-                    color = colors.textPrimary,
-                    fontWeight = FontWeight.Medium
-                )
+                Column(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    verticalArrangement = Arrangement.spacedBy(6.sdp)
+                ) {
+                    CategoryHeader(text = category.title, color = Color.White)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.sdp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val size = category.wallpapers.size
+                        CategorySubHeader(
+                            text = pluralStringResource(R.plurals.wallpaper_count, size, size),
+                            color = Color.White
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.sdp)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun CategoryCard(category: WallpaperCategory, onClick: () -> Unit) {
-    val firstWallpaper = category.wallpapers.firstOrNull()
-    val scale = LocalContext.current.scaleRatio
-    ThumbnailCard(
-        drawableRes = firstWallpaper?.drawableRes,
-        contentDescription = category.title,
-        size = ThumbnailSize * scale,
-        modifier = Modifier.padding(horizontal = ThumbnailPadding * scale, vertical = ThumbnailPaddingVertical * scale),
-        onClick = onClick
+private fun ExpressiveWallpaperThumbnail(
+    wallpaper: WallpaperInfo,
+    index: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = LocalAxColorScheme.current
+    val shape = RoundedCornerShape(20.sdp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "wallpaper_scale_$index"
+    )
+
+    val thumbnailSize = 120.sdp * 1.2f
+    val bitmap = rememberBitmap(wallpaper.drawableRes, thumbnailSize, thumbnailSize)
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(0.75f)
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            }
+            .clickable(
+                indication = null,
+                interactionSource = interactionSource
+            ) { onClick() },
+        shape = shape,
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = wallpaper.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(colors.surfaceContainerLow),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Image,
+                        contentDescription = null,
+                        tint = colors.textPrimary,
+                        modifier = Modifier.size(48.sdp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryHeader(
+    text: String, 
+    color: Color = LocalAxColorScheme.current.textPrimary
+) {
+    Text(
+        text = text,
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Bold,
+        color = color,
+        letterSpacing = (-0.5).sp
     )
 }
 
 @Composable
-private fun WallpaperThumbnail(wallpaper: WallpaperInfo, onClick: () -> Unit) {
-    val scale = LocalContext.current.scaleRatio
-    ThumbnailCard(
-        drawableRes = wallpaper.drawableRes,
-        contentDescription = wallpaper.title,
-        size = ThumbnailSize * scale,
-        modifier = Modifier.padding(horizontal = ThumbnailPadding * scale, vertical = ThumbnailPaddingVertical * scale),
-        onClick = onClick
+private fun CategorySubHeader(
+    text: String, 
+    color: Color = LocalAxColorScheme.current.textSecondary
+) {
+    Text(
+        text = text,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = color
     )
 }
