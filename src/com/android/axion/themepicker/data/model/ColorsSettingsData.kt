@@ -9,6 +9,5 @@ data class ColorsSettingsData(
     val useWallpaperColors: Boolean = true,
     val contrastLevel: Float = 0f,
     val fidelity: Boolean = true,
-    val advancedSettings: Boolean = false,
     val chromaBoost: Float = 0f,
 )

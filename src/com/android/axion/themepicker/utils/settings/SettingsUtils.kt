@@ -9,25 +9,6 @@ import com.android.axion.themepicker.data.model.ThemeStyle
 import com.android.axion.themepicker.utils.colors.toArgb
 import org.json.JSONObject
 
-fun applyPaletteOverride(context: Context, paletteName: String, color: Color) {
-    val json = getColorSettings(context)
-    val hexColor = String.format("%06X", 0xFFFFFF and color.toArgb())
-    json.put("_override_${paletteName}", hexColor)
-    json.put("_applied_timestamp", System.currentTimeMillis())
-    applyColorSettings(context, json)
-}
-
-fun clearPaletteOverrides(context: Context) {
-    val json = getColorSettings(context)
-    json.remove("_override_accent1")
-    json.remove("_override_accent2")
-    json.remove("_override_accent3")
-    json.remove("_override_neutral1")
-    json.remove("_override_neutral2")
-    json.put("_applied_timestamp", System.currentTimeMillis())
-    applyColorSettings(context, json)
-}
-
 fun getColorSettings(context: Context): JSONObject {
     return runCatching {
         val currentJson = Settings.Secure.getString(
@@ -44,14 +25,6 @@ fun applyColorSettings(context: Context, json: JSONObject) {
         Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
         json.toString()
     )
-}
-
-fun applyAdvancedSettings(context: Context, advancedEnabled: Boolean) {
-    val json = getColorSettings(context)
-    json.put("_advanced_settings", advancedEnabled)
-    json.put("_applied_timestamp", System.currentTimeMillis())
-    applyColorSettings(context, json)
-    if (!advancedEnabled) clearPaletteOverrides(context)
 }
 
 fun applyColorSettings(context: Context, settings: ColorsSettingsData) {
@@ -97,7 +70,6 @@ fun loadCurrentSettings(context: Context, defaultSeed: Color): ColorsSettingsDat
 
         val fidelity = json.optBoolean("_fidelity_enabled", true)
 
-        val advanced = json.optBoolean("_advanced_settings", false)
         val contrast = json.optDouble("_contrast_level", 0.0).toFloat()
         val chroma = json.optDouble("_chroma_boost", 0.0).toFloat()
 
@@ -107,7 +79,6 @@ fun loadCurrentSettings(context: Context, defaultSeed: Color): ColorsSettingsDat
             useWallpaperColors = useWallpaper,
             contrastLevel = contrast,
             fidelity = fidelity,
-            advancedSettings = advanced,
             chromaBoost = chroma
         )
     }.getOrElse { return ColorsSettingsData() }

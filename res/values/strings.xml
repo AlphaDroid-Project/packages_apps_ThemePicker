@@ -20,30 +20,6 @@
     <string name="theme_style_title">Theme Style</string>
     <string name="theme_style_desc">Defines how colors are generated from the seed</string>
 
-    <!-- Advanced Settings -->
-    <string name="enable_advanced_settings_title">Enable Advanced Settings</string>
-    <string name="enable_advanced_settings_desc">Allow advanced color customizations</string>
-
-    <string name="accent1_title">Accent 1 (Primary)</string>
-    <string name="accent1_desc">Main accent color used throughout the system</string>
-
-    <string name="accent2_title">Accent 2 (Secondary)</string>
-    <string name="accent2_desc">Secondary accent for complementary elements</string>
-
-    <string name="accent3_title">Accent 3 (Tertiary)</string>
-    <string name="accent3_desc">Tertiary accent for additional contrast</string>
-
-    <string name="neutral1_title">Neutral 1 (Surface)</string>
-    <string name="neutral1_desc">Primary neutral for backgrounds and surfaces</string>
-
-    <string name="neutral2_title">Neutral 2 (Variant)</string>
-    <string name="neutral2_desc">Secondary neutral for subtle variations</string>
-
-    <string name="reset_all_overrides">Reset All Overrides</string>
-
-    <string name="about_advanced_settings_title">About Advanced Settings</string>
-    <string name="about_advanced_settings_desc">Each palette override replaces the automatically generated palette with your custom seed color. Leave unset to use theme style generation.</string>
-    
     <!-- Lockscreen -->
     <string name="lockscreen_customize_title">Lockscreen appearance</string>
     <string name="lockscreen_customize_summary">Customize lockscreen appearance</string>
@@ -121,4 +97,11 @@
         <item quantity="one">%d wallpaper</item>
         <item quantity="other">%d wallpapers</item>
     </plurals>
+    
+    <!-- Colors Screen -->
+    <string name="colors_title">Colors</string>
+    <string name="customize_palette_title">Customize Your Palette</string>
+    <string name="customize_palette_description">
+        Personalize your device with colors that match your style
+    </string>
 </resources>

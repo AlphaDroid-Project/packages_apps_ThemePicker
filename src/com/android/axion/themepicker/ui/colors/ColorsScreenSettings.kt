@@ -51,10 +51,7 @@ import com.android.axion.themepicker.ui.preferences.PreferenceGroupCard
 import com.android.axion.themepicker.ui.preferences.SliderCard
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.utils.colors.toArgb
-import com.android.axion.themepicker.utils.settings.applyAdvancedSettings
 import com.android.axion.themepicker.utils.settings.applyColorSettings
-import com.android.axion.themepicker.utils.settings.applyPaletteOverride
-import com.android.axion.themepicker.utils.settings.clearPaletteOverrides
 import com.android.axion.themepicker.utils.settings.getColorSettings
 import com.android.axion.themepicker.utils.settings.loadCurrentSettings
 import com.android.axion.themepicker.R
@@ -67,7 +64,6 @@ fun BasicColorsSettings() {
     val colors = LocalAxColorScheme.current
     val accent = colors.primary
     var settings by remember { mutableStateOf(loadCurrentSettings(context, accent)) }
-    var advancedEnabled by remember { mutableStateOf(settings.advancedSettings) }
     var showColorPicker by remember { mutableStateOf(false) }
     var showStylePicker by remember { mutableStateOf(false) }
 
@@ -78,21 +74,19 @@ fun BasicColorsSettings() {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (!advancedEnabled) {
-            PreferenceGroupCard {
-                WallpaperColorPreference(settings, onSettingsChange = {
-                    settings = it
-                    applyColorSettings(context, settings)
-                })
-                
-                if (!settings.useWallpaperColors) {
-                    Divider()
-                    SeedColorPreference(settings, onClick = { showColorPicker = true })
-                }
-                
+        PreferenceGroupCard {
+            WallpaperColorPreference(settings, onSettingsChange = {
+                settings = it
+                applyColorSettings(context, settings)
+            })
+            
+            if (!settings.useWallpaperColors) {
                 Divider()
-                StylePickerPref(settings, onClick = { showStylePicker = true })
+                SeedColorPreference(settings, onClick = { showColorPicker = true })
             }
+            
+            Divider()
+            StylePickerPref(settings, onClick = { showStylePicker = true })
         }
 
         PreferenceGroupCard {
@@ -157,140 +151,6 @@ fun BasicColorsSettings() {
 }
 
 @Composable
-fun AdvancedColorsSettings() {
-    val context = LocalContext.current
-    val colors = LocalAxColorScheme.current
-    val accent = colors.primary
-    val settings by remember { mutableStateOf(loadCurrentSettings(context, accent)) }
-    var advancedEnabled by remember { mutableStateOf(settings.advancedSettings) }
-
-    val json = getColorSettings(context)
-
-    fun loadOverride(key: String, fallback: Color): Color {
-        return json.optString("_override_$key", null)?.let { hex ->
-            runCatching { Color(GraphicsColor.parseColor("#$hex")) }.getOrNull()
-        } ?: fallback
-    }
-
-    val accent1Title = stringResource(R.string.accent1_title)
-    val accent1Desc = stringResource(R.string.accent1_desc)
-    val accent2Title = stringResource(R.string.accent2_title)
-    val accent2Desc = stringResource(R.string.accent2_desc)
-    val accent3Title = stringResource(R.string.accent3_title)
-    val accent3Desc = stringResource(R.string.accent3_desc)
-    val neutral1Title = stringResource(R.string.neutral1_title)
-    val neutral1Desc = stringResource(R.string.neutral1_desc)
-    val neutral2Title = stringResource(R.string.neutral2_title)
-    val neutral2Desc = stringResource(R.string.neutral2_desc)
-
-    var palette by remember {
-        mutableStateOf(
-            listOf(
-                PaletteItem("accent1", accent1Title, accent1Desc, loadOverride("accent1", accent)),
-                PaletteItem("accent2", accent2Title, accent2Desc, loadOverride("accent2", colors.secondary)),
-                PaletteItem("accent3", accent3Title, accent3Desc, loadOverride("accent3", colors.tertiary)),
-                PaletteItem("neutral1", neutral1Title, neutral1Desc, loadOverride("neutral1", colors.surface)),
-                PaletteItem("neutral2", neutral2Title, neutral2Desc, loadOverride("neutral2", colors.surfaceVariant))
-            )
-        )
-    }
-
-    var showPicker by remember { mutableStateOf(false) }
-    var activePickerIndex by remember { mutableStateOf(-1) }
-    var activeColor by remember { mutableStateOf(Color.Black) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        PreferenceCard(
-            title = stringResource(R.string.enable_advanced_settings_title),
-            description = stringResource(R.string.enable_advanced_settings_desc),
-            checked = advancedEnabled,
-            onCheckedChange = { enabled ->
-                advancedEnabled = enabled
-                applyAdvancedSettings(context, advancedEnabled)
-            }
-        )
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .alpha(if (advancedEnabled) 1f else 0.5f),
-            colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                palette.forEachIndexed { index, item ->
-                    PaletteOverrideItem(
-                        title = item.title,
-                        description = item.description,
-                        color = item.color,
-                        onClick = {
-                            if (advancedEnabled) {
-                                activePickerIndex = index
-                                activeColor = item.color
-                                showPicker = true
-                            }
-                        }
-                    )
-                    if (index < palette.lastIndex) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Divider()
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-            }
-        }
-
-        if (advancedEnabled) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
-            ) {
-                OutlinedButton(
-                    onClick = {
-                        clearPaletteOverrides(context)
-                        palette = palette.map { item ->
-                            val defaultColor = when (item.key) {
-                                "accent1" -> colors.primary
-                                "accent2" -> colors.secondary
-                                "accent3" -> colors.tertiary
-                                "neutral1" -> colors.surface
-                                "neutral2" -> colors.surfaceVariant
-                                else -> item.color
-                            }
-                            item.copy(color = defaultColor)
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.reset_all_overrides))
-                }
-            }
-        }
-    }
-
-    if (showPicker && activePickerIndex >= 0) {
-        ColorPickerDialog(
-            initialColor = activeColor,
-            onDismiss = { showPicker = false },
-            onColorSelected = { color ->
-                palette = palette.toMutableList().also { it[activePickerIndex] = it[activePickerIndex].copy(color = color) }
-                if (advancedEnabled) applyPaletteOverride(context, palette[activePickerIndex].key, color)
-                showPicker = false
-            }
-        )
-    }
-}
-
-@Composable
 private fun PaletteOverrideItem(
     title: String,
     description: String,
@@ -330,51 +190,6 @@ private fun PaletteOverrideItem(
                 .clip(CircleShape)
                 .background(color)
         )
-    }
-}
-
-@Composable
-fun PaletteOverridesCard(
-    title: String,
-    description: String,
-    items: List<PaletteItem>,
-    onClick: (String) -> Unit,
-    enabledModifier: Modifier = Modifier
-) {
-    val colors = LocalAxColorScheme.current
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(enabledModifier),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
-            )
-
-            items.forEachIndexed { index, item ->
-                PaletteOverrideItem(
-                    title = item.title,
-                    description = item.description,
-                    color = item.color,
-                    onClick = { onClick(item.key) }
-                )
-                if (index < items.lastIndex) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Divider()
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
-        }
     }
 }
 
