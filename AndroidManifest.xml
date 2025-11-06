@@ -38,6 +38,16 @@
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+        </activity>
+
+        <activity
+            android:name=".ui.WallpaperSetActivity"
+            android:exported="true"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar"
+            android:taskAffinity=""
+            android:excludeFromRecents="false">
             <intent-filter>
                 <action android:name="android.intent.action.SET_WALLPAPER" />
                 <action android:name="android.intent.action.ATTACH_DATA" />

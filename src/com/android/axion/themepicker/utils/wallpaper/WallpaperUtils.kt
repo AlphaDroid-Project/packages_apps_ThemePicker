@@ -27,6 +27,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.net.Uri
 import android.os.*
 import android.view.View
 import android.util.Log
@@ -62,6 +63,8 @@ import kotlin.math.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+
+private val TAG = "WallpaperUtils"
 
 private val BACKGROUNDS_PKG_NAME = "com.android.backgrounds"
 
@@ -183,14 +186,19 @@ internal object EmptyPainter : Painter() {
 }
 
 fun getCurrentWallpaperBitmap(context: Context, isHome: Boolean = true): Bitmap? {
-    val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
-    val wallpaperManager = WallpaperManager.getInstance(context)
-    val wallBitmap = wallpaperManager.getDrawable(flag)?.toBitmap() ?: wallpaperManager.drawable!!.toBitmap()
-    return wallBitmap
+    return getCurrentWallpaperDrawable(context, isHome)?.toBitmap()
 }
 
 fun getCurrentWallpaperDrawable(context: Context, isHome: Boolean = true): Drawable? {
-    return BitmapDrawable(context.resources, getCurrentWallpaperBitmap(context, isHome))
+    val wallpaperManager = WallpaperManager.getInstance(context)
+    val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
+    return try {
+        wallpaperManager.getDrawable(flag)
+            ?: wallpaperManager.drawable
+            ?: wallpaperManager.getBuiltInDrawable()
+    } catch (e: Exception) {
+        null
+    }
 }
 
 fun applyWallpaper(
@@ -214,7 +222,7 @@ fun applyWallpaper(
                 setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
             }
         } catch (e: Exception) {
-            Log.e("WallpaperApply", "Error applying wallpaper", e)
+            Log.e(TAG, "Error applying wallpaper", e)
         }
     }
 }
@@ -226,7 +234,7 @@ fun loadWallpapers(context: Context): List<WallpaperInfo> {
         val pm = context.packageManager
         val res = pm.getResourcesForApplication(BACKGROUNDS_PKG_NAME)
         val xmlId = res.getIdentifier("wallpapers", "xml", BACKGROUNDS_PKG_NAME)
-        Log.d("ThemePicker", "XML id = $xmlId")
+        Log.d(TAG, "XML id = $xmlId")
 
         if (xmlId == 0) return emptyList()
 
@@ -251,17 +259,17 @@ fun loadWallpapers(context: Context): List<WallpaperInfo> {
                     result.add(WallpaperInfo(id, title, drawableRes))
                 }
             } catch (e: Exception) {
-                Log.w("ThemePicker", "Failed to load wallpaper for id=$id", e)
+                Log.w(TAG, "Failed to load wallpaper for id=$id", e)
             }
         }
 
-        Log.d("ThemePicker", "Parsed ${result.size} wallpapers")
+        Log.d(TAG, "Parsed ${result.size} wallpapers")
         return result.asReversed().take(8)
 
     } catch (e: PackageManager.NameNotFoundException) {
-        Log.e("ThemePicker", "Backgrounds package not found", e)
+        Log.e(TAG, "Backgrounds package not found", e)
     } catch (e: Exception) {
-        Log.e("ThemePicker", "Error parsing wallpapers", e)
+        Log.e(TAG, "Error parsing wallpapers", e)
     }
 
     return emptyList()
@@ -274,6 +282,81 @@ fun getWallpaperDrawable(context: Context, resId: Int): Drawable? {
     val drawable = runCatching { res?.getDrawable(resId, null) }.getOrNull()
     return drawable
 }
+
+fun decodeSampledBitmapFromUri(
+    context: Context,
+    uri: Uri
+): Bitmap? {
+    return try {
+        val displayMetrics = context.resources.displayMetrics
+        val reqWidth = displayMetrics.widthPixels
+        val reqHeight = displayMetrics.heightPixels
+
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+
+        context.contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+
+        val (width, height) = options.outWidth to options.outHeight
+        if (width <= 0 || height <= 0) return null
+
+        options.inSampleSize = calculateSampleSize(options, reqWidth, reqHeight)
+        options.inJustDecodeBounds = false
+
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+
+        val decoded = context.contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        } ?: return null
+
+        val baos = ByteArrayOutputStream()
+        decoded.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        decoded.recycle()
+
+        val bytes = baos.toByteArray()
+        baos.close()
+
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    } catch (e: OutOfMemoryError) {
+        Log.e(TAG, "Out of memory decoding bitmap", e)
+        null
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to decode bitmap", e)
+        null
+    }
+}
+
+private fun calculateSampleSize(
+    options: BitmapFactory.Options,
+    reqWidth: Int,
+    reqHeight: Int
+): Int {
+    val (srcWidth, srcHeight) = options.outWidth to options.outHeight
+    var inSampleSize = 1
+
+    if (srcHeight > reqHeight || srcWidth > reqWidth) {
+        var halfHeight = srcHeight / 2
+        var halfWidth = srcWidth / 2
+
+        while ((halfHeight / inSampleSize) >= reqHeight &&
+            (halfWidth / inSampleSize) >= reqWidth
+        ) {
+            inSampleSize *= 2
+        }
+    }
+
+    val bytesPerPixel = 4
+    val maxHeap = Runtime.getRuntime().maxMemory() / 4
+    while ((srcWidth * srcHeight * bytesPerPixel / inSampleSize.toDouble().pow(2)) > maxHeap) {
+        inSampleSize *= 2
+    }
+
+    return inSampleSize
+}
+
 
 class BitmapProcessor(private val context: Context) {
     private val cache = mutableMapOf<String, Bitmap>()
@@ -471,12 +554,12 @@ fun loadAllCategories(context: Context): List<WallpaperCategory> {
             )
         }
 
-        Log.d("WallpaperGallery", "Loaded ${categories.size} categories")
+        Log.d(TAG, "Loaded ${categories.size} categories")
         
     } catch (e: PackageManager.NameNotFoundException) {
-        Log.e("WallpaperGallery", "Backgrounds package not found", e)
+        Log.e(TAG, "Backgrounds package not found", e)
     } catch (e: Exception) {
-        Log.e("WallpaperGallery", "Error loading categories", e)
+        Log.e(TAG, "Error loading categories", e)
     }
 
     return categories

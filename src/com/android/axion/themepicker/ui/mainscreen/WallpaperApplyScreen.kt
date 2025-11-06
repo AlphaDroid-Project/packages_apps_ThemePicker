@@ -64,6 +64,7 @@ import com.android.axion.themepicker.ui.preferences.ToggleButton
 import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.utils.math.scaleRatio
+import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
 import com.android.axion.themepicker.utils.wallpaper.centerCrop
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
@@ -102,8 +103,8 @@ fun WallpaperApplyScreen(
         }
     }
 
-    val currentSystemWallpaper = getCurrentWallpaperBitmap(context, true)
-    val currentLockScreenWallpaper = getCurrentWallpaperBitmap(context, false)
+    val currentSystemWallpaper = remember { getCurrentWallpaperBitmap(context, true) }
+    val currentLockScreenWallpaper = remember { getCurrentWallpaperBitmap(context, false) }
 
     val homeSource = remember(baseBitmap, homescreenSelected) {
         if (homescreenSelected) baseBitmap else currentSystemWallpaper
@@ -147,7 +148,7 @@ fun WallpaperApplyScreen(
         if (lockscreenSelected) {
             lockBitmap?.let { bitmap ->
                 val effect = EffectConfig(atmosphere = atmosphereEnabled, glass = glassEnabled)
-                processor.processBitmap(bitmap, effect, "lock_${glassEnabled}_${zoomSettings.scale}")
+                processor.processBitmap(bitmap, effect, "lock_${glassEnabled}_${atmosphereEnabled}_${zoomSettings.scale}")
             }
         } else {
             lockSource
@@ -196,7 +197,7 @@ fun WallpaperApplyScreen(
                     wallpaperId = wallpaper.drawableRes,
                     lockscreen = lockscreenSelected,
                     homescreen = homescreenSelected,
-                    atmosphere = if (homescreenSelected) atmosphereEnabled else false,
+                    atmosphere = if (homescreenSelected || lockscreenSelected) atmosphereEnabled else false,
                     glass = if (lockscreenSelected || homescreenSelected) glassEnabled else false,
                     zoomProperties = if (lockscreenSelected || homescreenSelected) zoomSettings else ZoomProperties()
                 )
@@ -219,7 +220,7 @@ fun WallpaperApplyScreen(
             actionIcon = Icons.Default.Check
         )
 
-        Spacer(modifier = Modifier.height(32.dp * scale))
+        Spacer(modifier = Modifier.height(32.sdp))
 
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -241,11 +242,7 @@ fun WallpaperApplyScreen(
                 bitmap = homescreenBitmap,
                 isSelected = homescreenSelected,
                 label = "Home screen",
-                onClick = {
-                    if (!(atmosphereEnabled && homescreenSelected)) {
-                        homescreenSelected = !homescreenSelected
-                    }
-                },
+                onClick = { homescreenSelected = !homescreenSelected },
                 isLockscreen = false,
                 modifier = Modifier.size(
                     WallpaperMiniPreviewsWidth * scale,
@@ -258,7 +255,7 @@ fun WallpaperApplyScreen(
 
         WallpaperZoomIndicator(zoomSettings)
         
-        val padding = 16.dp * scale
+        val padding = 16.sdp
         
         Box(
             modifier = Modifier
@@ -378,7 +375,7 @@ fun WallpaperZoomIndicator(zoomProperties: ZoomProperties) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 32.dp * scale, vertical = 8.dp * scale)
+                .padding(horizontal = 32.sdp, vertical = 8.sdp)
         ) {
             Surface(
                 color = colors.secondaryContainer,
@@ -386,7 +383,7 @@ fun WallpaperZoomIndicator(zoomProperties: ZoomProperties) {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp * scale, vertical = 6.dp * scale)
+                    modifier = Modifier.padding(horizontal = 12.sdp, vertical = 6.sdp)
                 ) {
                     Icon(
                         Icons.Default.CropFree,
@@ -418,7 +415,7 @@ fun WallpaperEffectToggles(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp * scale, vertical = 32.dp * scale)
+            .padding(horizontal = 32.sdp, vertical = 32.sdp)
     ) {
         ToggleButton(
             icon = Icons.Default.WaterDrop,
