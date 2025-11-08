@@ -37,6 +37,7 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
+            android:resizeableActivity="false"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar">
         </activity>
 
@@ -45,6 +46,7 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
+            android:resizeableActivity="false"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar"
             android:taskAffinity=""
             android:excludeFromRecents="false">

@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
-import com.android.axion.themepicker.utils.math.scaleRatio
+import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.rememberDrawablePainter
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
@@ -62,7 +62,6 @@ fun WallpaperCarouselCard(
     val onMoreClick = mainScreenViewModel::onOpenGallery
 
     val context = LocalContext.current
-    val scale = context.scaleRatio
     val colors = LocalAxColorScheme.current
 
     val wallpaperDrawables = remember(wallpapers) {
@@ -75,7 +74,7 @@ fun WallpaperCarouselCard(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(start = 20.dp * scale, end = 20.dp * scale, bottom = 28.dp * scale),
+            .padding(start = 20.sdp, end = 20.sdp, bottom = 28.sdp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = colors.surfaceContainerLowest
@@ -86,16 +85,16 @@ fun WallpaperCarouselCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(top = 16.dp * scale, bottom = 16.dp * scale)
+                .padding(top = 16.sdp, bottom = 16.sdp)
         ) {
             HorizontalMultiBrowseCarousel(
                 state = rememberCarouselState { wallpapers.size },
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(start = 16.dp * scale, end = 16.dp * scale),
-                preferredItemWidth = 90.dp * scale,
-                itemSpacing = 8.dp * scale
+                    .padding(start = 16.sdp, end = 16.sdp),
+                preferredItemWidth = 90.sdp,
+                itemSpacing = 8.sdp
             ) { i ->
                 val wallpaper = wallpapers[i]
                 val drawable = wallpaperDrawables[i]
@@ -106,8 +105,8 @@ fun WallpaperCarouselCard(
                             painter = painter,
                             contentDescription = wallpaper.title,
                             modifier = Modifier
-                                .height(156.dp * scale)
-                                .maskClip(RoundedCornerShape(16.dp * scale))
+                                .height(156.sdp)
+                                .maskClip(RoundedCornerShape(16.sdp))
                                 .clickable { mainScreenViewModel.onWallpaperSelected(wallpaper) },
                             contentScale = ContentScale.Crop
                         )
@@ -115,7 +114,7 @@ fun WallpaperCarouselCard(
                 }
             }
             
-            Spacer(modifier = Modifier.height(10.dp * scale))
+            Spacer(modifier = Modifier.height(10.sdp))
 
             Row(
                 horizontalArrangement = Arrangement.Center,
@@ -124,7 +123,7 @@ fun WallpaperCarouselCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(24.dp * scale) 
+                        .size(24.sdp) 
                         .clip(CircleShape)
                         .border(1.dp, colors.textPrimary, CircleShape) 
                         .clickable { onMoreClick() },

@@ -17,6 +17,6 @@ val Context.scaleRatio: Float
     get() {
         val displayMetrics = resources.displayMetrics
         val sw = minOf(displayMetrics.widthPixels, displayMetrics.heightPixels) / displayMetrics.density
-        val ratio = sw / 420f
+        val ratio = if (sw > 620f) 1f else sw / 420f
         return ratio
     }

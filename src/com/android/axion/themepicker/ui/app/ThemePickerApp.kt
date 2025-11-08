@@ -74,7 +74,7 @@ import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.ui.preview.WallpaperPreviewScreen
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.ui.themes.LayoutMainScreen
-import com.android.axion.themepicker.utils.math.scaleRatio
+import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
@@ -86,8 +86,13 @@ import kotlin.coroutines.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
-val WallpaperMiniPreviewsHeight = 320.dp
-val WallpaperMiniPreviewsWidth = 162.dp
+val WallpaperMiniPreviewsHeight: Dp
+    @Composable
+    get() = 320.sdp
+
+val WallpaperMiniPreviewsWidth: Dp
+    @Composable
+    get() = 162.sdp
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -212,9 +217,6 @@ fun MainScreen(
     val previewPagerState = rememberPagerState(initialPage = selectedTab, pageCount = { tabs.size })
     val optionsPagerState = rememberPagerState(initialPage = selectedTab, pageCount = { tabs.size })
     val screenWidth = LocalConfiguration.current.screenWidthDp
-    val scale = context.scaleRatio
-    val previewHeight = WallpaperMiniPreviewsHeight * scale
-    val previewWidth = WallpaperMiniPreviewsWidth * scale
 
     LaunchedEffect(previewPagerState.currentPage, previewPagerState.currentPageOffsetFraction) {
         if (!optionsPagerState.isScrollInProgress && previewPagerState.isScrollInProgress) {
@@ -249,7 +251,7 @@ fun MainScreen(
                 .weight(0.7f),
             contentAlignment = Alignment.Center
         ) {
-            val maxHeight = max(previewHeight, maxHeight)
+            val maxHeight = max(WallpaperMiniPreviewsHeight, maxHeight)
             Box(
                 modifier = Modifier
                     .height(maxHeight)
@@ -258,8 +260,8 @@ fun MainScreen(
             ) {
                 HorizontalPager(
                     state = previewPagerState,
-                    pageSize = PageSize.Fixed(previewWidth + 12.dp),
-                    contentPadding = PaddingValues(horizontal = (screenWidth.dp - previewWidth) / 2),
+                    pageSize = PageSize.Fixed(WallpaperMiniPreviewsWidth + 12.sdp),
+                    contentPadding = PaddingValues(horizontal = (screenWidth.dp - WallpaperMiniPreviewsWidth) / 2),
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     val pageOffset = (previewPagerState.currentPage - page) + previewPagerState.currentPageOffsetFraction
@@ -269,14 +271,14 @@ fun MainScreen(
                         PreviewsPage(
                             isHome = page == 1,
                             modifier = Modifier
-                                .size(previewWidth, previewHeight)
-                                .clip(RoundedCornerShape(16.dp))
+                                .size(WallpaperMiniPreviewsWidth, WallpaperMiniPreviewsHeight)
+                                .clip(RoundedCornerShape(16.sdp))
                         )
                         if (page != previewPagerState.currentPage) {
                             Box(
                                 modifier = Modifier
                                     .matchParentSize()
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(16.sdp))
                                     .background(Color.Black.copy(alpha = 0.3f))
                             )
                         }
