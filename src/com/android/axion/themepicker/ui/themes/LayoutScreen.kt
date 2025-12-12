@@ -38,7 +38,6 @@ import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.ui.themes.FontScreen
-import com.android.axion.themepicker.ui.themes.SystemIconsScreen
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.rememberDrawablePainter
 import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
@@ -69,23 +68,11 @@ fun LayoutMainScreen(
             is LayoutScreen.AppGridSettings -> {
                 AppGridSettingsScreen(layoutScreenViewModel, mainScreenViewModel)
             }
-            is LayoutScreen.SystemIcons -> {
-                BackHandler {
-                    layoutScreenViewModel.goBackInLayout(mainScreenViewModel)
-                }
-                SystemIconsScreen(layoutScreenViewModel, mainScreenViewModel)
-            }
             is LayoutScreen.Font -> {
                 BackHandler {
                     layoutScreenViewModel.goBackInLayout(mainScreenViewModel)
                 }
                 FontScreen(layoutScreenViewModel, mainScreenViewModel)
-            }
-            is LayoutScreen.Shape -> {
-                BackHandler {
-                    layoutScreenViewModel.goBackInLayout(mainScreenViewModel)
-                }
-                ShapeScreen(layoutScreenViewModel, mainScreenViewModel)
             }
         }
     }
@@ -122,9 +109,7 @@ private fun LayoutRootScreen(
                 
                 when (item.title) {
                     "App Grid" -> AppGridCard(item, appIcons, scale, layoutScreenViewModel, mainScreenViewModel)
-                    "System Icons" -> SystemIconsCard(item, scale, layoutScreenViewModel, mainScreenViewModel)
                     "Font" -> FontCard(item, scale, layoutScreenViewModel, mainScreenViewModel)
-                    "Shape" -> ShapeCard(item, scale, layoutScreenViewModel, mainScreenViewModel)
                 }
             }
         }
@@ -238,79 +223,6 @@ private fun AppGridCard(
 }
 
 @Composable
-private fun SystemIconsCard(
-    item: LayoutPreferenceItem,
-    scale: Float,
-    layoutScreenViewModel: LayoutScreenViewModel,
-    mainScreenViewModel: MainScreenViewModel
-) {
-    val colors = LocalAxColorScheme.current
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp * scale))
-            .clickable {
-                layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp * scale),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp * scale)
-            ) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.onSurface
-                )
-            }
-            
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp * scale),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Wifi,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(20.dp * scale)
-                )
-                Icon(
-                    imageVector = Icons.Default.BatteryFull,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(20.dp * scale)
-                )
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(20.dp * scale)
-                )
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(20.dp * scale)
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun FontCard(
     item: LayoutPreferenceItem,
     scale: Float,
@@ -371,80 +283,6 @@ private fun FontCard(
                     text = "A is for Axion :)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ShapeCard(
-    item: LayoutPreferenceItem,
-    scale: Float,
-    layoutScreenViewModel: LayoutScreenViewModel,
-    mainScreenViewModel: MainScreenViewModel
-) {
-    val colors = LocalAxColorScheme.current
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp * scale)
-            .clip(RoundedCornerShape(28.dp * scale))
-            .clickable {
-                layoutScreenViewModel.onItemSelected(item, mainScreenViewModel)
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp * scale)
-        ) {
-            Column(
-                modifier = Modifier.align(Alignment.BottomStart),
-                verticalArrangement = Arrangement.spacedBy(4.dp * scale)
-            ) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.onSurface
-                )
-                Text(
-                    text = item.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
-            }
-            
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp * scale),
-                horizontalArrangement = Arrangement.spacedBy(12.dp * scale),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp * scale)
-                        .clip(RoundedCornerShape(10.dp * scale))
-                        .background(colors.primary.copy(alpha = 0.4f))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(36.dp * scale)
-                        .clip(CircleShape)
-                        .background(colors.primary.copy(alpha = 0.6f))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(36.dp * scale)
-                        .clip(RoundedCornerShape(50))
-                        .background(colors.primary.copy(alpha = 0.3f))
                 )
             }
         }

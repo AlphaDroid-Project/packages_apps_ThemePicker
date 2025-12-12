@@ -28,10 +28,6 @@ sealed class Screen : Parcelable {
     @Parcelize
     object WallpaperGallery : Screen()
     
-    
-    @Parcelize
-    object IconPack : Screen()
-    
     @Parcelize
     object Layout : Screen()
     

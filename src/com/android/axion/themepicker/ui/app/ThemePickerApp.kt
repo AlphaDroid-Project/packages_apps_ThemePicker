@@ -64,7 +64,6 @@ import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.colors.ColorsSettingsScreen
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.gallery.WallpaperGalleryScreen
-import com.android.axion.themepicker.ui.iconpack.IconPackScreen
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.mainscreen.rememberPhotoPicker
 import com.android.axion.themepicker.ui.mainscreen.ScreenOptions
@@ -177,11 +176,6 @@ fun ThemePickerApp(
                     galleryViewModel = galleryViewModel,
                     onSelectPhoto = { photoPickerLauncher.launch("image/*") }
                 )
-            }
-            
-            is Screen.IconPack -> {
-                BackHandler { mainScreenViewModel.goBack() }
-                IconPackScreen()
             }
             
             is Screen.Layout -> {

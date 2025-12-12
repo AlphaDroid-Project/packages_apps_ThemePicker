@@ -41,6 +41,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.util.PreviewUtils
 import com.android.wallpaper.util.SurfaceViewUtils
+import com.android.wallpaper.model.Screen as WallpaperScreen
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperDrawable
 import kotlinx.coroutines.*
 
@@ -54,7 +55,7 @@ fun HomescreenPreview(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val previewUtils = remember { PreviewUtils(context = context, authorityMetadataKey = "com.android.launcher3.grid.control") }
+    val previewUtils = remember { PreviewUtils(context = context, authorityMetadataKey = "com.android.launcher3.grid.control", screen = WallpaperScreen.HOME_SCREEN) }
     val wallpaperManager = remember { WallpaperManager.getInstance(context) }
     val drawable = wallpaperDrawable ?: remember { getCurrentWallpaperDrawable(context, true) }
 

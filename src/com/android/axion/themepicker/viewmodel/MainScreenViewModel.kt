@@ -95,10 +95,6 @@ class MainScreenViewModel : ViewModel() {
         navigateTo(Screen.ColorsSettings)
     }
     
-    fun onOpenIconPack() {
-        navigateTo(Screen.IconPack)
-    }
-    
     fun onOpenLayout() {
         navigateTo(Screen.Layout)
     }

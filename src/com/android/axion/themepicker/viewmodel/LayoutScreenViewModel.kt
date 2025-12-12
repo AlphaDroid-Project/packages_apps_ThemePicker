@@ -33,19 +33,9 @@ class LayoutScreenViewModel(application: Application) : AndroidViewModel(applica
             destination = LayoutScreen.AppGridSettings
         ),
         LayoutPreferenceItem(
-            title = "System Icons",
-            description = "Customize system icons",
-            destination = LayoutScreen.SystemIcons
-        ),
-        LayoutPreferenceItem(
             title = "Font",
             description = "Choose your system font",
             destination = LayoutScreen.Font
-        ),
-        LayoutPreferenceItem(
-            title = "Shape",
-            description = "Change shape corners and icons",
-            destination = LayoutScreen.Shape
         )
     )
 

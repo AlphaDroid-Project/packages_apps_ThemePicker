@@ -16,26 +16,16 @@
 package com.android.axion.themepicker.providers
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.graphics.Path
 import android.graphics.Typeface
-import android.graphics.drawable.AdaptiveIconDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.PathShape
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
-import android.util.PathParser
 import com.android.customization.model.ResourceConstants
 import com.android.customization.model.theme.OverlayManagerCompat
-import com.android.customization.widget.DynamicAdaptiveIconDrawable
 import com.android.themepicker.R
 import com.android.axion.themepicker.data.model.FontOverlayOption
-import com.android.axion.themepicker.data.model.IconPackOption
-import com.android.axion.themepicker.data.model.IconShapeOption
 import com.android.axion.themepicker.data.model.OverlayOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -125,41 +115,6 @@ class CommonOverlayProvider(
         options
     }
 
-    suspend fun loadIconShapeOptions(): List<IconShapeOption> = withContext(Dispatchers.IO) {
-        val options = mutableListOf<IconShapeOption>()
-        val thumbSize = context.resources.getDimensionPixelSize(R.dimen.component_shape_thumb_size)
-        
-        options.add(createDefaultIconShapeOption(thumbSize))
-        
-        val customOptions = overlayPackages.mapNotNull { overlayPackage ->
-            try {
-                val overlayRes = packageManager.getResourcesForApplication(overlayPackage)
-                val path = loadShapePath(overlayRes, overlayPackage)
-                val label = packageManager.getApplicationInfo(overlayPackage, 0)
-                    .loadLabel(packageManager).toString()
-                
-                if (path != null) {
-                    IconShapeOption(
-                        packageName = overlayPackage,
-                        label = label,
-                        shapePath = path,
-                        shapeDrawable = createShapeDrawable(path, thumbSize),
-                        shapedAppIcons = getShapedAppIcons(path),
-                        isActive = overlayPackage == activeOverlay
-                    )
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Couldn't load shape overlay $overlayPackage, will skip it", e)
-                null
-            }
-        }
-        
-        options.addAll(customOptions.sortedBy { it.label })
-        options
-    }
-
     fun applyOverlay(option: OverlayOption): Boolean {
         return try {
             if (option.packageName == null) {
@@ -239,99 +194,6 @@ class CommonOverlayProvider(
             bodyFont = bodyFont,
             isActive = activeOverlay == null
         )
-    }
-
-    private fun createDefaultIconShapeOption(thumbSize: Int): IconShapeOption {
-        val system = Resources.getSystem()
-        val path = loadShapePath(system, ResourceConstants.ANDROID_PACKAGE)
-        
-        return IconShapeOption(
-            packageName = null,
-            label = context.getString(R.string.default_theme_title),
-            shapePath = path,
-            shapeDrawable = createShapeDrawable(path, thumbSize),
-            shapedAppIcons = getShapedAppIcons(path),
-            isActive = activeOverlay == null
-        )
-    }
-
-    private fun loadShapePath(resources: Resources, packageName: String): Path? {
-        return try {
-            val shapeString = resources.getString(
-                resources.getIdentifier(
-                    ResourceConstants.CONFIG_ICON_MASK,
-                    "string",
-                    packageName
-                )
-            )
-            if (!shapeString.isNullOrEmpty()) {
-                PathParser.createPathFromPathData(shapeString)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Error loading shape path for $packageName", e)
-            null
-        }
-    }
-
-    private fun createShapeDrawable(path: Path?, thumbSize: Int): ShapeDrawable {
-        val shapePath = path ?: Path()
-        val pathShape = PathShape(shapePath, ResourceConstants.PATH_SIZE, ResourceConstants.PATH_SIZE)
-        return ShapeDrawable(pathShape).apply {
-            intrinsicHeight = thumbSize
-            intrinsicWidth = thumbSize
-        }
-    }
-
-    private fun getShapedAppIcons(path: Path?): List<Drawable> {
-        if (path == null) return emptyList()
-        
-        val shapedIcons = mutableListOf<Drawable>()
-        val userApps = getUserApps()
-        
-        for (packageName in userApps) {
-            var icon: Drawable? = null
-            var name: CharSequence? = null
-            
-            try {
-                val appIcon = packageManager.getApplicationIcon(packageName)
-                if (appIcon is AdaptiveIconDrawable) {
-                    icon = DynamicAdaptiveIconDrawable(
-                        appIcon.background,
-                        appIcon.foreground,
-                        path
-                    )
-                    
-                    val appInfo = packageManager.getApplicationInfo(packageName, 0)
-                    name = packageManager.getApplicationLabel(appInfo)
-                }
-            } catch (e: PackageManager.NameNotFoundException) {
-                Log.d(TAG, "Couldn't find app $packageName, won't use it for icon shape preview")
-            } finally {
-                if (icon != null && !name.isNullOrEmpty()) {
-                    shapedIcons.add(icon)
-                }
-            }
-            
-            if (shapedIcons.size >= 6) break
-        }
-        
-        return shapedIcons
-    }
-
-    private fun getUserApps(): List<String> {
-        val launchableApps = mutableListOf<String>()
-        val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        
-        for (appInfo in apps) {
-            if (packageManager.getLaunchIntentForPackage(appInfo.packageName) != null) {
-                launchableApps.add(appInfo.packageName)
-            }
-            if (launchableApps.size >= 6) break
-        }
-        
-        return launchableApps
     }
 
     private fun getFontFamily(overlayPackage: String, overlayRes: Resources, configName: String): String {

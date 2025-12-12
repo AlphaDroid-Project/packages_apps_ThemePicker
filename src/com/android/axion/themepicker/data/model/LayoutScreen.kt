@@ -12,11 +12,5 @@ sealed class LayoutScreen : Parcelable {
     object AppGridSettings : LayoutScreen()
 
     @Parcelize
-    object SystemIcons : LayoutScreen()
-
-    @Parcelize
     object Font : LayoutScreen()
-
-    @Parcelize
-    object Shape : LayoutScreen()
 }

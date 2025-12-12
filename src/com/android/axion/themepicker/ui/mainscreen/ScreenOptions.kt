@@ -87,7 +87,6 @@ fun ScreenOptions(
                             if (isHome) {
                                 when (name) {
                                     "Colors" -> mainScreenViewModel.onOpenColorsSettings()
-                                    "Layout" -> mainScreenViewModel.onOpenIconPack()
                                     "Apperance" -> mainScreenViewModel.onOpenLayout()
                                 }
                             } else {

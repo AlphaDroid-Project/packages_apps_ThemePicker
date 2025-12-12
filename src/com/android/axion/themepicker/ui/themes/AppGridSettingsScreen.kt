@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.ui.app.PreviewsPage
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
-import com.android.axion.themepicker.ui.iconpack.GridOption
-import com.android.axion.themepicker.ui.iconpack.LauncherSettingsViewModel
 import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
 import com.android.axion.themepicker.utils.math.scaleRatio
+import com.android.axion.themepicker.viewmodel.GridOption
+import com.android.axion.themepicker.viewmodel.GridSettingsViewModel
 import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import kotlinx.coroutines.delay
@@ -51,16 +51,16 @@ import kotlinx.coroutines.launch
 fun AppGridSettingsScreen(
     layoutScreenViewModel: LayoutScreenViewModel,
     mainScreenViewModel: MainScreenViewModel,
-    launcherViewModel: LauncherSettingsViewModel = viewModel()
+    gridViewModel: GridSettingsViewModel = viewModel()
 ) {
     val colors = LocalAxColorScheme.current
     val scale = LocalContext.current.scaleRatio
-    val availableGrids by launcherViewModel.availableGridOptions.collectAsState()
-    val selectedGrid by launcherViewModel.selectedGrid.collectAsState()
-    val isLoadingSelection by launcherViewModel.isLoadingSelection.collectAsState()
+    val availableGrids by gridViewModel.availableGridOptions.collectAsState()
+    val selectedGrid by gridViewModel.selectedGrid.collectAsState()
+    val isLoadingSelection by gridViewModel.isLoadingSelection.collectAsState()
 
     LaunchedEffect(Unit) {
-        launcherViewModel.loadGridOptions()
+        gridViewModel.loadGridOptions()
     }
 
     val isLoadingGrids = availableGrids.isEmpty()
@@ -160,7 +160,7 @@ fun AppGridSettingsScreen(
                                     isLoading = isLoadingSelection,
                                     onClick = {
                                         if (!isLoadingSelection) {
-                                            launcherViewModel.selectGrid(grid)
+                                            gridViewModel.selectGrid(grid)
                                         }
                                     }
                                 )
