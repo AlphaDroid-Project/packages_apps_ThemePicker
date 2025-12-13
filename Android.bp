@@ -16,6 +16,10 @@ android_app {
     privileged: true,
     system_ext_specific: true,
 
+    required: [
+        "privapp-permissions-axthemepicker",
+    ],
+
     optimize: {
         enabled: true,
     },
@@ -61,4 +65,12 @@ android_app {
     overrides: ["ThemePicker", "WallpaperCropper", "WallpaperPicker", "WallpaperPicker2"],
 
     kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
+}
+
+prebuilt_etc {
+    name: "privapp-permissions-axthemepicker",
+    system_ext_specific: true,
+    src: "privapp-permissions-axthemepicker.xml",
+    sub_dir: "permissions",
+    filename_from_src: true,
 }
