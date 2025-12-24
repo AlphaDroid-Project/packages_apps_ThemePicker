@@ -23,8 +23,14 @@ import androidx.compose.ui.platform.LocalContext
 fun AxTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
     val colors = rememberAxColorScheme(context)
+    val expressiveDesign = DefaultExpressiveDesign
+    val adaptiveLayoutInfo = calculateAdaptiveLayoutInfo()
 
-    CompositionLocalProvider(LocalAxColorScheme provides colors) {
+    CompositionLocalProvider(
+        LocalAxColorScheme provides colors,
+        LocalExpressiveDesign provides expressiveDesign,
+        LocalAdaptiveLayoutInfo provides adaptiveLayoutInfo
+    ) {
         content()
     }
 }

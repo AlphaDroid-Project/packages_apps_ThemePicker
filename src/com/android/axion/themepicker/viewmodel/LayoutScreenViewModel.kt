@@ -91,4 +91,14 @@ class LayoutScreenViewModel(application: Application) : AndroidViewModel(applica
     fun onItemSelected(item: LayoutPreferenceItem, mainScreenViewModel: MainScreenViewModel) {
         navigateToLayoutScreen(item.destination)
     }
+    
+    fun navigateToAppGrid() {
+        _layoutScreenStack.clear()
+        _currentLayoutScreen.value = LayoutScreen.AppGridSettings
+    }
+    
+    fun navigateToFonts() {
+        _layoutScreenStack.clear()
+        _currentLayoutScreen.value = LayoutScreen.Font
+    }
 }

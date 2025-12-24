@@ -95,8 +95,12 @@ class MainScreenViewModel : ViewModel() {
         navigateTo(Screen.ColorsSettings)
     }
     
-    fun onOpenLayout() {
-        navigateTo(Screen.Layout)
+    fun onOpenAppGrid() {
+        navigateTo(Screen.AppGrid)
+    }
+    
+    fun onOpenFonts() {
+        navigateTo(Screen.Fonts)
     }
 
     fun onWallpaperSelectedFromGallery(wallpaper: WallpaperInfo) {

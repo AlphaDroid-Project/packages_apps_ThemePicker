@@ -90,7 +90,7 @@ class GridSettingsViewModel(application: Application) : AndroidViewModel(applica
         )
 
         for (pkg in launcherPackages) {
-            val authority = "$pkg.settings"
+            val authority = "$pkg.grid_control"
             val testUri = Uri.parse("content://$authority/get_grid_name")
 
             try {
@@ -99,7 +99,7 @@ class GridSettingsViewModel(application: Application) : AndroidViewModel(applica
                         launcherAuthority = authority
                         Log.d(TAG, "Found launcher provider: $authority")
                         
-                        gridUri = Uri.parse("content://$authority/grid")
+                        gridUri = Uri.parse("content://$authority/default_grid")
                         return
                     }
                 }
@@ -125,11 +125,21 @@ class GridSettingsViewModel(application: Application) : AndroidViewModel(applica
             var defaultOption: GridOption? = null
 
             cursor?.use { c ->
+                val nameIdx = c.getColumnIndex("name")
+                val titleIdx = c.getColumnIndex("grid_title")
+                val rowsIdx = c.getColumnIndex("rows")
+                val colsIdx = c.getColumnIndex("cols")
+
                 while (c.moveToNext()) {
-                    val name = c.getString(c.getColumnIndex("name"))
-                    val title = c.getString(c.getColumnIndex("grid_title"))
-                    val rows = c.getInt(c.getColumnIndex("rows"))
-                    val cols = c.getInt(c.getColumnIndex("cols"))
+                    if (nameIdx == -1 || rowsIdx == -1 || colsIdx == -1) {
+                        Log.e(TAG, "Missing required columns in grid options cursor")
+                        continue
+                    }
+
+                    val name = c.getString(nameIdx)
+                    val title = if (titleIdx != -1) c.getString(titleIdx) else null
+                    val rows = c.getInt(rowsIdx)
+                    val cols = c.getInt(colsIdx)
                     val isDefault = name == currentGridName
 
                     val option = GridOption(name, title ?: "$cols × $rows", rows, cols, isDefault)

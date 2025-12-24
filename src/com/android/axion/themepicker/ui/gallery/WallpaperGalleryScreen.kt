@@ -52,7 +52,7 @@ import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.components.ThumbnailCard
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.ui.theme.*
 import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.utils.wallpaper.loadAllCategories
 import com.android.axion.themepicker.utils.wallpaper.rememberBitmap

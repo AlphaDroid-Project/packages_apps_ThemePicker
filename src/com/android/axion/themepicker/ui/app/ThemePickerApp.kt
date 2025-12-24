@@ -54,30 +54,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.data.model.WallpaperInfo
+import com.android.axion.themepicker.data.model.NavigationDestination
 import com.android.axion.themepicker.data.model.Screen
 import com.android.axion.themepicker.data.model.Screen.EntryPoint
 import com.android.axion.themepicker.data.model.WallpaperSettings
 import com.android.axion.themepicker.data.model.ZoomProperties
-import com.android.axion.themepicker.ui.carousel.WallpaperCarouselCard
-import com.android.axion.themepicker.ui.components.FooterIndicator
+import com.android.axion.themepicker.ui.components.ExpressiveScaffold
 import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.colors.ColorsSettingsScreen
-import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.gallery.WallpaperGalleryScreen
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.mainscreen.rememberPhotoPicker
-import com.android.axion.themepicker.ui.mainscreen.ScreenOptions
 import com.android.axion.themepicker.ui.mainscreen.WallpaperApplyScreen
 import com.android.axion.themepicker.ui.preview.EditCurrentWallpaperScreen
-import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.ui.preview.WallpaperPreviewScreen
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import com.android.axion.themepicker.ui.sections.WallpaperSection
+import com.android.axion.themepicker.ui.sections.StyleSection
+import com.android.axion.themepicker.ui.sections.LockscreenSection
+import com.android.axion.themepicker.ui.theme.*
 import com.android.axion.themepicker.ui.themes.LayoutMainScreen
-import com.android.axion.themepicker.utils.math.sdp
-import com.android.axion.themepicker.utils.wallpaper.applyZoomToBitmap
-import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
-import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
-import com.android.axion.themepicker.utils.wallpaper.BitmapProcessor
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperGalleryViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperViewModel
@@ -85,13 +80,7 @@ import kotlin.coroutines.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
-val WallpaperMiniPreviewsHeight: Dp
-    @Composable
-    get() = 320.sdp
-
-val WallpaperMiniPreviewsWidth: Dp
-    @Composable
-    get() = 162.sdp
+private const val TAG = "ThemePickerApp"
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -105,6 +94,12 @@ fun ThemePickerApp(
     val currentScreen by mainScreenViewModel.currentScreen.collectAsState()
     val wallpapers by mainScreenViewModel.wallpapers.collectAsState()
     val isNavigatingBack by mainScreenViewModel.isNavigatingBack.collectAsState()
+    
+    var currentDestinationIndex by rememberSaveable { mutableStateOf(0) }
+    
+    val currentDestination = NavigationDestination.destinations.getOrElse(currentDestinationIndex) {
+        NavigationDestination.Wallpaper
+    }
 
     LaunchedEffect(Unit) {
         mainScreenViewModel.initialize(context)
@@ -112,236 +107,209 @@ fun ThemePickerApp(
     }
     
     LaunchedEffect(currentScreen) {
-        if (currentScreen is Screen.Main) wallpaperViewModel.resetSettings()
-    }
-
-    val isBackPressed = isNavigatingBack || currentScreen is Screen.Main
-
-    ScreenTransition(
-        targetState = currentScreen,
-        isNavigatingBack = isBackPressed
-    ) { screen ->
-        when (screen) {
-            is Screen.Main -> {
-                val activity = LocalContext.current as? Activity
-                BackHandler {
-                    activity?.finish()
-                }
-                MainScreen(wallpapers = wallpapers)
-            }
-
-            is Screen.Preview -> {
-                BackHandler { mainScreenViewModel.goBack() }
-                WallpaperPreviewScreen(
-                    wallpaper = screen.wallpaper,
-                    settings = WallpaperSettings(),
-                    bitmap = screen.bitmap
-                )
-            }
-
-            is Screen.Apply -> {
-                BackHandler { mainScreenViewModel.goBack() }
-                WallpaperApplyScreen(
-                    wallpaper = screen.wallpaper,
-                    settings = settings.copy(zoomProperties = screen.zoomProperties),
-                    bitmap = screen.bitmap
-                )
-            }
-
-            is Screen.EditCurrent -> {
-                BackHandler { mainScreenViewModel.goBack() }
-                EditCurrentWallpaperScreen(
-                    settings = settings
-                )
-            }
-
-            is Screen.ColorsSettings -> {
-                BackHandler { mainScreenViewModel.resetToMain() }
-                ColorsSettingsScreen()
-            }
-
-            is Screen.WallpaperGallery -> {
-                val photoPickerLauncher = rememberPhotoPicker(context, wallpaperViewModel) { bitmap ->
-                    bitmap?.let {
-                        val customWallpaper = WallpaperInfo(
-                            id = "user_photo_${System.currentTimeMillis()}",
-                            title = "Wallpaper Photo",
-                            drawableRes = -1
-                        )
-                        mainScreenViewModel.onUserUpload(customWallpaper, it)
-                    }
-                }
-
-                WallpaperGalleryScreen(
-                    galleryViewModel = galleryViewModel,
-                    onSelectPhoto = { photoPickerLauncher.launch("image/*") }
-                )
-            }
-            
-            is Screen.Layout -> {
-                BackHandler { mainScreenViewModel.goBack() }
-                LayoutMainScreen()
-            }
-            
-            is Screen.Lockscreen -> {
-                BackHandler { mainScreenViewModel.goBack() }
-                LockscreenPreview(
-                    isPreview = false,
-                    wallpaperBitmap = getCurrentWallpaperBitmap(context, false),
-                    modifier = Modifier.fillMaxSize(),
-                    entryPoint = screen.entryPoint
-                )
-            }
+        if (currentScreen is Screen.Main) {
+            wallpaperViewModel.resetSettings()
         }
+    }
+    
+    val isDetailScreen = currentScreen !is Screen.Main
+    
+    if (isDetailScreen) {
+        val isBackPressed = isNavigatingBack || currentScreen is Screen.Main
+        
+        ScreenTransition(
+            targetState = currentScreen,
+            isNavigatingBack = isBackPressed
+        ) { screen ->
+            DetailScreenContent(
+                screen = screen,
+                settings = settings,
+                wallpaperViewModel = wallpaperViewModel,
+                mainScreenViewModel = mainScreenViewModel,
+                galleryViewModel = galleryViewModel,
+                wallpapers = wallpapers
+            )
+        }
+    } else {
+        MainNavigationScaffold(
+            currentDestination = currentDestination,
+            onDestinationSelected = { dest -> 
+                val index = NavigationDestination.destinations.indexOf(dest)
+                if (index >= 0) currentDestinationIndex = index
+            },
+            wallpapers = wallpapers,
+            mainScreenViewModel = mainScreenViewModel,
+            wallpaperViewModel = wallpaperViewModel
+        )
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(
+private fun MainNavigationScaffold(
+    currentDestination: NavigationDestination,
+    onDestinationSelected: (NavigationDestination) -> Unit,
     wallpapers: List<WallpaperInfo>,
-    mainScreenViewModel: MainScreenViewModel = viewModel()
+    mainScreenViewModel: MainScreenViewModel,
+    wallpaperViewModel: WallpaperViewModel
 ) {
-    val onTabChange = mainScreenViewModel::onTabSelected
-    val selectedTab = mainScreenViewModel.selectedTab.collectAsState().value
     val context = LocalContext.current
     val activity = context as? Activity
-
-    val tabs = listOf("Lockscreen", "Home Screen")
-    val previewPagerState = rememberPagerState(initialPage = selectedTab, pageCount = { tabs.size })
-    val optionsPagerState = rememberPagerState(initialPage = selectedTab, pageCount = { tabs.size })
-    val screenWidth = LocalConfiguration.current.screenWidthDp
-
-    LaunchedEffect(previewPagerState.currentPage, previewPagerState.currentPageOffsetFraction) {
-        if (!optionsPagerState.isScrollInProgress && previewPagerState.isScrollInProgress) {
-            optionsPagerState.scrollToPage(previewPagerState.currentPage, previewPagerState.currentPageOffsetFraction)
+    
+    val photoPickerLauncher = rememberPhotoPicker(context, wallpaperViewModel) { bitmap ->
+        bitmap?.let {
+            val customWallpaper = WallpaperInfo(
+                id = "user_photo_${System.currentTimeMillis()}",
+                title = "Wallpaper Photo",
+                drawableRes = -1
+            )
+            mainScreenViewModel.onUserUpload(customWallpaper, it)
         }
     }
-
-    LaunchedEffect(optionsPagerState.currentPage, optionsPagerState.currentPageOffsetFraction) {
-        if (!previewPagerState.isScrollInProgress && optionsPagerState.isScrollInProgress) {
-            previewPagerState.scrollToPage(optionsPagerState.currentPage, optionsPagerState.currentPageOffsetFraction)
-        }
+    
+    BackHandler {
+        activity?.finish()
     }
-
-    LaunchedEffect(previewPagerState.currentPage) {
-        onTabChange(previewPagerState.currentPage)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(LocalAxColorScheme.current.surfaceContainer),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        ExpressiveHeader(
-            title = tabs[previewPagerState.currentPage],
-            onBackClick = { activity?.finish() }
-        )
-
-        BoxWithConstraints(
+    
+    ExpressiveScaffold(
+        currentDestination = currentDestination,
+        onDestinationSelected = onDestinationSelected
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.7f),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            val maxHeight = max(WallpaperMiniPreviewsHeight, maxHeight)
-            Box(
-                modifier = Modifier
-                    .height(maxHeight)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                HorizontalPager(
-                    state = previewPagerState,
-                    pageSize = PageSize.Fixed(WallpaperMiniPreviewsWidth + 12.sdp),
-                    contentPadding = PaddingValues(horizontal = (screenWidth.dp - WallpaperMiniPreviewsWidth) / 2),
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    val pageOffset = (previewPagerState.currentPage - page) + previewPagerState.currentPageOffsetFraction
-                    val offsetAlpha = 1f - (abs(pageOffset) * 0.5f).coerceIn(0f, 0.5f)
-
-                    Box(contentAlignment = Alignment.Center) {
-                        PreviewsPage(
-                            isHome = page == 1,
-                            modifier = Modifier
-                                .size(WallpaperMiniPreviewsWidth, WallpaperMiniPreviewsHeight)
-                                .clip(RoundedCornerShape(16.sdp))
+            AnimatedContent(
+                targetState = currentDestination,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) + 
+                    slideInHorizontally(
+                        initialOffsetX = { if (initialState.route < targetState.route) it / 4 else -it / 4 },
+                        animationSpec = tween(300)
+                    ) togetherWith
+                    fadeOut(animationSpec = tween(200)) +
+                    slideOutHorizontally(
+                        targetOffsetX = { if (initialState.route < targetState.route) -it / 4 else it / 4 },
+                        animationSpec = tween(200)
+                    )
+                },
+                label = "section_transition"
+            ) { destination ->
+                when (destination) {
+                    NavigationDestination.Wallpaper -> {
+                        WallpaperSection(
+                            wallpapers = wallpapers,
+                            onWallpaperSelected = mainScreenViewModel::onWallpaperSelected,
+                            onEditCurrent = mainScreenViewModel::onEditCurrent,
+                            onOpenGallery = mainScreenViewModel::onOpenGallery,
+                            onSelectPhoto = { photoPickerLauncher.launch("image/*") }
                         )
-                        if (page != previewPagerState.currentPage) {
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .clip(RoundedCornerShape(16.sdp))
-                                    .background(Color.Black.copy(alpha = 0.3f))
-                            )
-                        }
+                    }
+                    NavigationDestination.Style -> {
+                        StyleSection(
+                            onOpenColors = mainScreenViewModel::onOpenColorsSettings,
+                            onOpenAppGrid = mainScreenViewModel::onOpenAppGrid,
+                            onOpenFonts = mainScreenViewModel::onOpenFonts
+                        )
+                    }
+                    NavigationDestination.Lockscreen -> {
+                        LockscreenSection(
+                            onOpenFullPreview = { entryPoint ->
+                                mainScreenViewModel.onOpenLockscreenPreview(entryPoint = entryPoint)
+                            }
+                        )
                     }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.3f),
-            contentAlignment = Alignment.Center
-        ) {
-            HorizontalPager(
-                state = optionsPagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                val pageOffset = (previewPagerState.currentPage - page) + previewPagerState.currentPageOffsetFraction
-                val offsetAlpha = 1f - (abs(pageOffset) * 0.5f).coerceIn(0f, 0.5f)
-
-                ScreenOptions(
-                    isHome = page == 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .graphicsLayer {
-                            alpha = offsetAlpha
-                            translationX = pageOffset * -50.dp.toPx()
-                        }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        FooterIndicator(
-            tabCount = tabs.size,
-            currentPage = previewPagerState.currentPage
-        )
-
-        WallpaperCarouselCard(
-            wallpapers = wallpapers
-        )
     }
 }
 
 @Composable
-fun PreviewsPage(
-    isHome: Boolean,
-    refreshKey: Any? = null,
-    modifier: Modifier = Modifier,
-    mainScreenViewModel: MainScreenViewModel = viewModel()
+private fun DetailScreenContent(
+    screen: Screen,
+    settings: WallpaperSettings,
+    wallpaperViewModel: WallpaperViewModel,
+    mainScreenViewModel: MainScreenViewModel,
+    galleryViewModel: WallpaperGalleryViewModel,
+    wallpapers: List<WallpaperInfo>
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier
-    ) {
-        if (isHome) {
-            HomescreenPreview(
-                modifier = modifier.clickable { mainScreenViewModel.onEditCurrent() },
-                refreshKey = refreshKey
+    val context = LocalContext.current
+    
+    when (screen) {
+        is Screen.Main -> {
+        }
+
+        is Screen.Preview -> {
+            BackHandler { mainScreenViewModel.goBack() }
+            WallpaperPreviewScreen(
+                wallpaper = screen.wallpaper,
+                settings = WallpaperSettings(),
+                bitmap = screen.bitmap
             )
-        } else {
+        }
+
+        is Screen.Apply -> {
+            BackHandler { mainScreenViewModel.goBack() }
+            WallpaperApplyScreen(
+                wallpaper = screen.wallpaper,
+                settings = settings.copy(zoomProperties = screen.zoomProperties),
+                bitmap = screen.bitmap
+            )
+        }
+
+        is Screen.EditCurrent -> {
+            BackHandler { mainScreenViewModel.goBack() }
+            EditCurrentWallpaperScreen(
+                settings = settings
+            )
+        }
+
+        is Screen.ColorsSettings -> {
+            BackHandler { mainScreenViewModel.resetToMain() }
+            ColorsSettingsScreen()
+        }
+
+        is Screen.WallpaperGallery -> {
+            val photoPickerLauncher = rememberPhotoPicker(context, wallpaperViewModel) { bitmap ->
+                bitmap?.let {
+                    val customWallpaper = WallpaperInfo(
+                        id = "user_photo_${System.currentTimeMillis()}",
+                        title = "Wallpaper Photo",
+                        drawableRes = -1
+                    )
+                    mainScreenViewModel.onUserUpload(customWallpaper, it)
+                }
+            }
+
+            WallpaperGalleryScreen(
+                galleryViewModel = galleryViewModel,
+                onSelectPhoto = { photoPickerLauncher.launch("image/*") }
+            )
+        }
+        
+        is Screen.Layout -> {
+            BackHandler { mainScreenViewModel.goBack() }
+            LayoutMainScreen()
+        }
+        
+        is Screen.AppGrid -> {
+            BackHandler { mainScreenViewModel.goBack() }
+            LayoutMainScreen(startWithAppGrid = true)
+        }
+        
+        is Screen.Fonts -> {
+            BackHandler { mainScreenViewModel.goBack() }
+            LayoutMainScreen(startWithFonts = true)
+        }
+        
+        is Screen.Lockscreen -> {
+            BackHandler { mainScreenViewModel.goBack() }
             LockscreenPreview(
-                isPreview = true,
-                modifier = modifier.clickable { mainScreenViewModel.onOpenLockscreenPreview() },
+                isPreview = false,
+                wallpaperBitmap = com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap(context, false),
+                modifier = Modifier.fillMaxSize(),
+                entryPoint = screen.entryPoint
             )
         }
     }

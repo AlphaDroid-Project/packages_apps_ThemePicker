@@ -32,6 +32,12 @@ sealed class Screen : Parcelable {
     object Layout : Screen()
     
     @Parcelize
+    object AppGrid : Screen()
+    
+    @Parcelize
+    object Fonts : Screen()
+    
+    @Parcelize
     data class Lockscreen(
         val wallpaper: WallpaperInfo? = null,
         val entryPoint: EntryPoint = EntryPoint.DEFAULT

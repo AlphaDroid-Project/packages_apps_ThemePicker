@@ -64,8 +64,8 @@ fun ScreenOptions(
     val context = LocalContext.current
     val options = if (isHome) listOf(
         OptionCircle("Colors", null),
-        OptionCircle("Layout", Icons.Default.GridView),
-        OptionCircle("Apperance", Icons.Default.Brush)
+        OptionCircle("App Grid", Icons.Default.GridView),
+        OptionCircle("Fonts", Icons.Default.TextFormat)
     ) else listOf(
         OptionCircle("Widgets", Icons.Default.Widgets),
         OptionCircle("Shortcuts", Icons.Default.Shortcut),
@@ -87,7 +87,8 @@ fun ScreenOptions(
                             if (isHome) {
                                 when (name) {
                                     "Colors" -> mainScreenViewModel.onOpenColorsSettings()
-                                    "Apperance" -> mainScreenViewModel.onOpenLayout()
+                                    "App Grid" -> mainScreenViewModel.onOpenAppGrid()
+                                    "Fonts" -> mainScreenViewModel.onOpenFonts()
                                 }
                             } else {
                                 when (name) {

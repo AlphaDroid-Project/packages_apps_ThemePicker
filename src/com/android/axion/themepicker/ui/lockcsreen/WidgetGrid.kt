@@ -62,7 +62,12 @@ fun WidgetGrid(
     onPickWidget: () -> Unit
 ) {
     val context = LocalContext.current
-    val scale = if (isPreview) context.previewScale - 0.18f else context.scaleRatio
+    val displayMetrics = context.resources.displayMetrics
+    val sw = minOf(displayMetrics.widthPixels, displayMetrics.heightPixels) / displayMetrics.density
+    val isTablet = sw >= 600f
+    
+    val scaleOffset = if (isTablet) 0.10f else 0.18f
+    val scale = if (isPreview) context.previewScale - scaleOffset else context.scaleRatio
     val widgetSlot = scale * WidgetSlot
     val spacing = scale * WidgetSpacing
 

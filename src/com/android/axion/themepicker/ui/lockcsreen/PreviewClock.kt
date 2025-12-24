@@ -61,11 +61,27 @@ val Context.previewScale: Float
     get() {
         val displayMetrics = resources.displayMetrics
         val sw = minOf(displayMetrics.widthPixels, displayMetrics.heightPixels) / displayMetrics.density
-        val baseMultiplier = 0.55f
-        val baseDp = 420f
+        
+        val isTablet = sw >= 600f
+        val baseMultiplier = if (isTablet) 0.24f else 0.42f
+        val baseDp = if (isTablet) 600f else 420f
+        
         val dpRatio = sw / baseDp
-        val adjustedMultiplier = baseMultiplier * kotlin.math.sqrt(dpRatio)
-        return adjustedMultiplier.coerceIn(0.35f, 0.75f)
+        val adjustedMultiplier = if (isTablet) {
+            baseMultiplier * kotlin.math.cbrt(dpRatio.toDouble()).toFloat()
+        } else {
+            baseMultiplier * kotlin.math.sqrt(dpRatio)
+        }
+        
+        val maxScale = if (isTablet) 0.32f else 0.55f
+        return adjustedMultiplier.coerceIn(0.22f, maxScale)
+    }
+
+val Context.maxClockWidthFraction: Float
+    get() {
+        val displayMetrics = resources.displayMetrics
+        val sw = minOf(displayMetrics.widthPixels, displayMetrics.heightPixels) / displayMetrics.density
+        return if (sw >= 600f) 0.45f else 0.70f
     }
 
 enum class DateAlignment {
@@ -245,14 +261,14 @@ fun PreviewClock(isPreview: Boolean) {
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .heightIn(max = 200.dp),
             userScrollEnabled = !isPreview
         ) { page ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(vertical = 16.dp * scale),
+                    .heightIn(max = 180.dp)
+                    .padding(vertical = 8.dp * scale),
                 contentAlignment = Alignment.Center
             ) {
                 clocks[page].Render(currentTime)
@@ -355,7 +371,7 @@ sealed class ClockItem {
 
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(context.maxClockWidthFraction)
                         .height(100.dp * renderScale),
                     contentAlignment = Alignment.CenterStart
                 ) {
@@ -369,13 +385,36 @@ sealed class ClockItem {
                         val hourStr = hour.toString()
                         val minuteStr = String.format("%02d", minute)
                         val timeDigits = (hourStr + minuteStr).toCharArray()
+                        
+                        val digitSpacingPx = with(density) { digitSpacing.toPx() }
+                        val dotExtraWidth = with(density) { (digitSpacing.toPx() * 2) + dotRadiusPx }
+                        
+                        var totalNaturalWidth = 0f
+                        timeDigits.forEach { char ->
+                            val bmp = bitmaps.getOrNull(char.digitToIntOrNull() ?: 0)
+                            if (bmp != null) {
+                                totalNaturalWidth += bmp.width * renderScale + digitSpacingPx
+                            }
+                        }
+                        totalNaturalWidth += dotExtraWidth 
+                        
+                        val availableWidth = size.width * 0.95f
+                        val widthScaleFactor = if (totalNaturalWidth > availableWidth) {
+                            availableWidth / totalNaturalWidth
+                        } else {
+                            1f
+                        }
+                        
+                        val uniformScale = renderScale * widthScaleFactor
+                        val uniformDigitSpacing = digitSpacingPx * widthScaleFactor
+                        val uniformDotRadius = dotRadiusPx * widthScaleFactor
 
                         var xOffset = 0f
 
                         timeDigits.forEachIndexed { index, char ->
                             val bmp = bitmaps.getOrNull(char.digitToIntOrNull() ?: 0) ?: return@forEachIndexed
-                            val scaledW = bmp.width * renderScale
-                            val scaledH = bmp.height * renderScale
+                            val scaledW = bmp.width * uniformScale
+                            val scaledH = bmp.height * uniformScale
                             val yOffset = (size.height - scaledH) / 2f
 
                             drawImage(
@@ -385,24 +424,24 @@ sealed class ClockItem {
                                 colorFilter = ColorFilter.tint(Color.White, BlendMode.SrcIn)
                             )
 
-                            xOffset += scaledW + with(density) { digitSpacing.toPx() }
+                            xOffset += scaledW + uniformDigitSpacing
 
                             if (index == hourStr.lastIndex) {
                                 val centerX = xOffset
-                                val inwardOffset = 24.dp * renderScale
+                                val inwardOffset = 24.dp * uniformScale
                                 val inwardOffsetPx = with(density) { inwardOffset.toPx() }
 
-                                val topDotY = inwardOffsetPx + dotRadiusPx
-                                val bottomDotY = size.height - inwardOffsetPx - dotRadiusPx
+                                val topDotY = inwardOffsetPx + uniformDotRadius
+                                val bottomDotY = size.height - inwardOffsetPx - uniformDotRadius
 
                                 drawCircle(
                                     color = Color.White,
-                                    radius = dotRadiusPx,
+                                    radius = uniformDotRadius,
                                     center = Offset(centerX, topDotY)
                                 )
                                 drawCircle(
                                     color = Color.White,
-                                    radius = dotRadiusPx,
+                                    radius = uniformDotRadius,
                                     center = Offset(centerX, bottomDotY)
                                 )
 
