@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.axion.themepicker.data.model.WallpaperInfo
@@ -241,27 +242,34 @@ private fun HeroCard(
                     }
                 }
                 
+                val configuration = LocalContext.current.resources.configuration
+                val screenWidthDp = configuration.screenWidthDp
+                val showLabels = screenWidthDp >= 360
+                
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = if (showLabels) Arrangement.spacedBy(8.dp) else Arrangement.SpaceEvenly
                 ) {
                     WallpaperActionChip(
-                        title = "Gallery",
-                        icon = Icons.Outlined.Collections,
+                        title = "Walls",
+                        icon = Icons.Outlined.Wallpaper,
                         onClick = onOpenGallery,
-                        modifier = Modifier.weight(1f)
+                        showLabel = showLabels,
+                        modifier = if (showLabels) Modifier.weight(1f) else Modifier
                     )
                     WallpaperActionChip(
                         title = "Photos",
                         icon = Icons.Outlined.Photo,
                         onClick = onSelectPhoto,
-                        modifier = Modifier.weight(1f)
+                        showLabel = showLabels,
+                        modifier = if (showLabels) Modifier.weight(1f) else Modifier
                     )
                     WallpaperActionChip(
                         title = "Edit",
                         icon = Icons.Outlined.Tune,
                         onClick = onEditCurrent,
-                        modifier = Modifier.weight(1f)
+                        showLabel = showLabels,
+                        modifier = if (showLabels) Modifier.weight(1f) else Modifier
                     )
                 }
             }
@@ -274,6 +282,7 @@ private fun WallpaperActionChip(
     title: String,
     icon: ImageVector,
     onClick: () -> Unit,
+    showLabel: Boolean,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -296,26 +305,45 @@ private fun WallpaperActionChip(
                 indication = null,
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(20.dp),
+        shape = if (showLabel) RoundedCornerShape(20.dp) else CircleShape,
         color = Color.White.copy(alpha = 0.2f)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                color = Color.White
-            )
+        if (showLabel) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.basicMarquee()
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }
