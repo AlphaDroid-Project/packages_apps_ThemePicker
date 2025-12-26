@@ -83,10 +83,7 @@ fun LockscreenSection(
                     title = "Widgets",
                     subtitle = "Add information at a glance",
                     icon = Icons.Filled.Widgets,
-                    gradientColors = listOf(
-                        Color(0xFF6366F1),
-                        Color(0xFF8B5CF6)
-                    ),
+                    accentColor = colors.primary,
                     onClick = { onOpenFullPreview(EntryPoint.WIDGETS) }
                 )
                 
@@ -94,10 +91,7 @@ fun LockscreenSection(
                     title = "Shortcuts",
                     subtitle = "Quick access to your favorites",
                     icon = Icons.Filled.TouchApp,
-                    gradientColors = listOf(
-                        Color(0xFF06B6D4),
-                        Color(0xFF0EA5E9)
-                    ),
+                    accentColor = colors.tertiary,
                     onClick = { onOpenFullPreview(EntryPoint.SHORTCUTS) }
                 )
                 
@@ -105,10 +99,7 @@ fun LockscreenSection(
                     title = "Clock Style",
                     subtitle = "Choose your time format",
                     icon = Icons.Filled.Schedule,
-                    gradientColors = listOf(
-                        Color(0xFFF59E0B),
-                        Color(0xFFEF4444)
-                    ),
+                    accentColor = colors.secondary,
                     onClick = { onOpenFullPreview(EntryPoint.DEFAULT) }
                 )
             }
@@ -145,30 +136,21 @@ fun LockscreenSection(
                     FeatureChip(
                         title = "Widgets",
                         icon = Icons.Outlined.Widgets,
-                        gradientColors = listOf(
-                            Color(0xFF6366F1),
-                            Color(0xFF8B5CF6)
-                        ),
+                        accentColor = colors.primary,
                         onClick = { onOpenFullPreview(EntryPoint.WIDGETS) },
                         modifier = Modifier.weight(1f)
                     )
                     FeatureChip(
                         title = "Shortcuts",
                         icon = Icons.Outlined.TouchApp,
-                        gradientColors = listOf(
-                            Color(0xFF06B6D4),
-                            Color(0xFF0EA5E9)
-                        ),
+                        accentColor = colors.tertiary,
                         onClick = { onOpenFullPreview(EntryPoint.SHORTCUTS) },
                         modifier = Modifier.weight(1f)
                     )
                     FeatureChip(
                         title = "Clock",
                         icon = Icons.Outlined.Schedule,
-                        gradientColors = listOf(
-                            Color(0xFFF59E0B),
-                            Color(0xFFEF4444)
-                        ),
+                        accentColor = colors.secondary,
                         onClick = { onOpenFullPreview(EntryPoint.DEFAULT) },
                         modifier = Modifier.weight(1f)
                     )
@@ -325,7 +307,7 @@ private fun FeatureCard(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    gradientColors: List<Color>,
+    accentColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -352,19 +334,12 @@ private fun FeatureCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = LocalAxColorScheme.current.surfaceContainerLowest)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = gradientColors,
-                        start = Offset(0f, 0f),
-                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                    )
-                )
                 .padding(design.spacing.large)
         ) {
             Box(
@@ -373,7 +348,7 @@ private fun FeatureCard(
                     .align(Alignment.TopEnd)
                     .offset(x = 30.dp, y = (-30).dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.1f))
+                    .background(accentColor.copy(alpha = 0.05f))
             )
             
             Row(
@@ -386,20 +361,20 @@ private fun FeatureCard(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = LocalAxColorScheme.current.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.85f)
+                        color = LocalAxColorScheme.current.onSurfaceVariant
                     )
                 }
                 
                 Surface(
                     modifier = Modifier.size(48.dp),
                     shape = RoundedCornerShape(14.dp),
-                    color = Color.White.copy(alpha = 0.2f)
+                    color = accentColor.copy(alpha = 0.2f)
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -408,7 +383,7 @@ private fun FeatureCard(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = accentColor,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -422,12 +397,13 @@ private fun FeatureCard(
 private fun FeatureChip(
     title: String,
     icon: ImageVector,
-    gradientColors: List<Color>,
+    accentColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val colors = LocalAxColorScheme.current
     
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.92f else 1f,
@@ -448,36 +424,35 @@ private fun FeatureChip(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(20.dp),
-        shadowElevation = 4.dp,
-        color = Color.Transparent
+        shadowElevation = 0.dp,
+        color = colors.surfaceContainerLowest
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = gradientColors,
-                        start = Offset(0f, 0f),
-                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                    )
-                ),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(28.dp)
-                )
+                Surface(
+                    shape = CircleShape,
+                    color = accentColor.copy(alpha = 0.2f)
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .size(24.dp)
+                    )
+                }
                 Text(
                     text = title,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = colors.onSurface
                 )
             }
         }

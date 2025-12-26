@@ -31,6 +31,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -47,14 +50,15 @@ fun StyleSection(
     onOpenFonts: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(
                 if (layoutInfo.isTablet) design.spacing.screenPaddingTablet
                 else design.spacing.screenPadding
@@ -63,104 +67,24 @@ fun StyleSection(
     ) {
         StyleHeader()
         
-        if (layoutInfo.isDualPane) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(design.spacing.medium)
-            ) {
-                StyleCard(
-                    title = "Colors",
-                    subtitle = "Wallpaper colors & themes",
-                    description = "Create a cohesive look",
-                    icon = Icons.Filled.Palette,
-                    gradientColors = listOf(
-                        Color(0xFF8B5CF6),
-                        Color(0xFFA855F7),
-                        Color(0xFFD946EF)
-                    ),
-                    onClick = onOpenColors,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                StyleCard(
-                    title = "App Grid",
-                    subtitle = "Home screen layout",
-                    description = "Customize grid size",
-                    icon = Icons.Filled.GridView,
-                    gradientColors = listOf(
-                        Color(0xFF10B981),
-                        Color(0xFF06B6D4),
-                        Color(0xFF3B82F6)
-                    ),
-                    onClick = onOpenAppGrid,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(design.spacing.medium)
-            ) {
-                StyleCard(
-                    title = "Fonts",
-                    subtitle = "System typography",
-                    description = "Choose your style",
-                    icon = Icons.Filled.TextFormat,
-                    gradientColors = listOf(
-                        Color(0xFFF59E0B),
-                        Color(0xFFF472B6),
-                        Color(0xFFEF4444)
-                    ),
-                    onClick = onOpenFonts,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        } else {
-            StyleCard(
-                title = "Colors",
-                subtitle = "Wallpaper colors & themes",
-                description = "Create a cohesive look",
-                icon = Icons.Filled.Palette,
-                gradientColors = listOf(
-                    Color(0xFF8B5CF6),
-                    Color(0xFFA855F7),
-                    Color(0xFFD946EF)
-                ),
-                onClick = onOpenColors,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            StyleCard(
-                title = "App Grid",
-                subtitle = "Home screen layout",
-                description = "Customize grid size",
-                icon = Icons.Filled.GridView,
-                gradientColors = listOf(
-                    Color(0xFF10B981),
-                    Color(0xFF06B6D4),
-                    Color(0xFF3B82F6)
-                ),
-                onClick = onOpenAppGrid,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            StyleCard(
-                title = "Fonts",
-                subtitle = "System typography",
-                description = "Choose your style",
-                icon = Icons.Filled.TextFormat,
-                gradientColors = listOf(
-                    Color(0xFFF59E0B),
-                    Color(0xFFF472B6),
-                    Color(0xFFEF4444)
-                ),
-                onClick = onOpenFonts,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        ColorsCard(
+            title = "Colors",
+            description = "Wallpaper colors & themes",
+            onClick = onOpenColors
+        )
         
+        AppGridCard(
+            title = "App Grid",
+            description = "Home screen layout",
+            onClick = onOpenAppGrid
+        )
+        
+        FontsCard(
+            title = "Fonts",
+            description = "System typography",
+            onClick = onOpenFonts
+        )
+
         ProTip(
             text = "Colors are automatically extracted from your wallpaper. Enable wallpaper colors for a cohesive look."
         )
@@ -221,95 +145,158 @@ private fun StyleHeader(
 }
 
 @Composable
-private fun StyleCard(
+private fun ColorsCard(
     title: String,
-    subtitle: String,
     description: String,
-    icon: ImageVector,
-    gradientColors: List<Color>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val design = LocalExpressiveDesign.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f),
-        label = "style_card_scale"
-    )
-    
-    val rotation by animateFloatAsState(
-        targetValue = if (isPressed) -0.5f else 0f,
-        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f),
-        label = "style_card_rotation"
-    )
+    val colors = LocalAxColorScheme.current
     
     Card(
         modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = gradientColors,
-                        start = Offset(0f, 0f),
-                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                    )
-                )
-                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(colors.primaryContainer.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .offset(x = (-8).dp, y = (-4).dp)
+                        .clip(CircleShape)
+                        .background(colors.primary.copy(alpha = 0.6f))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .offset(x = 8.dp, y = 8.dp)
+                        .clip(CircleShape)
+                        .background(colors.tertiary.copy(alpha = 0.6f))
+                )
+                 Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .offset(x = 6.dp, y = (-8).dp)
+                        .clip(CircleShape)
+                        .background(colors.secondary.copy(alpha = 0.6f))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppGridCard(
+    title: String,
+    description: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = LocalAxColorScheme.current
+    
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(colors.primaryContainer.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
             ) {
                 Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.85f)
-                    )
-                }
-                
-                Surface(
-                    modifier = Modifier.size(44.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.White.copy(alpha = 0.2f)
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        repeat(2) {
+                             Box(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(colors.primary.copy(alpha = 0.8f))
+                            )
+                        }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        repeat(2) {
+                            Box(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(colors.primary.copy(alpha = 0.4f))
+                            )
+                        }
                     }
                 }
             }
@@ -318,86 +305,66 @@ private fun StyleCard(
 }
 
 @Composable
-private fun FeatureHighlights(
+private fun FontsCard(
+    title: String,
+    description: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = LocalAxColorScheme.current
-    val design = LocalExpressiveDesign.current
     
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(design.spacing.small)
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(160.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = "Highlights",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = colors.onSurface
-        )
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(design.spacing.small)
-        ) {
-            FeatureHighlightChip(
-                text = "Dynamic Color",
-                icon = Icons.Outlined.AutoAwesome,
-                modifier = Modifier.weight(1f)
-            )
-            FeatureHighlightChip(
-                text = "Material You",
-                icon = Icons.Outlined.Palette,
-                modifier = Modifier.weight(1f)
-            )
-            FeatureHighlightChip(
-                text = "Adaptive",
-                icon = Icons.Outlined.Tune,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun FeatureHighlightChip(
-    text: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier
-) {
-    val colors = LocalAxColorScheme.current
-    val design = LocalExpressiveDesign.current
-    
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = colors.surfaceContainerHigh
-    ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(design.spacing.medium),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxSize()
+                .padding(20.dp)
         ) {
-            Surface(
-                shape = CircleShape,
-                color = colors.primaryContainer
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = colors.onPrimaryContainer,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .size(20.dp)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
                 )
             }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Medium,
-                color = colors.onSurface
-            )
+            
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 8.dp),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Aa",
+                    style = MaterialTheme.typography.displayLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary
+                )
+                Text(
+                    text = "A is for Axion :)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+            }
         }
     }
 }
