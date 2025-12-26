@@ -46,7 +46,7 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 @Composable
@@ -60,7 +60,7 @@ fun ToggleButton(
     backgroundColor: Color? = null,
     primaryTint: Color? = null
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val ratio = LocalContext.current.scaleRatio
     val iconSize = 32.dp * ratio
 
@@ -90,7 +90,7 @@ fun ToggleButton(
                 .clip(CircleShape)
                 .background(
                     backgroundColor ?: if (enabled) colors.primary.copy(alpha = 0.2f)
-                    else colors.surfaceContainerLowest
+                    else colors.surface
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -127,13 +127,13 @@ fun ToggleButton(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = primaryTint ?: colors.textPrimary
+            color = primaryTint ?: colors.onSurface
         )
 
         Text(
             text = if (enabled) "On" else "Off",
             style = MaterialTheme.typography.bodySmall,
-            color = primaryTint?.copy(alpha = 0.85f) ?: colors.textSecondary
+            color = primaryTint?.copy(alpha = 0.85f) ?: colors.onSurfaceVariant
         )
     }
 }
@@ -147,7 +147,7 @@ fun IconButtonCircle(
     selected: Boolean = false,
     onClick: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
     val buttonSize = 72.dp * scale
     Column(
@@ -164,7 +164,7 @@ fun IconButtonCircle(
             modifier = Modifier
                 .size(buttonSize)
                 .background(
-                    color = colors.surfaceContainerLowest,
+                    color = colors.surface,
                     shape = CircleShape
                 )
                 .border(

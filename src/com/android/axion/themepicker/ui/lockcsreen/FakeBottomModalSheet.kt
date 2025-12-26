@@ -45,7 +45,7 @@ import com.android.axion.themepicker.R
 import com.android.axion.themepicker.ui.components.CommonBottomSheet
 import com.android.axion.themepicker.ui.components.PagedTilePicker
 import com.android.axion.themepicker.ui.components.SheetDimens
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun WidgetPickerBottomSheet(
@@ -54,7 +54,7 @@ fun WidgetPickerBottomSheet(
     onDismiss: () -> Unit,
     onSelect: (WidgetItem) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     var showSizeOptions by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val available = WidgetsList().filter { it !in current.map { it.name } }

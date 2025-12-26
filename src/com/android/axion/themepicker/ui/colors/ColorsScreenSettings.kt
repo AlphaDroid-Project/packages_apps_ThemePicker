@@ -34,6 +34,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.stringResource
@@ -43,21 +44,26 @@ import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.ColorsSettingsData
 import com.android.axion.themepicker.ui.dialogs.ColorPickerDialog
 import com.android.axion.themepicker.ui.dialogs.StylePickerDialog
+import com.android.axion.themepicker.ui.dialogs.WallpaperColorPickerDialog
 import com.android.axion.themepicker.ui.theme.*
 import com.android.axion.themepicker.utils.colors.toArgb
 import com.android.axion.themepicker.utils.settings.applyColorSettings
 import com.android.axion.themepicker.utils.settings.loadCurrentSettings
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicColorsSettings() {
     val context = LocalContext.current
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val accent = colors.primary
+    val scope = rememberCoroutineScope()
     
     var settings by remember { mutableStateOf(loadCurrentSettings(context, accent)) }
     var showColorPicker by remember { mutableStateOf(false) }
+    var showWallpaperPicker by remember { mutableStateOf(false) }
     var showStylePicker by remember { mutableStateOf(false) }
 
     Column(
@@ -71,9 +77,19 @@ fun BasicColorsSettings() {
             seedColor = settings.seedColor,
             onToggleWallpaper = { enabled ->
                 settings = settings.copy(useWallpaperColors = enabled)
-                applyColorSettings(context, settings)
+                scope.launch {
+                    delay(350)
+                    applyColorSettings(context, settings)
+                }
             },
-            onPickColor = { showColorPicker = true }
+            onPickColor = { 
+                settings = settings.copy(useWallpaperColors = false)
+                showColorPicker = true 
+            },
+            onPickFromWallpaper = { 
+                settings = settings.copy(useWallpaperColors = false)
+                showWallpaperPicker = true 
+            }
         )
         
         ThemeStyleCard(
@@ -114,6 +130,17 @@ fun BasicColorsSettings() {
         )
     }
 
+    if (showWallpaperPicker) {
+        WallpaperColorPickerDialog(
+            onDismiss = { showWallpaperPicker = false },
+            onColorSelected = { color ->
+                settings = settings.copy(seedColor = color)
+                applyColorSettings(context, settings)
+                showWallpaperPicker = false
+            }
+        )
+    }
+
     if (showStylePicker) {
         StylePickerDialog(
             currentStyle = settings.style,
@@ -133,15 +160,16 @@ private fun ColorSourceCard(
     seedColor: Color,
     onToggleWallpaper: (Boolean) -> Unit,
     onPickColor: () -> Unit,
+    onPickFromWallpaper: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(design.shapes.cardCorner),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Column(
             modifier = Modifier
@@ -150,80 +178,133 @@ private fun ColorSourceCard(
             verticalArrangement = Arrangement.spacedBy(design.spacing.medium)
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(design.spacing.small),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    modifier = Modifier.size(40.dp),
-                    shape = CircleShape,
-                    color = colors.primaryContainer
+                Column {
+                    Text(
+                        text = "Theme Colors",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = if (useWallpaper) "Following wallpaper" else "Using custom color",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+                
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (useWallpaper) colors.primaryContainer else seedColor)
+                        .border(
+                            2.dp, 
+                            if (useWallpaper) colors.primary else colors.outline.copy(alpha = 0.5f), 
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    if (useWallpaper) {
                         Icon(
-                            Icons.Filled.Palette,
+                            Icons.Filled.AutoAwesome,
                             contentDescription = null,
                             tint = colors.onPrimaryContainer,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
-                Text(
-                    text = "Color Source",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+            }
+            
+            HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.5f))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ModeChip(
+                    text = "Automatic",
+                    icon = Icons.Filled.AutoAwesome,
+                    isSelected = useWallpaper,
+                    onClick = { onToggleWallpaper(true) },
+                    modifier = Modifier.weight(1f)
+                )
+                ModeChip(
+                    text = "Custom",
+                    icon = Icons.Filled.Palette,
+                    isSelected = !useWallpaper,
+                    onClick = { onToggleWallpaper(false) },
+                    modifier = Modifier.weight(1f)
                 )
             }
             
-            ExpressiveToggleRow(
-                title = stringResource(R.string.use_wallpaper_colors_title),
-                subtitle = stringResource(R.string.use_wallpaper_colors_desc),
-                checked = useWallpaper,
-                onCheckedChange = onToggleWallpaper
-            )
-            
             AnimatedVisibility(
                 visible = !useWallpaper,
-                enter = fadeIn(animationSpec = tween(150)) + expandVertically(animationSpec = tween(150)),
-                exit = fadeOut(animationSpec = tween(100)) + shrinkVertically(animationSpec = tween(100))
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = onPickColor),
-                    shape = RoundedCornerShape(design.shapes.cornerMedium),
-                    color = colors.surfaceContainerHigh
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Choose how to pick your custom color:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                    
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(design.spacing.medium),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.custom_seed_color_title),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = "#${String.format("%06X", 0xFFFFFF and seedColor.toArgb())}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = colors.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(seedColor)
-                                .border(2.dp, colors.outline.copy(alpha = 0.3f), CircleShape)
+                        ActionButton(
+                            text = "From Wallpaper",
+                            icon = Icons.Filled.Colorize,
+                            onClick = onPickFromWallpaper,
+                            modifier = Modifier.weight(1f)
                         )
+                        ActionButton(
+                            text = "Color Picker",
+                            icon = Icons.Filled.ColorLens,
+                            onClick = onPickColor,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = colors.surfaceContainerHighest,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(seedColor)
+                                    .border(1.dp, colors.outlineVariant, RoundedCornerShape(8.dp))
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Selected Color",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "#${String.format("%06X", 0xFFFFFF and seedColor.toArgb())}",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = colors.onSurface
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -232,12 +313,85 @@ private fun ColorSourceCard(
 }
 
 @Composable
+private fun ModeChip(
+    text: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) colors.primaryContainer else colors.surfaceContainerHigh,
+        border = if (isSelected) BorderStroke(2.dp, colors.primary) else null,
+        modifier = modifier.height(48.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (isSelected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) colors.onPrimaryContainer else colors.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActionButton(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.height(44.dp),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.5f)),
+        contentPadding = PaddingValues(horizontal = 12.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = colors.primary
+        )
+        Spacer(Modifier.width(6.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1
+        )
+    }
+}
+
+
+@Composable
 private fun ThemeStyleCard(
     currentStyle: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -261,7 +415,7 @@ private fun ThemeStyleCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(design.shapes.cardCorner),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Row(
             modifier = Modifier
@@ -325,13 +479,13 @@ private fun AdvancedColorsCard(
     onChromaChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(design.shapes.cardCorner),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Column(
             modifier = Modifier
@@ -411,7 +565,7 @@ private fun ExpressiveToggleRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -446,7 +600,7 @@ private fun ExpressiveSlider(
     valueLabel: String,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     var sliderValue by remember(value) { mutableStateOf(value) }
     
     Column(
@@ -495,7 +649,7 @@ private fun ExpressiveSlider(
 private fun InfoFooter(
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     Surface(

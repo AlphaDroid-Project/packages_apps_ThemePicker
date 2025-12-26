@@ -55,7 +55,7 @@ fun LockscreenSection(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     
@@ -172,7 +172,7 @@ private fun SectionHeader(
     subtitle: String,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -198,7 +198,7 @@ private fun LockPreview(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -335,7 +335,7 @@ private fun FeatureCard(
             ),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = LocalAxColorScheme.current.surfaceContainerLowest)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(
             modifier = Modifier
@@ -361,13 +361,13 @@ private fun FeatureCard(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = LocalAxColorScheme.current.onSurface
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = LocalAxColorScheme.current.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
@@ -403,7 +403,7 @@ private fun FeatureChip(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.92f else 1f,
@@ -425,7 +425,7 @@ private fun FeatureChip(
             ),
         shape = RoundedCornerShape(20.dp),
         shadowElevation = 0.dp,
-        color = colors.surfaceContainerLowest
+        color = colors.surface
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -464,7 +464,7 @@ private fun TipCard(
     text: String,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     Surface(

@@ -47,7 +47,7 @@ import com.android.axion.themepicker.ui.components.FooterCard
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.preferences.ToggleButton
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.*
 
@@ -132,7 +132,7 @@ fun StandaloneWallpaperApplyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LocalAxColorScheme.current.surfaceContainer)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         ExpressiveHeader(
             title = titleText,

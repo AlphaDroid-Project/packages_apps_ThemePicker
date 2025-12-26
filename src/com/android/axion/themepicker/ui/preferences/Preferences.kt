@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlin.math.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 @Composable
@@ -54,7 +54,7 @@ fun PreferenceCard(
     onCheckedChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
 
     Card(
@@ -62,7 +62,7 @@ fun PreferenceCard(
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.5f)
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp * scale),
@@ -115,7 +115,7 @@ fun SliderCard(
     steps: Int = 0,
     defaultValue: Float
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
 
     var internalValue by remember { mutableStateOf(value) }
@@ -208,13 +208,13 @@ fun PreferenceGroupCard(
     enabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
     Card(
         modifier = modifier
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.5f),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLowest)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Column(
             modifier = Modifier.padding(16.dp * scale),

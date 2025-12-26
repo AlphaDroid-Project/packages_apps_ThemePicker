@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun <T> FastScrollBar(
@@ -35,7 +35,7 @@ fun <T> FastScrollBar(
     onItemSelected: (Int) -> Unit,
     labelExtractor: (T) -> String
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toList()
 
     val groupedItems = items.drop(1).groupBy { 
@@ -52,7 +52,7 @@ fun <T> FastScrollBar(
             .width(52.dp)
             .heightIn(max = 600.dp),
         shape = RoundedCornerShape(26.dp),
-        color = colors.surfaceContainerLowest.copy(alpha = 0.98f),
+        color = colors.surface.copy(alpha = 0.98f),
         border = BorderStroke(2.dp, colors.outlineVariant.copy(alpha = 0.4f))
     ) {
         Column(
@@ -90,7 +90,7 @@ fun <T> FastScrollBar(
                             else -> FontWeight.Normal
                         },
                         color = when {
-                            isCurrentLetter -> colors.textPrimaryInverse
+                            isCurrentLetter -> colors.onPrimaryContainer
                             hasItems -> colors.onSurface
                             else -> colors.onSurfaceVariant.copy(alpha = 0.3f)
                         }

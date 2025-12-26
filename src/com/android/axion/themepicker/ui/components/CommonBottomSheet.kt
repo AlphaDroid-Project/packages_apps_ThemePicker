@@ -31,7 +31,7 @@ import androidx.compose.ui.platform.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
 
@@ -58,7 +58,7 @@ fun CommonBottomSheet(
     onOffsetChanged: ((currentOffset: Float, maxOffset: Float) -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -120,7 +120,7 @@ fun CommonBottomSheet(
                         .height(with(density) { sheetHeightPx.toDp() })
                         .offset(y = with(density) { offsetY.value.toDp() })
                         .background(
-                            surfaceColor ?: colors.surfaceContainerLowest,
+                            surfaceColor ?: colors.surface,
                             RoundedCornerShape(
                                 topStart = SheetDimens.SheetCorner,
                                 topEnd = SheetDimens.SheetCorner
@@ -181,7 +181,7 @@ fun CommonBottomSheet(
                             text = title,
                             fontSize = SheetDimens.SheetTitleFont,
                             fontWeight = FontWeight.SemiBold,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = SheetDimens.SheetPagerPadding)

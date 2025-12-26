@@ -33,7 +33,7 @@ import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.ui.theme.LocalAdaptiveLayoutInfo
 import com.android.axion.themepicker.ui.theme.LocalExpressiveDesign
 import com.android.axion.themepicker.ui.theme.ExpressiveScale
@@ -48,7 +48,7 @@ fun ExpressiveHeader(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     
@@ -138,7 +138,7 @@ fun ExpressiveLargeHeader(
     onBackClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     

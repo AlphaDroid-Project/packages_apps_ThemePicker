@@ -15,22 +15,47 @@
  */
 package com.android.axion.themepicker.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun AxTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val colors = rememberAxColorScheme(context)
+    val isDark = isSystemInDarkTheme()
+    
+    val baseColorScheme = if (isDark) {
+        dynamicDarkColorScheme(context)
+    } else {
+        dynamicLightColorScheme(context)
+    }
+    
+    val customBackground = if (isDark) {
+        colorResource(android.R.color.system_neutral1_1000)
+    } else {
+        colorResource(android.R.color.system_neutral1_50)
+    }
+    
+    val colorScheme = baseColorScheme.copy(
+        background = customBackground
+    )
+    
     val expressiveDesign = DefaultExpressiveDesign
     val adaptiveLayoutInfo = calculateAdaptiveLayoutInfo()
 
     CompositionLocalProvider(
-        LocalAxColorScheme provides colors,
         LocalExpressiveDesign provides expressiveDesign,
         LocalAdaptiveLayoutInfo provides adaptiveLayoutInfo
     ) {
-        content()
+        MaterialTheme(
+            colorScheme = colorScheme
+        ) {
+            content()
+        }
     }
 }

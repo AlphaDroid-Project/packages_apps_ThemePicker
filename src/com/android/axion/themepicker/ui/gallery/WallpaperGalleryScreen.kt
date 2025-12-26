@@ -68,7 +68,7 @@ fun WallpaperGalleryScreen(
     val onWallpaperSelected = mainScreenViewModel::onWallpaperSelectedFromGallery
 
     val context = LocalContext.current
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
 
     val galleryState by galleryViewModel.currentGalleryState.collectAsState()
     val isNavigatingBack by galleryViewModel.isNavigatingBack.collectAsState()
@@ -107,7 +107,7 @@ fun WallpaperGalleryScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = colors.surfaceContainerLow
+        color = colors.surfaceContainer
     ) {
         Column(
             modifier = Modifier
@@ -182,7 +182,7 @@ private fun OverviewContent(
     onMoreClick: () -> Unit,
     onWallpaperSelected: (WallpaperInfo) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
 
     LazyColumn(
@@ -251,13 +251,13 @@ private fun OverviewContent(
                             text = stringResource(R.string.view_all),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = colors.textPrimary
+                            color = colors.onSurface
                         )
                         Spacer(modifier = Modifier.width(4.sdp))
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
                             contentDescription = null,
-                            tint = colors.textPrimary,
+                            tint = colors.onSurface,
                             modifier = Modifier.size(18.sdp)
                         )
                     }
@@ -290,7 +290,7 @@ private fun ExpressiveMainCard(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(28.sdp)
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -318,7 +318,7 @@ private fun ExpressiveMainCard(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -340,7 +340,7 @@ private fun ExpressiveMainCard(
                         text = text,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colors.textPrimary,
+                        color = colors.onSurface,
                         letterSpacing = (-0.5).sp
                     )
                     CategorySubHeader(
@@ -351,7 +351,7 @@ private fun ExpressiveMainCard(
                 Surface(
                     modifier = Modifier.size(56.sdp),
                     shape = CircleShape,
-                    color = colors.surfaceContainerLow
+                    color = colors.surfaceContainer
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -360,7 +360,7 @@ private fun ExpressiveMainCard(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = colors.textPrimary,
+                            tint = colors.onSurface,
                             modifier = Modifier.size(28.sdp)
                         )
                     }
@@ -376,7 +376,7 @@ private fun ExpressiveActionCard(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(24.sdp)
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -404,7 +404,7 @@ private fun ExpressiveActionCard(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -421,7 +421,7 @@ private fun ExpressiveActionCard(
                 Surface(
                     modifier = Modifier.size(48.sdp),
                     shape = CircleShape,
-                    color = colors.surfaceContainerLow
+                    color = colors.surfaceContainer
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -430,14 +430,14 @@ private fun ExpressiveActionCard(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = colors.textPrimary,
+                            tint = colors.onSurface,
                             modifier = Modifier.size(24.sdp)
                         )
                     }
                 }
                 Text(
                     text = text,
-                    color = colors.textPrimary,
+                    color = colors.onSurface,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -467,7 +467,7 @@ private fun CategoryListContent(
     categories: List<WallpaperCategory>,
     onCategoryClick: (WallpaperCategory) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val size = categories.size
 
     LazyColumn(
@@ -495,7 +495,7 @@ private fun CategoryDetailContent(
     category: WallpaperCategory,
     onWallpaperSelected: (WallpaperInfo) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(24.sdp),
@@ -558,7 +558,7 @@ private fun ExpressiveCategoryCard(
     category: WallpaperCategory,
     onClick: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(24.sdp)
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -592,7 +592,7 @@ private fun ExpressiveCategoryCard(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -663,7 +663,7 @@ private fun ExpressiveWallpaperThumbnail(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(20.sdp)
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -694,7 +694,7 @@ private fun ExpressiveWallpaperThumbnail(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -712,13 +712,13 @@ private fun ExpressiveWallpaperThumbnail(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(colors.surfaceContainerLow),
+                        .background(colors.surfaceContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Image,
                         contentDescription = null,
-                        tint = colors.textPrimary,
+                        tint = colors.onSurface,
                         modifier = Modifier.size(48.sdp)
                     )
                 }
@@ -730,7 +730,7 @@ private fun ExpressiveWallpaperThumbnail(
 @Composable
 private fun CategoryHeader(
     text: String, 
-    color: Color = LocalAxColorScheme.current.textPrimary
+    color: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Text(
         text = text,
@@ -744,7 +744,7 @@ private fun CategoryHeader(
 @Composable
 private fun CategorySubHeader(
     text: String, 
-    color: Color = LocalAxColorScheme.current.textSecondary
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     Text(
         text = text,

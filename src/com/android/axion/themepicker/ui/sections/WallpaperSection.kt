@@ -63,7 +63,7 @@ fun WallpaperSection(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     
@@ -148,7 +148,7 @@ private fun HeroCard(
     onSelectPhoto: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     Card(
@@ -354,7 +354,7 @@ private fun SectionHeader(
     subtitle: String,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -413,7 +413,7 @@ private fun WallpaperCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -442,7 +442,7 @@ private fun WallpaperCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerLow),
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp,
             pressedElevation = 1.dp

@@ -105,7 +105,7 @@ private fun LayoutRootScreen(
     layoutScreenViewModel: LayoutScreenViewModel,
     mainScreenViewModel: MainScreenViewModel
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     val appIcons by layoutScreenViewModel.appIcons.collectAsState()
@@ -188,7 +188,7 @@ private fun AppGridCard(
     mainScreenViewModel: MainScreenViewModel,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -306,7 +306,7 @@ private fun AppGridCard(
 
 @Composable
 private fun AppGridPlaceholder() {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .size(18.dp)

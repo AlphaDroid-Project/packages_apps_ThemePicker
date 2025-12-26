@@ -68,7 +68,7 @@ import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 import com.android.axion.themepicker.ui.carousel.WallpaperCarouselCard
 import com.android.axion.themepicker.ui.preferences.ToggleButton
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperViewModel
 import kotlin.coroutines.*
@@ -85,7 +85,7 @@ fun WallpaperPreviewScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel(),
     wallpaperViewModel: WallpaperViewModel = viewModel()
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val isUserSelected = wallpaper.drawableRes == -1
     val context = LocalContext.current

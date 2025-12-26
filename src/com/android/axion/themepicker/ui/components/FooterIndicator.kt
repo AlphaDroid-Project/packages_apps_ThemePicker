@@ -29,7 +29,7 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.utils.wallpaper.rememberBitmap
 
@@ -53,7 +53,7 @@ fun FooterIndicator(
                 modifier = Modifier
                     .size(8.dp * scale)
                     .clip(CircleShape)
-                    .background(if (selected) LocalAxColorScheme.current.primary else Color.Gray)
+                    .background(if (selected) MaterialTheme.colorScheme.primary else Color.Gray)
                     .padding(4.dp * scale)
             )
             if (index < tabCount - 1) Spacer(modifier = Modifier.width(8.dp * scale))
@@ -67,7 +67,7 @@ fun FooterCard(
     description: String, 
     modifier: Modifier = Modifier.fillMaxWidth()
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
     Card(
         modifier = modifier,

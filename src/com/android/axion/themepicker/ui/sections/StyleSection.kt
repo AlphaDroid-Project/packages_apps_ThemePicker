@@ -95,7 +95,7 @@ fun StyleSection(
 private fun StyleHeader(
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val infiniteTransition = rememberInfiniteTransition(label = "header_gradient")
     
     val gradientOffset by infiniteTransition.animateFloat(
@@ -151,7 +151,7 @@ private fun ColorsCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Card(
         modifier = modifier
@@ -159,7 +159,7 @@ private fun ColorsCard(
             .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -229,7 +229,7 @@ private fun AppGridCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Card(
         modifier = modifier
@@ -237,7 +237,7 @@ private fun AppGridCard(
             .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -311,7 +311,7 @@ private fun FontsCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Card(
         modifier = modifier
@@ -320,7 +320,7 @@ private fun FontsCard(
             .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -374,7 +374,7 @@ private fun ProTip(
     text: String,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     Surface(

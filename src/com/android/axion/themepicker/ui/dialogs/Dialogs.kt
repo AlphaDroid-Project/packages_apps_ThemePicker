@@ -38,11 +38,17 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import com.android.axion.themepicker.data.model.ThemeStyle
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.colors.toArgb
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import android.app.WallpaperManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import kotlin.math.*
 
 @Composable
@@ -51,7 +57,7 @@ fun StylePickerDialog(
     onDismiss: () -> Unit,
     onStyleSelected: (ThemeStyle) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(28.dp),
@@ -136,7 +142,7 @@ fun ColorPickerDialog(
     onDismiss: () -> Unit,
     onColorSelected: (Color) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     var selectedColor by remember { mutableStateOf(initialColor) }
     var hue by remember { mutableStateOf(0f) }
     var saturation by remember { mutableStateOf(0.5f) }
@@ -154,7 +160,7 @@ fun ColorPickerDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(28.dp),
-            color = colors.surfaceContainerLowest,
+            color = colors.surface,
             tonalElevation = 6.dp
         ) {
             Column(
@@ -327,6 +333,232 @@ private fun ColorSlider(
                 center = Offset(selectorX, size.height / 2),
                 style = Stroke(width = 3.dp.toPx())
             )
+        }
+    }
+}
+
+@Composable
+fun WallpaperColorPickerDialog(
+    onDismiss: () -> Unit,
+    onColorSelected: (Color) -> Unit
+) {
+    val context = LocalContext.current
+    val colors = MaterialTheme.colorScheme
+    
+    var nativeBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var selectedColor by remember { mutableStateOf<Color?>(null) }
+    var touchPosition by remember { mutableStateOf<Offset?>(null) }
+    var isDragging by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                 val wallpaperManager = WallpaperManager.getInstance(context)
+                 val drawable = wallpaperManager.drawable
+                 if (drawable != null) {
+                     val bmp = (drawable as? BitmapDrawable)?.bitmap 
+                         ?: run {
+                            val w = drawable.intrinsicWidth.takeIf { it > 0 } ?: 1080
+                            val h = drawable.intrinsicHeight.takeIf { it > 0 } ?: 1920
+                            val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                            val canvas = Canvas(bitmap)
+                            drawable.setBounds(0, 0, canvas.width, canvas.height)
+                            drawable.draw(canvas)
+                            bitmap
+                         }
+                     
+                     val maxDim = 1000
+                     val scale = if (bmp.width > maxDim || bmp.height > maxDim) {
+                         val ratio = min(maxDim.toFloat() / bmp.width, maxDim.toFloat() / bmp.height)
+                         Bitmap.createScaledBitmap(bmp, (bmp.width * ratio).toInt(), (bmp.height * ratio).toInt(), true)
+                     } else bmp
+                     
+                     nativeBitmap = scale
+                     imageBitmap = scale.asImageBitmap()
+                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = colors.surface,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Pick from Wallpaper",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier
+                        .padding(bottom = 16.dp)
+                        .align(Alignment.Start)
+                )
+
+                if (imageBitmap != null && nativeBitmap != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                            .aspectRatio(nativeBitmap!!.width.toFloat() / nativeBitmap!!.height.toFloat())
+                            .clip(RoundedCornerShape(16.dp))
+                            .border(1.dp, colors.outlineVariant, RoundedCornerShape(16.dp))
+                            .pointerInput(Unit) {
+                                awaitEachGesture {
+                                    val down = awaitFirstDown()
+                                    isDragging = true
+                                    touchPosition = down.position
+                                    
+                                    val updateColor = { pos: Offset ->
+                                        val bmp = nativeBitmap!!
+                                        val xCenter = (pos.x / size.width * bmp.width).toInt().coerceIn(0, bmp.width - 1)
+                                        val yCenter = (pos.y / size.height * bmp.height).toInt().coerceIn(0, bmp.height - 1)
+                                        
+                                        var rSum = 0
+                                        var gSum = 0
+                                        var bSum = 0
+                                        var count = 0
+                                        val radius = 5
+                                        
+                                        for (dX in -radius..radius) {
+                                            for (dY in -radius..radius) {
+                                                val x = xCenter + dX
+                                                val y = yCenter + dY
+                                                
+                                                if (x in 0 until bmp.width && y in 0 until bmp.height) {
+                                                    val pixel = bmp.getPixel(x, y)
+                                                    rSum += GraphicsColor.red(pixel)
+                                                    gSum += GraphicsColor.green(pixel)
+                                                    bSum += GraphicsColor.blue(pixel)
+                                                    count++
+                                                }
+                                            }
+                                        }
+                                        
+                                        if (count > 0) {
+                                            selectedColor = Color(
+                                                red = rSum / count,
+                                                green = gSum / count,
+                                                blue = bSum / count
+                                            )
+                                        }
+                                    }
+                                    
+                                    updateColor(down.position)
+                                    
+                                    var drag = awaitTouchSlopOrCancellation(down.id) { change, _ ->
+                                        change.consume()
+                                    }
+                                    
+                                    if (drag != null) {
+                                         var pointer = drag.id
+                                         while (true) {
+                                             val event = awaitPointerEvent()
+                                             val dragChange = event.changes.firstOrNull { it.id == pointer } ?: break
+                                             if (dragChange.pressed != true) break
+                                             
+                                             touchPosition = dragChange.position
+                                             updateColor(dragChange.position)
+                                             dragChange.consume()
+                                         }
+                                    }
+                                    
+                                    isDragging = false
+                                    touchPosition = null
+                                }
+                            }
+                    ) {
+                        Image(
+                            bitmap = imageBitmap!!,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        
+                        if (isDragging && touchPosition != null && selectedColor != null) {
+                            val magnifierSize = 80.dp
+                            val magnifierSizePx = with(LocalDensity.current) { magnifierSize.toPx() }
+                            
+                            val xPos = touchPosition!!.x
+                            val yPos = touchPosition!!.y - magnifierSizePx / 1.2f 
+                            
+                            Box(
+                                modifier = Modifier
+                                    .offset { IntOffset((xPos - magnifierSizePx / 2).toInt(), (yPos - magnifierSizePx / 2).toInt()) }
+                                    .size(magnifierSize)
+                                    .shadow(elevation = 8.dp, shape = CircleShape)
+                                    .clip(CircleShape)
+                                    .border(4.dp, Color.White, CircleShape)
+                                    .background(selectedColor!!)
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                         Text(
+                            text = "Selected Color:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(end = 12.dp)
+                        )
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(selectedColor ?: Color.Transparent)
+                                .border(1.dp, colors.outline, CircleShape)
+                        )
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        if (selectedColor != null) {
+                            Text(
+                                text = "#${String.format("%06X", 0xFFFFFF and selectedColor!!.toArgb())}",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = onDismiss) {
+                            Text("Cancel")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = { selectedColor?.let { onColorSelected(it) } },
+                            enabled = selectedColor != null
+                        ) {
+                            Text("Apply")
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
         }
     }
 }

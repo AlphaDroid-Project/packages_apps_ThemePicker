@@ -45,7 +45,7 @@ import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 fun ColorsSettingsScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel()
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
     
@@ -57,7 +57,7 @@ fun ColorsSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.surfaceContainerLow)
+            .background(colors.background)
     ) {
         ExpressiveHeader(
             title = stringResource(id = R.string.colors_title),
@@ -154,7 +154,7 @@ private fun PreviewCarousel(
 fun ColorsSectionHeader(
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
 
     Column(
@@ -165,13 +165,13 @@ fun ColorsSectionHeader(
             text = stringResource(id = R.string.customize_palette_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = colors.textPrimary
+            color = colors.onSurface
         )
 
         Text(
             text = stringResource(id = R.string.customize_palette_description),
             style = MaterialTheme.typography.bodyMedium,
-            color = colors.textSecondary
+            color = colors.onSurfaceVariant
         )
     }
 }

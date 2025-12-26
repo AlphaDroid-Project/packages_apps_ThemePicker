@@ -42,14 +42,14 @@ fun ExpressiveScaffold(
     content: @Composable (PaddingValues) -> Unit
 ) {
     val layoutInfo = LocalAdaptiveLayoutInfo.current
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     if (layoutInfo.showNavigationRail) {
         Row(
             modifier = modifier
                 .fillMaxSize()
-                .background(colors.surfaceContainer)
+                .background(colors.background)
         ) {
             ExpressiveNavigationRail(
                 currentDestination = currentDestination,
@@ -85,7 +85,7 @@ fun ExpressiveScaffold(
                 )
             },
             floatingActionButton = floatingActionButton,
-            containerColor = colors.surfaceContainer,
+            containerColor = colors.background,
             content = content
         )
     }
@@ -97,7 +97,7 @@ private fun ExpressiveNavigationRail(
     onDestinationSelected: (NavigationDestination) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     NavigationRail(
@@ -148,12 +148,12 @@ private fun ExpressiveBottomBar(
     onDestinationSelected: (NavigationDestination) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
     
     NavigationBar(
         modifier = modifier,
-        containerColor = colors.surfaceContainerLowest,
+        containerColor = colors.surface,
         contentColor = colors.onSurface,
         tonalElevation = 0.dp
     ) {
@@ -218,13 +218,13 @@ fun ExpressiveDetailScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Scaffold(
         modifier = modifier,
         topBar = topBar,
         floatingActionButton = floatingActionButton,
-        containerColor = colors.surfaceContainerLow,
+        containerColor = colors.background,
         content = content
     )
 }

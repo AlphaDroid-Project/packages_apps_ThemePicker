@@ -52,7 +52,7 @@ import com.android.axion.themepicker.data.model.OptionCircle
 import com.android.axion.themepicker.data.model.Screen.EntryPoint
 import com.android.axion.themepicker.ui.components.OptionIcon
 import com.android.axion.themepicker.ui.components.PieIcon
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 
 @Composable
@@ -116,7 +116,7 @@ fun ScreenOptions(
                     Text(
                         option.name,
                         style = MaterialTheme.typography.bodySmall,
-                        color = LocalAxColorScheme.current.onSurface
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

@@ -36,7 +36,7 @@ import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import com.android.axion.themepicker.ui.lockscreen.Dimens
 import com.android.axion.themepicker.ui.components.SheetDimens
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -103,7 +103,7 @@ private fun PagedTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = modifier,
@@ -179,7 +179,7 @@ private fun PagedTile(
 
 @Composable
 private fun PageIndicator(pageCount: Int, currentPage: Int) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically

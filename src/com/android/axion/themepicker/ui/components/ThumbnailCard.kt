@@ -25,7 +25,7 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.wallpaper.rememberBitmap
 
 @Composable
@@ -36,7 +36,7 @@ fun ThumbnailCard(
     size: Dp,
     onClick: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val bitmap = drawableRes?.let { rememberBitmap(it, size, size) }
 
     Card(
@@ -46,13 +46,13 @@ fun ThumbnailCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colors.surfaceContainerLowest),
+                .background(colors.surface),
             contentAlignment = Alignment.Center
         ) {
             if (bitmap != null) {

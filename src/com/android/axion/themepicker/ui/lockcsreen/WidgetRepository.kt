@@ -39,7 +39,7 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 private const val KEY_WIDGETS = "lockscreen_widgets_extras"
@@ -62,12 +62,12 @@ data class WidgetItem(
         onRemove: () -> Unit,
         showRemove: Boolean = true
     ) {
-        val colors = LocalAxColorScheme.current
+        val colors = MaterialTheme.colorScheme
         val spacing = (if (isPreview) padding * 0.5f else padding) * scale
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.surfaceContainerLowest, shape),
+                .background(colors.surface, shape),
             contentAlignment = alignment
         ) {
             Row(

@@ -21,7 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.text.font.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun ExpressiveDialog(
@@ -34,7 +34,7 @@ fun ExpressiveDialog(
     confirmButtonColors: ButtonColors = ButtonDefaults.filledTonalButtonColors(),
     onConfirm: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
@@ -53,7 +53,7 @@ fun ExpressiveDialog(
                     color = colors.onSurfaceVariant
                 )
             },
-            containerColor = colors.surfaceContainerLowest,
+            containerColor = colors.surface,
             confirmButton = {
                 FilledTonalButton(
                     onClick = onConfirm,

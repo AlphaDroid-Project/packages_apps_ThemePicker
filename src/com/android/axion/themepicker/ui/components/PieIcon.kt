@@ -28,7 +28,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 val OptionSize = 72.dp
@@ -56,7 +56,7 @@ fun PieIcon() {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(OptionSize * scale)
-            .background(LocalAxColorScheme.current.surfaceContainerLowest, shape = CircleShape)
+            .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
             .padding(12.dp * scale)
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -81,9 +81,9 @@ fun OptionIcon(icon: ImageVector) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(OptionSize * scale)
-            .background(LocalAxColorScheme.current.surfaceContainerLowest, shape = CircleShape)
+            .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
             .padding(12.dp * scale)
     ) {
-        Icon(icon, contentDescription = null, tint = LocalAxColorScheme.current.textPrimary)
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
     }
 }

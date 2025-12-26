@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import com.android.axion.themepicker.ui.components.CommonBottomSheet
 import com.android.axion.themepicker.ui.components.PagedTilePicker
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.R
 
 data class AffordanceOption(
@@ -84,7 +84,7 @@ fun BoxScope.AffordanceOverlay(
 ) {
     val context = LocalContext.current
     val resolver = context.contentResolver
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val bottomPadding = 24.dp
 
     var startAffordance by remember { 
@@ -178,7 +178,7 @@ private fun AffordanceButton(
     isPreview: Boolean,
     selected: Boolean = false 
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val affordance = AffordancesList.options.find { it.key == affordanceKey }
     val showIcon = affordance != null && affordanceKey != "none"
     val buttonSize = if (isPreview) 48.dp else 64.dp
@@ -192,7 +192,7 @@ private fun AffordanceButton(
             .size(buttonSize * scale)
             .clip(CircleShape)
             .background(
-                color = if (selected && showIcon) colors.surfaceContainerLowest else Color.Transparent,
+                color = if (selected && showIcon) colors.surface else Color.Transparent,
                 shape = CircleShape
             )
             .border(
@@ -211,7 +211,7 @@ private fun AffordanceButton(
             Icon(
                 imageVector = affordance.icon,
                 contentDescription = affordance.label,
-                tint = if (selected) colors.textPrimary else Color.White,
+                tint = if (selected) colors.onSurface else Color.White,
                 modifier = Modifier.size(iconSize * scale)
             )
         } else {

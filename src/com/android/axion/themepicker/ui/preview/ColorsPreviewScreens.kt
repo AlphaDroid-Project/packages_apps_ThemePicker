@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 
 val ColorPreviewsHeight = 420.dp
@@ -64,14 +64,14 @@ fun WorkspacePreview() {
             getCurrentWallpaperBitmap(context, true)
         }
 
-        val iconColor = LocalAxColorScheme.current.surfaceContainerLowest
+        val iconColor = MaterialTheme.colorScheme.surface
 
         Box(
             modifier = Modifier
                 .width(ColorPreviewsWidth)
                 .height(ColorPreviewsHeight)
                 .clip(ColorPreviewsCornerSize)
-                .background(LocalAxColorScheme.current.primary)
+                .background(MaterialTheme.colorScheme.primary)
                 .padding(1.5.dp)
         ) {
             wallpaperBitmap?.let { bitmap ->
@@ -218,11 +218,11 @@ fun WorkspacePreview() {
 
 @Composable
 fun CalculatorPreview() {
-    val colors = LocalAxColorScheme.current
-    val bgColor = colors.axBackground
+    val colors = MaterialTheme.colorScheme
+    val bgColor = colors.background
     val accentColor = colors.primary
     val secColor = colors.tertiary
-    val surface = colors.axSurface
+    val surface = colors.surface
 
     Box(
         modifier = Modifier
@@ -364,10 +364,10 @@ fun CalculatorPreview() {
 
 @Composable
 fun QuickSettingsPreview() {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val accentColor = colors.primary
-    val qsSurface = colors.axSurface
-    val bgColor = colors.axBackground
+    val qsSurface = colors.surface
+    val bgColor = colors.background
 
     Box(
         modifier = Modifier

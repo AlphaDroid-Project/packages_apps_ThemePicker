@@ -47,7 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.ui.components.FooterCard
 import com.android.axion.themepicker.ui.expressive.ExpressiveDialog
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
@@ -64,7 +64,7 @@ fun FontScreen(
     layoutScreenViewModel: LayoutScreenViewModel,
     mainScreenViewModel: MainScreenViewModel
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -130,7 +130,7 @@ fun FontScreen(
     val listState = rememberLazyListState()
 
     CompositionLocalProvider(LocalContentColor provides colors.onSurface) {
-        Box(Modifier.fillMaxSize().background(colors.surfaceContainerLow)) {
+        Box(Modifier.fillMaxSize().background(colors.background)) {
             Column(Modifier.fillMaxSize()) {
                 ExpressiveHeader(
                     title = stringResource(R.string.font_title),
@@ -254,7 +254,7 @@ private fun FontPreviewDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -283,7 +283,7 @@ private fun FontPreviewDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.sdp),
-                    color = colors.surfaceContainerLowest,
+                    color = colors.surface,
                     shape = RoundedCornerShape(24.sdp),
                     border = BorderStroke(2.sdp, colors.outlineVariant.copy(alpha = 0.5f))
                 ) {
@@ -393,12 +393,12 @@ private fun FontContent(
     listState: LazyListState,
     uiFontFamily: FontFamily
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.surfaceContainerLow)
+            .background(colors.background)
     ) {
         Column(
             modifier = Modifier
@@ -454,13 +454,13 @@ private fun FontPreviewCard(
     selectedIndex: Int,
     uiFontFamily: FontFamily
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(160.sdp)
             .padding(horizontal = 24.sdp),
-        color = colors.surfaceContainerLowest,
+        color = colors.surface,
         shape = RoundedCornerShape(32.sdp),
         border = BorderStroke(2.sdp, colors.outlineVariant.copy(alpha = 0.5f))
     ) {
@@ -514,14 +514,14 @@ private fun CustomFontSection(
     onResetCustomFont: () -> Unit,
     uiFontFamily: FontFamily
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     var showRebootDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.sdp),
-        color = colors.surfaceContainerLowest,
+        color = colors.surface,
         shape = RoundedCornerShape(28.sdp)
     ) {
         Column(
@@ -593,7 +593,7 @@ private fun CustomFontHeader(
     onResetCustomFont: () -> Unit,
     uiFontFamily: FontFamily
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val default = stringResource(R.string.no_custom_font)
 
     val customFontDesc = if (hasCustomFont && customFontName.isNotEmpty()) customFontName else default
@@ -676,7 +676,7 @@ private fun ApplyButton(
     uiFontFamily: FontFamily,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     Button(
         onClick = onApply,
         modifier = modifier
@@ -712,7 +712,7 @@ private fun FontPreviewLarge(
     option: FontOverlayOption,
     key: Int
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     
     key(key) {
         var visible by remember { mutableStateOf(false) }
@@ -781,7 +781,7 @@ private fun FontOptionCard(
     hasCustomFont: Boolean,
     customFontName: String
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val haptic = LocalHapticFeedback.current
 
     val displayLabel = if (option.label.contains("default", ignoreCase = true) && hasCustomFont) {
@@ -804,7 +804,7 @@ private fun FontOptionCard(
             .width(100.sdp)
             .fillMaxHeight()
             .scale(scale),
-        color = if (isSelected) colors.primaryContainer else colors.surfaceContainerLowest,
+        color = if (isSelected) colors.primaryContainer else colors.surface,
         shape = RoundedCornerShape(24.sdp),
         border = BorderStroke(
             width = if (isSelected) 2.5.sdp else 2.sdp,

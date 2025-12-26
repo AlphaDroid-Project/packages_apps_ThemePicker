@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.ui.app.PreviewsPage
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.viewmodel.GridOption
 import com.android.axion.themepicker.viewmodel.GridSettingsViewModel
@@ -53,7 +53,7 @@ fun AppGridSettingsScreen(
     mainScreenViewModel: MainScreenViewModel,
     gridViewModel: GridSettingsViewModel = viewModel()
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
     val availableGrids by gridViewModel.availableGridOptions.collectAsState()
     val selectedGrid by gridViewModel.selectedGrid.collectAsState()
@@ -72,7 +72,7 @@ fun AppGridSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.surfaceContainerLow)
+            .background(colors.background)
     ) {
         ExpressiveHeader(
             title = "App Grid",
@@ -101,7 +101,7 @@ fun AppGridSettingsScreen(
                 .fillMaxWidth()
                 .padding(start = 16.dp * scale, end = 16.dp * scale, top = 24.dp * scale),
             colors = CardDefaults.cardColors(
-                containerColor = colors.surfaceContainerLowest
+                containerColor = colors.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp * scale),
             shape = MaterialTheme.shapes.extraLarge
@@ -181,7 +181,7 @@ private fun GridChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
     val scale = LocalContext.current.scaleRatio
     val backgroundColor = if (isSelected) colors.primary else colors.surfaceContainerHigh
     val borderColor = if (isSelected) colors.primary else colors.outline.copy(alpha = 0.3f)

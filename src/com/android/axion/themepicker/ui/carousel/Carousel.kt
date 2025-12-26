@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.data.model.WallpaperInfo
-import com.android.axion.themepicker.ui.theme.LocalAxColorScheme
+import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
 import com.android.axion.themepicker.utils.wallpaper.rememberDrawablePainter
@@ -62,7 +62,7 @@ fun WallpaperCarouselCard(
     val onMoreClick = mainScreenViewModel::onOpenGallery
 
     val context = LocalContext.current
-    val colors = LocalAxColorScheme.current
+    val colors = MaterialTheme.colorScheme
 
     val wallpaperDrawables = remember(wallpapers) {
         wallpapers.map { wallpaper ->
@@ -77,7 +77,7 @@ fun WallpaperCarouselCard(
             .padding(start = 20.sdp, end = 20.sdp, bottom = 28.sdp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceContainerLowest
+            containerColor = colors.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -125,14 +125,14 @@ fun WallpaperCarouselCard(
                     modifier = Modifier
                         .size(24.sdp) 
                         .clip(CircleShape)
-                        .border(1.dp, colors.textPrimary, CircleShape) 
+                        .border(1.dp, colors.onSurface, CircleShape) 
                         .clickable { onMoreClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.MoreHoriz,
                         contentDescription = "More wallpapers",
-                        tint = colors.textPrimary
+                        tint = colors.onSurface
                     )
                 }
 
@@ -141,7 +141,7 @@ fun WallpaperCarouselCard(
                         text = "More wallpapers",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp,
-                        color = colors.textPrimary
+                        color = colors.onSurface
                     )
                 }
             }
