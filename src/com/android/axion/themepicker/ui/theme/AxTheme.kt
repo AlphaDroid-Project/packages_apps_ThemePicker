@@ -29,21 +29,11 @@ fun AxTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
     
-    val baseColorScheme = if (isDark) {
+    val colorScheme = if (isDark) {
         dynamicDarkColorScheme(context)
     } else {
         dynamicLightColorScheme(context)
     }
-    
-    val customBackground = if (isDark) {
-        colorResource(android.R.color.system_neutral1_1000)
-    } else {
-        colorResource(android.R.color.system_neutral1_50)
-    }
-    
-    val colorScheme = baseColorScheme.copy(
-        background = customBackground
-    )
     
     val expressiveDesign = DefaultExpressiveDesign
     val adaptiveLayoutInfo = calculateAdaptiveLayoutInfo()

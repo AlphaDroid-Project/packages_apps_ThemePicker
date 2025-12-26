@@ -49,7 +49,7 @@ fun ExpressiveScaffold(
         Row(
             modifier = modifier
                 .fillMaxSize()
-                .background(colors.background)
+                .background(colors.surfaceContainer)
         ) {
             ExpressiveNavigationRail(
                 currentDestination = currentDestination,
@@ -85,7 +85,7 @@ fun ExpressiveScaffold(
                 )
             },
             floatingActionButton = floatingActionButton,
-            containerColor = colors.background,
+            containerColor = colors.surfaceContainer,
             content = content
         )
     }
@@ -153,7 +153,7 @@ private fun ExpressiveBottomBar(
     
     NavigationBar(
         modifier = modifier,
-        containerColor = colors.surface,
+        containerColor = colors.surfaceBright,
         contentColor = colors.onSurface,
         tonalElevation = 0.dp
     ) {
@@ -224,7 +224,7 @@ fun ExpressiveDetailScaffold(
         modifier = modifier,
         topBar = topBar,
         floatingActionButton = floatingActionButton,
-        containerColor = colors.background,
+        containerColor = colors.surfaceContainer,
         content = content
     )
 }

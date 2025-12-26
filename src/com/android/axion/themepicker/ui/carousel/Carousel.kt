@@ -77,7 +77,7 @@ fun WallpaperCarouselCard(
             .padding(start = 20.sdp, end = 20.sdp, bottom = 28.sdp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {

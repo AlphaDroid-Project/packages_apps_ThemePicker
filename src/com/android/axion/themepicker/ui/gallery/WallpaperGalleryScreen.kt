@@ -318,7 +318,7 @@ private fun ExpressiveMainCard(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -404,7 +404,7 @@ private fun ExpressiveActionCard(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -592,7 +592,7 @@ private fun ExpressiveCategoryCard(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -694,7 +694,7 @@ private fun ExpressiveWallpaperThumbnail(
             ) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp

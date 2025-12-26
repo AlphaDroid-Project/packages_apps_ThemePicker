@@ -46,13 +46,13 @@ fun ThumbnailCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colors.surface),
+                .background(colors.surfaceBright),
             contentAlignment = Alignment.Center
         ) {
             if (bitmap != null) {

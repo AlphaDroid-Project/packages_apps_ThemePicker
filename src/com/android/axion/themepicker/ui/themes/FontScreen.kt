@@ -283,7 +283,7 @@ private fun FontPreviewDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.sdp),
-                    color = colors.surface,
+                    color = colors.surfaceBright,
                     shape = RoundedCornerShape(24.sdp),
                     border = BorderStroke(2.sdp, colors.outlineVariant.copy(alpha = 0.5f))
                 ) {
@@ -460,7 +460,7 @@ private fun FontPreviewCard(
             .fillMaxWidth()
             .height(160.sdp)
             .padding(horizontal = 24.sdp),
-        color = colors.surface,
+        color = colors.surfaceBright,
         shape = RoundedCornerShape(32.sdp),
         border = BorderStroke(2.sdp, colors.outlineVariant.copy(alpha = 0.5f))
     ) {
@@ -521,7 +521,7 @@ private fun CustomFontSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.sdp),
-        color = colors.surface,
+        color = colors.surfaceBright,
         shape = RoundedCornerShape(28.sdp)
     ) {
         Column(
@@ -804,7 +804,7 @@ private fun FontOptionCard(
             .width(100.sdp)
             .fillMaxHeight()
             .scale(scale),
-        color = if (isSelected) colors.primaryContainer else colors.surface,
+        color = if (isSelected) colors.primaryContainer else colors.surfaceBright,
         shape = RoundedCornerShape(24.sdp),
         border = BorderStroke(
             width = if (isSelected) 2.5.sdp else 2.sdp,

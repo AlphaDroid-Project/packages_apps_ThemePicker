@@ -62,7 +62,7 @@ fun PreferenceCard(
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.5f)
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright)
     ) {
         Row(
             modifier = Modifier.padding(16.dp * scale),
@@ -214,7 +214,7 @@ fun PreferenceGroupCard(
         modifier = modifier
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.5f),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright)
     ) {
         Column(
             modifier = Modifier.padding(16.dp * scale),

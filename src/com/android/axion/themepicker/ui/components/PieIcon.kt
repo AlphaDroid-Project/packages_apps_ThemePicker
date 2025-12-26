@@ -56,7 +56,7 @@ fun PieIcon() {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(OptionSize * scale)
-            .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceBright, shape = CircleShape)
             .padding(12.dp * scale)
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -81,7 +81,7 @@ fun OptionIcon(icon: ImageVector) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(OptionSize * scale)
-            .background(MaterialTheme.colorScheme.surface, shape = CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceBright, shape = CircleShape)
             .padding(12.dp * scale)
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)

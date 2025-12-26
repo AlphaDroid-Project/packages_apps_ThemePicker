@@ -159,7 +159,7 @@ private fun ColorsCard(
             .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -237,7 +237,7 @@ private fun AppGridCard(
             .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -320,7 +320,7 @@ private fun FontsCard(
             .clip(RoundedCornerShape(28.dp))
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.surface
+            containerColor = colors.surfaceBright
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {

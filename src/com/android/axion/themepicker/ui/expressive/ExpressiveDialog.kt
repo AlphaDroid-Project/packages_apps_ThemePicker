@@ -53,7 +53,7 @@ fun ExpressiveDialog(
                     color = colors.onSurfaceVariant
                 )
             },
-            containerColor = colors.surface,
+            containerColor = colors.surfaceContainerHigh,
             confirmButton = {
                 FilledTonalButton(
                     onClick = onConfirm,

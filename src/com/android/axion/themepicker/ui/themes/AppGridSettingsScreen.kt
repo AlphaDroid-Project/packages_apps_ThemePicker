@@ -101,7 +101,7 @@ fun AppGridSettingsScreen(
                 .fillMaxWidth()
                 .padding(start = 16.dp * scale, end = 16.dp * scale, top = 24.dp * scale),
             colors = CardDefaults.cardColors(
-                containerColor = colors.surface
+                containerColor = colors.surfaceBright
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp * scale),
             shape = MaterialTheme.shapes.extraLarge

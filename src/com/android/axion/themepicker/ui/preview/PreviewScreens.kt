@@ -153,7 +153,7 @@ fun WallpaperPreviewScreen(
                     Text(text = wallpaper.id, style = MaterialTheme.typography.bodySmall)
                 }
             },
-            containerColor = colors.surface
+            containerColor = colors.surfaceContainerHigh
         )
     }
 }

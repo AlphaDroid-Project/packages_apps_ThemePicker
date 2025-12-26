@@ -169,7 +169,7 @@ private fun ColorSourceCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(design.shapes.cardCorner),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright)
     ) {
         Column(
             modifier = Modifier
@@ -415,7 +415,7 @@ private fun ThemeStyleCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(design.shapes.cardCorner),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright)
     ) {
         Row(
             modifier = Modifier
@@ -485,7 +485,7 @@ private fun AdvancedColorsCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(design.shapes.cardCorner),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright)
     ) {
         Column(
             modifier = Modifier

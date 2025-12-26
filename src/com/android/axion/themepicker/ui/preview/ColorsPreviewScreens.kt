@@ -64,7 +64,7 @@ fun WorkspacePreview() {
             getCurrentWallpaperBitmap(context, true)
         }
 
-        val iconColor = MaterialTheme.colorScheme.surface
+        val iconColor = MaterialTheme.colorScheme.surfaceBright
 
         Box(
             modifier = Modifier
@@ -366,7 +366,7 @@ fun CalculatorPreview() {
 fun QuickSettingsPreview() {
     val colors = MaterialTheme.colorScheme
     val accentColor = colors.primary
-    val qsSurface = colors.surface
+    val qsSurface = colors.surfaceBright
     val bgColor = colors.background
 
     Box(

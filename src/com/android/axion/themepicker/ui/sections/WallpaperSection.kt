@@ -442,7 +442,7 @@ private fun WallpaperCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp,
             pressedElevation = 1.dp
