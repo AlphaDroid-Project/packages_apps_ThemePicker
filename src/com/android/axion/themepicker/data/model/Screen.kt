@@ -29,9 +29,6 @@ sealed class Screen : Parcelable {
     object WallpaperGallery : Screen()
     
     @Parcelize
-    object Layout : Screen()
-    
-    @Parcelize
     object AppGrid : Screen()
     
     @Parcelize

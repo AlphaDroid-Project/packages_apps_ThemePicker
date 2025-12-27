@@ -62,6 +62,7 @@ import com.android.axion.themepicker.data.model.ZoomProperties
 import com.android.axion.themepicker.ui.components.ExpressiveScaffold
 import com.android.axion.themepicker.ui.components.ScreenTransition
 import com.android.axion.themepicker.ui.colors.ColorsSettingsScreen
+import com.android.axion.themepicker.ui.themes.AppGridSettingsScreen
 import com.android.axion.themepicker.ui.gallery.WallpaperGalleryScreen
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.mainscreen.rememberPhotoPicker
@@ -72,7 +73,8 @@ import com.android.axion.themepicker.ui.sections.WallpaperSection
 import com.android.axion.themepicker.ui.sections.StyleSection
 import com.android.axion.themepicker.ui.sections.LockscreenSection
 import com.android.axion.themepicker.ui.theme.*
-import com.android.axion.themepicker.ui.themes.LayoutMainScreen
+import com.android.axion.themepicker.ui.themes.FontScreen
+
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperGalleryViewModel
 import com.android.axion.themepicker.viewmodel.WallpaperViewModel
@@ -288,19 +290,14 @@ private fun DetailScreenContent(
             )
         }
         
-        is Screen.Layout -> {
-            BackHandler { mainScreenViewModel.goBack() }
-            LayoutMainScreen()
-        }
-        
         is Screen.AppGrid -> {
             BackHandler { mainScreenViewModel.goBack() }
-            LayoutMainScreen(startWithAppGrid = true)
+            AppGridSettingsScreen(mainScreenViewModel = mainScreenViewModel)
         }
         
         is Screen.Fonts -> {
             BackHandler { mainScreenViewModel.goBack() }
-            LayoutMainScreen(startWithFonts = true)
+            FontScreen(mainScreenViewModel = mainScreenViewModel)
         }
         
         is Screen.Lockscreen -> {

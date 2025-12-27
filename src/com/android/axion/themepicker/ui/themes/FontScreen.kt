@@ -49,7 +49,6 @@ import com.android.axion.themepicker.ui.expressive.ExpressiveDialog
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.sdp
-import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import com.android.customization.model.ResourceConstants
 import com.android.customization.model.theme.OverlayManagerCompat
@@ -61,7 +60,6 @@ import kotlinx.coroutines.*
 
 @Composable
 fun FontScreen(
-    layoutScreenViewModel: LayoutScreenViewModel,
     mainScreenViewModel: MainScreenViewModel
 ) {
     val colors = MaterialTheme.colorScheme
@@ -135,7 +133,7 @@ fun FontScreen(
                 ExpressiveHeader(
                     title = stringResource(R.string.font_title),
                     subtitle = fontOptions.getOrNull(selectedIndex)?.label ?: "",
-                    onBackClick = { layoutScreenViewModel.goBackInLayout(mainScreenViewModel) },
+                    onBackClick = { mainScreenViewModel.goBack() },
                     onActionClick = { showResetDialog = true }
                 )
 

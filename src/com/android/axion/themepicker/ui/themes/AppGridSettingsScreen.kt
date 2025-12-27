@@ -42,14 +42,12 @@ import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.scaleRatio
 import com.android.axion.themepicker.viewmodel.GridOption
 import com.android.axion.themepicker.viewmodel.GridSettingsViewModel
-import com.android.axion.themepicker.viewmodel.LayoutScreenViewModel
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun AppGridSettingsScreen(
-    layoutScreenViewModel: LayoutScreenViewModel,
     mainScreenViewModel: MainScreenViewModel,
     gridViewModel: GridSettingsViewModel = viewModel()
 ) {
@@ -66,7 +64,7 @@ fun AppGridSettingsScreen(
     val isLoadingGrids = availableGrids.isEmpty()
 
     BackHandler {
-        layoutScreenViewModel.goBackInLayout(mainScreenViewModel)
+        mainScreenViewModel.goBack()
     }
 
     Column(
@@ -77,7 +75,7 @@ fun AppGridSettingsScreen(
         ExpressiveHeader(
             title = "App Grid",
             subtitle = null,
-            onBackClick = { layoutScreenViewModel.goBackInLayout(mainScreenViewModel) },
+            onBackClick = { mainScreenViewModel.goBack() },
             onActionClick = null
         )
 
