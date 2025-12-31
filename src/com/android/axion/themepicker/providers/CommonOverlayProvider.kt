@@ -229,7 +229,7 @@ class CommonOverlayProvider(
                 userId
             )
             
-            Typeface.changeFont(context.resources)
+            Typeface.changeFont()
 
             return true
         } catch (e: JSONException) {
