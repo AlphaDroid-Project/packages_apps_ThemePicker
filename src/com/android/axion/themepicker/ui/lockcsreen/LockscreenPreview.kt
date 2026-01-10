@@ -16,6 +16,8 @@
 package com.android.axion.themepicker.ui.lockscreen
 
 import android.util.Log
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -64,6 +66,14 @@ fun LockscreenPreview(
     var showAffordancePicker by remember { mutableStateOf<AffordanceSlot?>(null) }
     var widgetItems by remember { mutableStateOf(load(context, isPreview)) }
     val scale = if (isPreview) context.previewScale else context.scaleRatio
+
+    DisposableEffect(Unit) {
+        val activity = context as? Activity
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        onDispose {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
 
     LaunchedEffect(entryPoint) {
         when (entryPoint) {
