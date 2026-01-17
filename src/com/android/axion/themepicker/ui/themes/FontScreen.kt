@@ -826,7 +826,7 @@ private fun FontOptionCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Aa",
+                        text = stringResource(R.string.font_preview_aa),
                         style = MaterialTheme.typography.displayMedium.copy(
                             fontFamily = FontFamily(option.bodyFont),
                             fontSize = 42.sp

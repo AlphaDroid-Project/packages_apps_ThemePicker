@@ -32,10 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.ui.app.PreviewsPage
 import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import androidx.compose.material3.MaterialTheme
@@ -73,7 +75,7 @@ fun AppGridSettingsScreen(
             .background(colors.background)
     ) {
         ExpressiveHeader(
-            title = "App Grid",
+            title = stringResource(R.string.app_grid_title),
             subtitle = null,
             onBackClick = { mainScreenViewModel.goBack() },
             onActionClick = null
@@ -110,7 +112,7 @@ fun AppGridSettingsScreen(
                     .padding(20.dp * scale)
             ) {
                 Text(
-                    text = "Home screen Layout",
+                    text = stringResource(R.string.home_screen_layout_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 16.dp * scale)

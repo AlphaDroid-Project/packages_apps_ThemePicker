@@ -52,7 +52,9 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.data.model.NavigationDestination
 import com.android.axion.themepicker.data.model.Screen
@@ -156,12 +158,13 @@ private fun MainNavigationScaffold(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+    val wallpaperPhotoTitle = stringResource(R.string.wallpaper_photo)
     
     val photoPickerLauncher = rememberPhotoPicker(context, wallpaperViewModel) { bitmap ->
         bitmap?.let {
             val customWallpaper = WallpaperInfo(
                 id = "user_photo_${System.currentTimeMillis()}",
-                title = "Wallpaper Photo",
+                title = wallpaperPhotoTitle,
                 drawableRes = -1
             )
             mainScreenViewModel.onUserUpload(customWallpaper, it)
@@ -273,11 +276,12 @@ private fun DetailScreenContent(
         }
 
         is Screen.WallpaperGallery -> {
+            val wallpaperPhotoTitle = stringResource(R.string.wallpaper_photo)
             val photoPickerLauncher = rememberPhotoPicker(context, wallpaperViewModel) { bitmap ->
                 bitmap?.let {
                     val customWallpaper = WallpaperInfo(
                         id = "user_photo_${System.currentTimeMillis()}",
-                        title = "Wallpaper Photo",
+                        title = wallpaperPhotoTitle,
                         drawableRes = -1
                     )
                     mainScreenViewModel.onUserUpload(customWallpaper, it)

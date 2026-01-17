@@ -44,6 +44,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.Screen.EntryPoint
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.theme.*
@@ -75,29 +77,29 @@ fun LockscreenSection(
                 verticalArrangement = Arrangement.spacedBy(design.spacing.medium)
             ) {
                 SectionHeader(
-                    title = "Lock Screen",
-                    subtitle = "Personalize your experience"
+                    title = stringResource(R.string.lockscreen_title),
+                    subtitle = stringResource(R.string.personalize_your_experience)
                 )
                 
                 FeatureCard(
-                    title = "Widgets",
-                    subtitle = "Add information at a glance",
+                    title = stringResource(R.string.widgets),
+                    subtitle = stringResource(R.string.add_information_at_a_glance),
                     icon = Icons.Filled.Widgets,
                     accentColor = colors.primary,
                     onClick = { onOpenFullPreview(EntryPoint.WIDGETS) }
                 )
                 
                 FeatureCard(
-                    title = "Shortcuts",
-                    subtitle = "Quick access to your favorites",
+                    title = stringResource(R.string.shortcuts),
+                    subtitle = stringResource(R.string.quick_access_to_your_favorites),
                     icon = Icons.Filled.TouchApp,
                     accentColor = colors.tertiary,
                     onClick = { onOpenFullPreview(EntryPoint.SHORTCUTS) }
                 )
                 
                 FeatureCard(
-                    title = "Clock Style",
-                    subtitle = "Choose your time format",
+                    title = stringResource(R.string.clock_style),
+                    subtitle = stringResource(R.string.choose_your_time_format),
                     icon = Icons.Filled.Schedule,
                     accentColor = colors.secondary,
                     onClick = { onOpenFullPreview(EntryPoint.DEFAULT) }
@@ -134,21 +136,21 @@ fun LockscreenSection(
                     horizontalArrangement = Arrangement.spacedBy(design.spacing.small)
                 ) {
                     FeatureChip(
-                        title = "Widgets",
+                        title = stringResource(R.string.widgets),
                         icon = Icons.Outlined.Widgets,
                         accentColor = colors.primary,
                         onClick = { onOpenFullPreview(EntryPoint.WIDGETS) },
                         modifier = Modifier.weight(1f)
                     )
                     FeatureChip(
-                        title = "Shortcuts",
+                        title = stringResource(R.string.shortcuts),
                         icon = Icons.Outlined.TouchApp,
                         accentColor = colors.tertiary,
                         onClick = { onOpenFullPreview(EntryPoint.SHORTCUTS) },
                         modifier = Modifier.weight(1f)
                     )
                     FeatureChip(
-                        title = "Clock",
+                        title = stringResource(R.string.clock),
                         icon = Icons.Outlined.Schedule,
                         accentColor = colors.secondary,
                         onClick = { onOpenFullPreview(EntryPoint.DEFAULT) },
@@ -159,7 +161,7 @@ fun LockscreenSection(
             
             item {
                 TipCard(
-                    text = "Tap the preview to see all customization options"
+                    text = stringResource(R.string.tap_the_preview_to_see_all_customization_options)
                 )
             }
         }
@@ -291,7 +293,7 @@ private fun LockPreview(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "Tap to customize",
+                        text = stringResource(R.string.tap_to_customize),
                         style = MaterialTheme.typography.labelMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Medium

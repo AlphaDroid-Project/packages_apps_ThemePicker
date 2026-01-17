@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
@@ -171,11 +172,11 @@ fun WallpaperApplyScreen(
     }
     
     val titleText = when {
-        !homescreenSelected && !lockscreenSelected -> "Select at least one"
-        homescreenSelected && lockscreenSelected -> "Set wallpaper on"
-        homescreenSelected -> "Home screen"
-        lockscreenSelected -> "Lock screen"
-        else -> "Set wallpaper"
+        !homescreenSelected && !lockscreenSelected -> stringResource(R.string.select_at_least_one)
+        homescreenSelected && lockscreenSelected -> stringResource(R.string.set_wallpaper_on)
+        homescreenSelected -> stringResource(R.string.home_screen)
+        lockscreenSelected -> stringResource(R.string.lock_screen_label)
+        else -> stringResource(R.string.set_wallpaper)
     }
 
     DisposableEffect(Unit) {
@@ -229,7 +230,7 @@ fun WallpaperApplyScreen(
             WallpaperPreviewBox(
                 bitmap = lockscreenBitmap,
                 isSelected = lockscreenSelected,
-                label = "Lock screen",
+                label = stringResource(R.string.lock_screen_label),
                 onClick = { lockscreenSelected = !lockscreenSelected },
                 isLockscreen = true,
                 modifier = Modifier.size(
@@ -241,7 +242,7 @@ fun WallpaperApplyScreen(
             WallpaperPreviewBox(
                 bitmap = homescreenBitmap,
                 isSelected = homescreenSelected,
-                label = "Home screen",
+                label = stringResource(R.string.home_screen),
                 onClick = { homescreenSelected = !homescreenSelected },
                 isLockscreen = false,
                 modifier = Modifier.size(
@@ -419,14 +420,14 @@ fun WallpaperEffectToggles(
     ) {
         ToggleButton(
             icon = Icons.Default.WaterDrop,
-            label = "Atmosphere",
+            label = stringResource(R.string.atmosphere),
             enabled = atmosphereEnabled,
             onClick = onAtmosphereToggle,
         )
 
         ToggleButton(
             icon = Icons.Default.HeatPump,
-            label = "Glass",
+            label = stringResource(R.string.glass),
             enabled = glassEnabled,
             onClick = onGlassToggle,
         )

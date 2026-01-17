@@ -29,7 +29,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.data.model.WallpaperSettings
 import com.android.axion.themepicker.ui.mainscreen.StandaloneWallpaperApplyScreen
@@ -66,7 +68,7 @@ class WallpaperSetActivity : ComponentActivity() {
                             StandaloneWallpaperApplyScreen(
                                 wallpaper = WallpaperInfo(
                                     id = "shared_image",
-                                    title = "Shared Image",
+                                    title = stringResource(R.string.shared_image),
                                     drawableRes = -1
                                 ),
                                 settings = WallpaperSettings(
@@ -97,7 +99,7 @@ class WallpaperSetActivity : ComponentActivity() {
                     loadImageFromUri(uri)
                 } else {
                     Log.e(TAG, "No URI found in intent")
-                    Toast.makeText(this, "No image provided", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.no_image_provided), Toast.LENGTH_SHORT).show()
                     isLoadingImage = false
                 }
             }
@@ -119,7 +121,7 @@ class WallpaperSetActivity : ComponentActivity() {
                     } else {
                         Toast.makeText(
                             context,
-                            "Failed to load image",
+                            getString(R.string.failed_to_load_image),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -160,11 +162,11 @@ class WallpaperSetActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Unable to load image",
+                    text = stringResource(R.string.unable_to_load_image),
                     style = MaterialTheme.typography.titleMedium
                 )
                 TextButton(onClick = { finish() }) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             }
         }

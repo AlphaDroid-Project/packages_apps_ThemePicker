@@ -47,6 +47,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.ui.theme.*
 import com.android.axion.themepicker.utils.math.sdp
@@ -93,8 +95,8 @@ fun WallpaperSection(
                 verticalArrangement = Arrangement.spacedBy(design.spacing.medium)
             ) {
                 SectionHeader(
-                    title = "Featured",
-                    subtitle = "Curated wallpapers for you"
+                    title = stringResource(R.string.featured),
+                    subtitle = stringResource(R.string.curated_wallpapers_for_you)
                 )
                 
                 WallpaperGrid(
@@ -124,8 +126,8 @@ fun WallpaperSection(
             
             item {
                 SectionHeader(
-                    title = "Explore",
-                    subtitle = "Discover new wallpapers"
+                    title = stringResource(R.string.explore),
+                    subtitle = stringResource(R.string.discover_new_wallpapers)
                 )
             }
             
@@ -194,7 +196,7 @@ private fun HeroCard(
                         contentColor = colors.onPrimary
                     ) {
                         Text(
-                            text = "Your Wallpaper",
+                            text = stringResource(R.string.your_wallpaper),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -204,14 +206,14 @@ private fun HeroCard(
                     Spacer(Modifier.height(8.dp))
                     
                     Text(
-                        text = "Make it yours",
+                        text = stringResource(R.string.make_it_yours),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                     
                     Text(
-                        text = "Customize to match your style",
+                        text = stringResource(R.string.customize_to_match_your_style),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.8f)
                     )
@@ -234,7 +236,7 @@ private fun HeroCard(
                         ) {
                             Image(
                                 bitmap = bmp.asImageBitmap(),
-                                contentDescription = "Current wallpaper",
+                                contentDescription = stringResource(R.string.current_wallpaper),
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
@@ -251,21 +253,21 @@ private fun HeroCard(
                     horizontalArrangement = if (showLabels) Arrangement.spacedBy(8.dp) else Arrangement.SpaceEvenly
                 ) {
                     WallpaperActionChip(
-                        title = "Walls",
+                        title = stringResource(R.string.walls),
                         icon = Icons.Outlined.Wallpaper,
                         onClick = onOpenGallery,
                         showLabel = showLabels,
                         modifier = if (showLabels) Modifier.weight(1f) else Modifier
                     )
                     WallpaperActionChip(
-                        title = "Photos",
+                        title = stringResource(R.string.photos),
                         icon = Icons.Outlined.Photo,
                         onClick = onSelectPhoto,
                         showLabel = showLabels,
                         modifier = if (showLabels) Modifier.weight(1f) else Modifier
                     )
                     WallpaperActionChip(
-                        title = "Edit",
+                        title = stringResource(R.string.edit),
                         icon = Icons.Outlined.Tune,
                         onClick = onEditCurrent,
                         showLabel = showLabels,

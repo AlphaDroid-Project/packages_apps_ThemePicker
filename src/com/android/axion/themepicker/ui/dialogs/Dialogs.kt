@@ -36,10 +36,12 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.ThemeStyle
 import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.colors.toArgb
@@ -70,7 +72,7 @@ fun StylePickerDialog(
                     .width(320.dp)
             ) {
                 Text(
-                    text = "Theme Style",
+                    text = stringResource(R.string.theme_style_title),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -169,7 +171,7 @@ fun ColorPickerDialog(
                     .width(320.dp)
             ) {
                 Text(
-                    text = "Choose Seed Color",
+                    text = stringResource(R.string.choose_seed_color),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -185,7 +187,7 @@ fun ColorPickerDialog(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Hue",
+                    text = stringResource(R.string.hue),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -217,7 +219,7 @@ fun ColorPickerDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Brightness",
+                    text = stringResource(R.string.brightness),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -396,7 +398,7 @@ fun WallpaperColorPickerDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Pick from Wallpaper",
+                    text = stringResource(R.string.pick_from_wallpaper),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier
                         .padding(bottom = 16.dp)

@@ -25,7 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
 import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.utils.wallpaper.centerCrop
@@ -53,7 +55,7 @@ fun PreviewsPage(
             wallpaperBitmap?.let { bitmap ->
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Home screen preview",
+                    contentDescription = stringResource(R.string.home_screen_preview),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )

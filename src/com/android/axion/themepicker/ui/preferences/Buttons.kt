@@ -43,10 +43,12 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.compose.material3.MaterialTheme
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 @Composable
@@ -131,7 +133,7 @@ fun ToggleButton(
         )
 
         Text(
-            text = if (enabled) "On" else "Off",
+            text = if (enabled) stringResource(R.string.on) else stringResource(R.string.off),
             style = MaterialTheme.typography.bodySmall,
             color = primaryTint?.copy(alpha = 0.85f) ?: colors.onSurfaceVariant
         )

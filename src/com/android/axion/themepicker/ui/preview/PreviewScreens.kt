@@ -50,11 +50,13 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.data.model.EffectConfig
 import com.android.axion.themepicker.data.model.WallpaperSettings
@@ -132,7 +134,7 @@ fun WallpaperPreviewScreen(
                     .size(48.dp)
                     .background(overlayColor, CircleShape)
             ) {
-                Icon(Icons.Default.Info, contentDescription = "Info", tint = contentColor)
+                Icon(Icons.Default.Info, contentDescription = stringResource(R.string.info), tint = contentColor)
             }
         }
     )
@@ -145,10 +147,10 @@ fun WallpaperPreviewScreen(
                     Text("OK")
                 }
             },
-            title = { Text(text = "Wallpaper info") },
+            title = { Text(text = stringResource(R.string.wallpaper_info)) },
             text = {
                 Column {
-                    Text(text = wallpaper.title ?: "Unknown")
+                    Text(text = wallpaper.title ?: stringResource(R.string.unknown))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = wallpaper.id, style = MaterialTheme.typography.bodySmall)
                 }
@@ -264,7 +266,7 @@ private fun CommonWallpaperPreview(
             val painter = BitmapPainter(sourceBitmap.asImageBitmap())
             Image(
                 painter = painter,
-                contentDescription = "Wallpaper",
+                contentDescription = stringResource(R.string.wallpaper),
                 modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(Unit) {
@@ -372,7 +374,7 @@ private fun CommonWallpaperPreview(
                     .size(48.dp * ratio)
                     .background(overlayColor, CircleShape)
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = contentOnStatusBar)
+                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back), tint = contentOnStatusBar)
             }
 
             if (topEndAction != null) {
@@ -387,7 +389,7 @@ private fun CommonWallpaperPreview(
                     .size(48.dp * ratio)
                     .background(overlayColor, CircleShape)
             ) {
-                Icon(Icons.Default.Check, contentDescription = "Apply", tint = contentOnStatusBar)
+                Icon(Icons.Default.Check, contentDescription = stringResource(R.string.apply), tint = contentOnStatusBar)
             }
         }
 
@@ -420,7 +422,7 @@ private fun CommonWallpaperPreview(
                         )
                         Spacer(modifier = Modifier.width(8.dp * ratio))
                         Text(
-                            "Pinch to crop",
+                            stringResource(R.string.pinch_to_crop),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.7f)
                         )

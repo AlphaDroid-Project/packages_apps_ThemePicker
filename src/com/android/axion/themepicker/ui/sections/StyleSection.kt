@@ -41,6 +41,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.ui.theme.*
 
 @Composable
@@ -68,25 +70,25 @@ fun StyleSection(
         StyleHeader()
         
         ColorsCard(
-            title = "Colors",
-            description = "Wallpaper colors & themes",
+            title = stringResource(R.string.colors),
+            description = stringResource(R.string.wallpaper_colors_and_themes),
             onClick = onOpenColors
         )
         
         AppGridCard(
-            title = "App Grid",
-            description = "Home screen layout",
+            title = stringResource(R.string.app_grid),
+            description = stringResource(R.string.home_screen_layout),
             onClick = onOpenAppGrid
         )
         
         FontsCard(
-            title = "Fonts",
-            description = "System typography",
+            title = stringResource(R.string.fonts),
+            description = stringResource(R.string.system_typography),
             onClick = onOpenFonts
         )
 
         ProTip(
-            text = "Colors are automatically extracted from your wallpaper. Enable wallpaper colors for a cohesive look."
+            text = stringResource(R.string.pro_tip_colors_message)
         )
     }
 }
@@ -130,14 +132,14 @@ private fun StyleHeader(
         )
         
         Text(
-            text = "Personalize",
+            text = stringResource(R.string.personalize),
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             color = colors.onSurface
         )
         
         Text(
-            text = "Make your device uniquely yours",
+            text = stringResource(R.string.make_your_device_uniquely_yours),
             style = MaterialTheme.typography.bodyLarge,
             color = colors.onSurfaceVariant
         )
@@ -405,7 +407,7 @@ private fun ProTip(
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Pro Tip",
+                    text = stringResource(R.string.pro_tip),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = colors.primary

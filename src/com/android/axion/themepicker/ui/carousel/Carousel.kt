@@ -42,10 +42,12 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.utils.math.sdp
@@ -138,7 +140,7 @@ fun WallpaperCarouselCard(
 
                 TextButton(onClick = onMoreClick) {
                     Text(
-                        text = "More wallpapers",
+                        text = stringResource(R.string.more_wallpapers),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp,
                         color = colors.onSurface

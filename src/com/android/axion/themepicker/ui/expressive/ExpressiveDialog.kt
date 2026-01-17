@@ -19,9 +19,11 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.material3.MaterialTheme
+import com.android.axion.themepicker.R
 
 @Composable
 fun ExpressiveDialog(
@@ -29,8 +31,8 @@ fun ExpressiveDialog(
     onDismiss: () -> Unit,
     title: String,
     message: String,
-    confirmText: String = "Confirm",
-    dismissText: String = "Cancel",
+    confirmText: String = stringResource(R.string.confirm),
+    dismissText: String = stringResource(R.string.cancel),
     confirmButtonColors: ButtonColors = ButtonDefaults.filledTonalButtonColors(),
     onConfirm: () -> Unit
 ) {

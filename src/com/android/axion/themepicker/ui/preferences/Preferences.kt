@@ -36,12 +36,14 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlin.math.*
 import androidx.compose.material3.MaterialTheme
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 @Composable
@@ -148,14 +150,14 @@ fun SliderCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp * scale)
             ) {
                 Text(
-                    text = "Value: ${internalValue.toInt()}%",
+                    text = stringResource(R.string.value_percentage, internalValue.toInt()),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
 
                 Icon(
                     imageVector = Icons.Default.Refresh,
-                    contentDescription = "Reset to default",
+                    contentDescription = stringResource(R.string.reset_to_default),
                     tint = colors.onSurfaceVariant,
                     modifier = Modifier
                         .size(14.dp * scale)

@@ -43,11 +43,13 @@ import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.data.model.OptionCircle
 import com.android.axion.themepicker.data.model.Screen.EntryPoint
 import com.android.axion.themepicker.ui.components.OptionIcon
@@ -62,14 +64,21 @@ fun ScreenOptions(
     mainScreenViewModel: MainScreenViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val colorsStr = stringResource(R.string.colors)
+    val appGridStr = stringResource(R.string.app_grid)
+    val fontsStr = stringResource(R.string.fonts)
+    val widgetsStr = stringResource(R.string.widgets)
+    val shortcutsStr = stringResource(R.string.shortcuts)
+    val moreStr = stringResource(R.string.more)
+    
     val options = if (isHome) listOf(
-        OptionCircle("Colors", null),
-        OptionCircle("App Grid", Icons.Default.GridView),
-        OptionCircle("Fonts", Icons.Default.TextFormat)
+        OptionCircle(colorsStr, null),
+        OptionCircle(appGridStr, Icons.Default.GridView),
+        OptionCircle(fontsStr, Icons.Default.TextFormat)
     ) else listOf(
-        OptionCircle("Widgets", Icons.Default.Widgets),
-        OptionCircle("Shortcuts", Icons.Default.Shortcut),
-        OptionCircle("More", Icons.Default.MoreHoriz)
+        OptionCircle(widgetsStr, Icons.Default.Widgets),
+        OptionCircle(shortcutsStr, Icons.Default.Shortcut),
+        OptionCircle(moreStr, Icons.Default.MoreHoriz)
     )
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -86,15 +95,15 @@ fun ScreenOptions(
                             val name = option.name
                             if (isHome) {
                                 when (name) {
-                                    "Colors" -> mainScreenViewModel.onOpenColorsSettings()
-                                    "App Grid" -> mainScreenViewModel.onOpenAppGrid()
-                                    "Fonts" -> mainScreenViewModel.onOpenFonts()
+                                    colorsStr -> mainScreenViewModel.onOpenColorsSettings()
+                                    appGridStr -> mainScreenViewModel.onOpenAppGrid()
+                                    fontsStr -> mainScreenViewModel.onOpenFonts()
                                 }
                             } else {
                                 when (name) {
-                                    "Widgets" -> mainScreenViewModel.onOpenLockscreenPreview(entryPoint = EntryPoint.WIDGETS)
-                                    "Shortcuts" -> mainScreenViewModel.onOpenLockscreenPreview(entryPoint = EntryPoint.SHORTCUTS)
-                                    "More" -> {
+                                    widgetsStr -> mainScreenViewModel.onOpenLockscreenPreview(entryPoint = EntryPoint.WIDGETS)
+                                    shortcutsStr -> mainScreenViewModel.onOpenLockscreenPreview(entryPoint = EntryPoint.SHORTCUTS)
+                                    moreStr -> {
                                         runCatching {
                                             val intent = Intent(Settings.ACTION_LOCKSCREEN_SETTINGS).apply {
                                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

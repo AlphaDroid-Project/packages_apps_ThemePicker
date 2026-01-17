@@ -184,12 +184,12 @@ private fun ColorSourceCard(
             ) {
                 Column {
                     Text(
-                        text = "Theme Colors",
+                        text = stringResource(R.string.theme_colors),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = if (useWallpaper) "Following wallpaper" else "Using custom color",
+                        text = if (useWallpaper) stringResource(R.string.following_wallpaper) else stringResource(R.string.using_custom_color),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant
                     )
@@ -225,14 +225,14 @@ private fun ColorSourceCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ModeChip(
-                    text = "Automatic",
+                    text = stringResource(R.string.automatic),
                     icon = Icons.Filled.AutoAwesome,
                     isSelected = useWallpaper,
                     onClick = { onToggleWallpaper(true) },
                     modifier = Modifier.weight(1f)
                 )
                 ModeChip(
-                    text = "Custom",
+                    text = stringResource(R.string.custom),
                     icon = Icons.Filled.Palette,
                     isSelected = !useWallpaper,
                     onClick = { onToggleWallpaper(false) },
@@ -258,13 +258,13 @@ private fun ColorSourceCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         ActionButton(
-                            text = "From Wallpaper",
+                            text = stringResource(R.string.from_wallpaper),
                             icon = Icons.Filled.Colorize,
                             onClick = onPickFromWallpaper,
                             modifier = Modifier.weight(1f)
                         )
                         ActionButton(
-                            text = "Color Picker",
+                            text = stringResource(R.string.color_picker),
                             icon = Icons.Filled.ColorLens,
                             onClick = onPickColor,
                             modifier = Modifier.weight(1f)
@@ -292,7 +292,7 @@ private fun ColorSourceCard(
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Selected Color",
+                                    text = stringResource(R.string.selected_color),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = colors.onSurfaceVariant
                                 )
@@ -515,7 +515,7 @@ private fun AdvancedColorsCard(
                     }
                 }
                 Text(
-                    text = "Fine Tuning",
+                    text = stringResource(R.string.fine_tuning),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -538,9 +538,9 @@ private fun AdvancedColorsCard(
                 onValueChange = onContrastChange,
                 valueRange = -1f..1f,
                 valueLabel = when {
-                    contrastLevel < -0.3f -> "Low"
-                    contrastLevel > 0.3f -> "High"
-                    else -> "Normal"
+                    contrastLevel < -0.3f -> stringResource(R.string.contrast_low)
+                    contrastLevel > 0.3f -> stringResource(R.string.contrast_high)
+                    else -> stringResource(R.string.contrast_normal)
                 }
             )
             

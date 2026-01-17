@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
@@ -217,7 +218,7 @@ private fun AffordanceButton(
         } else {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add affordance",
+                contentDescription = stringResource(R.string.add_affordance),
                 tint = if (hide) Color.Transparent else Color.White,
                 modifier = Modifier.size(iconSize * scale)
             )
@@ -235,7 +236,7 @@ fun AffordancePickerSheet(
     onOffsetChanged: ((Float, Float) -> Unit)? = null
 ) {
     val titleText = if (currentSlot == AffordanceSlot.BOTTOM_START) 
-        "Left Affordance" else "Right Affordance"
+        stringResource(R.string.left_affordance) else stringResource(R.string.right_affordance)
 
     CommonBottomSheet(
         visible = visible,

@@ -40,11 +40,13 @@ import androidx.compose.ui.graphics.painter.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.*
 import androidx.compose.material3.MaterialTheme
+import com.android.axion.themepicker.R
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 
 val ColorPreviewsHeight = 420.dp
@@ -77,7 +79,7 @@ fun WorkspacePreview() {
             wallpaperBitmap?.let { bitmap ->
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Wallpaper background",
+                    contentDescription = stringResource(R.string.wallpaper_background),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(ColorPreviewsCornerSize),
