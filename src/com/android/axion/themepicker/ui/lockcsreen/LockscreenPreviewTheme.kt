@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.axion.themepicker.ui.lockscreen
 
 import androidx.compose.foundation.*
@@ -36,8 +38,9 @@ fun LockscreenPreviewTheme(content: @Composable () -> Unit) {
         if (darkTheme) dynamicDarkColorScheme(context) 
         else dynamicLightColorScheme(context)
 
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
+        motionScheme = MotionScheme.expressive(),
         content = content
     )
 }
