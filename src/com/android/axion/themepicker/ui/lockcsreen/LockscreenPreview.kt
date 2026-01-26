@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.android.axion.themepicker.ui.lockscreen
 
 import android.util.Log
 import android.app.Activity
+import android.app.WallpaperColors
+import android.app.WallpaperManager
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import androidx.compose.animation.*
@@ -62,11 +64,17 @@ fun LockscreenPreview(
 ) {
     val context = LocalContext.current
     val wallpaper = wallpaperBitmap ?: getCurrentWallpaperBitmap(context, false)!!
+    
+    val isRegionDark = remember(wallpaper) {
+        val colors = WallpaperColors.fromBitmap(wallpaper)
+        (colors.colorHints and WallpaperColors.HINT_SUPPORTS_DARK_TEXT) == 0
+    }
+
     var showPicker by remember { mutableStateOf(false) }
     var showAffordancePicker by remember { mutableStateOf<AffordanceSlot?>(null) }
     var widgetItems by remember { mutableStateOf(load(context, isPreview)) }
     val scale = if (isPreview) context.previewScale else context.scaleRatio
-
+    
     DisposableEffect(Unit) {
         val activity = context as? Activity
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -102,10 +110,10 @@ fun LockscreenPreview(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = Dimens.ClockTopPadding * scale),
+                .padding(top = Dimens.ClockTopPadding * scale * 1.5f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            PreviewClock(isPreview)
+            PreviewClock(isPreview, isRegionDark)
             if (!isPreview) Spacer(modifier = Modifier.height(Dimens.ClockSpacer * scale))
             WidgetGrid(
                 isPreview = isPreview,
