@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,45 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
 package com.android.axion.themepicker.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+import com.android.axion.compose.theme.AxionTheme
 
 @Composable
 fun AxTheme(content: @Composable () -> Unit) {
-    val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
-    
-    val colorScheme = if (isDark) {
-        dynamicDarkColorScheme(context)
-    } else {
-        dynamicLightColorScheme(context)
-    }
-    
-    val expressiveDesign = DefaultExpressiveDesign
     val adaptiveLayoutInfo = calculateAdaptiveLayoutInfo()
 
-    CompositionLocalProvider(
-        LocalExpressiveDesign provides expressiveDesign,
-        LocalAdaptiveLayoutInfo provides adaptiveLayoutInfo
-    ) {
-        MaterialExpressiveTheme(
-            colorScheme = colorScheme,
-            motionScheme = MotionScheme.expressive()
-        ) {
-            content()
-        }
+    AxionTheme {
+        CompositionLocalProvider(LocalAdaptiveLayoutInfo provides adaptiveLayoutInfo) { content() }
     }
 }

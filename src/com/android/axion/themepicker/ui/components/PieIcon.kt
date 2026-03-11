@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.components
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import com.android.axion.themepicker.utils.math.scaleRatio
 
 val OptionSize = 72.dp
@@ -37,37 +38,33 @@ val OptionSize = 72.dp
 fun PieIcon() {
     val scale = LocalContext.current.scaleRatio
     val isDark = isSystemInDarkTheme()
-    val colors = if (!isDark) {
-        listOf(
-            colorResource(android.R.color.system_neutral1_100),
-            colorResource(android.R.color.system_accent1_600),
-            colorResource(android.R.color.system_accent1_400),
-            colorResource(android.R.color.system_accent1_300)
-        )
-    } else {
-        listOf(
-            colorResource(android.R.color.system_neutral1_800),
-            colorResource(android.R.color.system_accent1_100),
-            colorResource(android.R.color.system_accent1_200),
-            colorResource(android.R.color.system_accent1_300)
-        )
-    }
+    val colors =
+        if (!isDark) {
+            listOf(
+                colorResource(android.R.color.system_neutral1_100),
+                colorResource(android.R.color.system_accent1_600),
+                colorResource(android.R.color.system_accent1_400),
+                colorResource(android.R.color.system_accent1_300),
+            )
+        } else {
+            listOf(
+                colorResource(android.R.color.system_neutral1_800),
+                colorResource(android.R.color.system_accent1_100),
+                colorResource(android.R.color.system_accent1_200),
+                colorResource(android.R.color.system_accent1_300),
+            )
+        }
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(OptionSize * scale)
-            .background(MaterialTheme.colorScheme.surfaceBright, shape = CircleShape)
-            .padding(12.dp * scale)
+        modifier =
+            Modifier.size(OptionSize * scale)
+                .background(MaterialTheme.colorScheme.surfaceBright, shape = CircleShape)
+                .padding(12.dp * scale),
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
             var startAngle = 0f
             colors.forEach { color ->
-                drawArc(
-                    color = color,
-                    startAngle = startAngle,
-                    sweepAngle = 90f,
-                    useCenter = true
-                )
+                drawArc(color = color, startAngle = startAngle, sweepAngle = 90f, useCenter = true)
                 startAngle += 90f
             }
         }
@@ -79,10 +76,10 @@ fun OptionIcon(icon: ImageVector) {
     val scale = LocalContext.current.scaleRatio
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(OptionSize * scale)
-            .background(MaterialTheme.colorScheme.surfaceBright, shape = CircleShape)
-            .padding(12.dp * scale)
+        modifier =
+            Modifier.size(OptionSize * scale)
+                .background(MaterialTheme.colorScheme.surfaceBright, shape = CircleShape)
+                .padding(12.dp * scale),
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
     }

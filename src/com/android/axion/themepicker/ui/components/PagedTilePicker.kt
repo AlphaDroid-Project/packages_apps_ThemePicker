@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.axion.themepicker.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,16 +29,15 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import com.android.axion.themepicker.ui.lockscreen.Dimens
-import com.android.axion.themepicker.ui.components.SheetDimens
-import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -47,7 +48,7 @@ fun <T> PagedTilePicker(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     sheetHeightFraction: Float = 0.4f,
-    selected: (T) -> Boolean = { false }
+    selected: (T) -> Boolean = { false },
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -55,25 +56,20 @@ fun <T> PagedTilePicker(
     val pageCount = (items.size + itemsPerPage - 1) / itemsPerPage
     val pagerState = rememberPagerState { pageCount }
 
-    val screenHeight = LocalDensity.current.run { context.resources.displayMetrics.heightPixels.toDp() }
+    val screenHeight =
+        LocalDensity.current.run { context.resources.displayMetrics.heightPixels.toDp() }
     val sheetHeight = screenHeight * sheetHeightFraction
-        
+
     Column(
         modifier = modifier.fillMaxWidth().height(sheetHeight),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) { page ->
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth().weight(1f)) { page ->
             val pageItems = items.drop(page * itemsPerPage).take(itemsPerPage)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = SheetDimens.SheetPagerPadding),
-                horizontalArrangement = Arrangement.spacedBy(SheetDimens.SheetPagerSpacing)
+                modifier =
+                    Modifier.fillMaxWidth().padding(horizontal = SheetDimens.SheetPagerPadding),
+                horizontalArrangement = Arrangement.spacedBy(SheetDimens.SheetPagerSpacing),
             ) {
                 pageItems.forEach { item ->
                     PagedTile(
@@ -81,7 +77,7 @@ fun <T> PagedTilePicker(
                         label = label(item),
                         isSelected = selected(item),
                         onClick = { onSelect(item) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
 
@@ -101,54 +97,41 @@ private fun PagedTile(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
 
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-        ) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f)) {
             BoxWithConstraints(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(RoundedCornerShape(Dimens.TileCorner))
-                    .background(if (isSelected) colors.primaryContainer else colors.surface)
-                    .border(
-                        Dimens.TileBorder,
-                        if (isSelected) colors.primary else colors.surfaceVariant,
-                        RoundedCornerShape(Dimens.TileCorner)
-                    )
-                    .clickable { onClick() }
+                modifier =
+                    Modifier.matchParentSize()
+                        .clip(RoundedCornerShape(Dimens.TileCorner))
+                        .background(if (isSelected) colors.primaryContainer else colors.surface)
+                        .border(
+                            Dimens.TileBorder,
+                            if (isSelected) colors.primary else colors.surfaceVariant,
+                            RoundedCornerShape(Dimens.TileCorner),
+                        )
+                        .clickable { onClick() }
             ) {
                 val cardSize = maxWidth
                 val circleSize = cardSize * 1.4f
 
                 Box(
-                    modifier = Modifier
-                        .size(circleSize)
-                        .offset(
-                            x = circleSize * 0.16f,
-                            y = circleSize * 0.16f
-                        )
-                        .clip(CircleShape)
-                        .background(
-                            if (isSelected) colors.primary
-                            else colors.surfaceVariant
-                        )
-                        .align(Alignment.BottomEnd),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier.size(circleSize)
+                            .offset(x = circleSize * 0.16f, y = circleSize * 0.16f)
+                            .clip(CircleShape)
+                            .background(if (isSelected) colors.primary else colors.surfaceVariant)
+                            .align(Alignment.BottomEnd),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = label,
                         tint = if (isSelected) colors.onPrimary else colors.onSurface,
-                        modifier = Modifier.size(cardSize * 0.22f)
+                        modifier = Modifier.size(cardSize * 0.22f),
                     )
                 }
             }
@@ -156,24 +139,20 @@ private fun PagedTile(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = if (isSelected) colors.onPrimary else colors.onSurface,
-                modifier = Modifier
-                    .size(Dimens.TileIcon)
-                    .align(Alignment.TopStart)
-                    .aspectRatio(1f)
-                    .offset(
-                        x = SheetDimens.SheetPagerPadding,
-                        y = SheetDimens.SheetPagerPadding
-                    )
+                tint = if (isSelected) colors.onPrimaryContainer else colors.onSurface,
+                modifier =
+                    Modifier.size(Dimens.TileIcon)
+                        .align(Alignment.TopStart)
+                        .aspectRatio(1f)
+                        .offset(
+                            x = SheetDimens.SheetPagerPadding,
+                            y = SheetDimens.SheetPagerPadding,
+                        ),
             )
         }
 
         Spacer(Modifier.height(Dimens.TileTextSpacer))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium,
-            color = colors.onSurface
-        )
+        Text(text = label, style = MaterialTheme.typography.titleMedium, color = colors.onSurface)
     }
 }
 
@@ -182,27 +161,25 @@ private fun PageIndicator(pageCount: Int, currentPage: Int) {
     val colors = MaterialTheme.colorScheme
     Row(
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(pageCount) { index ->
-            val animProgress by animateFloatAsState(
-                targetValue = if (index == currentPage) 1f else 0f,
-                animationSpec = tween(durationMillis = 300)
-            )
+            val animProgress by
+                animateFloatAsState(
+                    targetValue = if (index == currentPage) 1f else 0f,
+                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+                )
 
             val indicatorWidth = Dimens.TilePagerIndicator + (16.dp * animProgress)
             Box(
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .height(Dimens.TilePagerIndicator)
-                    .width(indicatorWidth * 2)
-                    .clip(CircleShape)
-                    .background(
-                        if (index == currentPage)
-                            colors.primary
-                        else
-                            colors.surfaceVariant
-                    )
+                modifier =
+                    Modifier.padding(horizontal = 4.dp)
+                        .height(Dimens.TilePagerIndicator)
+                        .width(indicatorWidth * 2)
+                        .clip(CircleShape)
+                        .background(
+                            if (index == currentPage) colors.primary else colors.surfaceVariant
+                        )
             )
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,102 +13,97 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.axion.themepicker.ui.colors
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.*
-import androidx.compose.ui.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.*
-import androidx.compose.ui.unit.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.axion.compose.scaffold.AxionScaffold
 import com.android.axion.themepicker.R
-import com.android.axion.themepicker.ui.colors.BasicColorsSettings
-import com.android.axion.themepicker.ui.expressive.ExpressiveHeader
 import com.android.axion.themepicker.ui.preview.CalculatorPreview
 import com.android.axion.themepicker.ui.preview.QuickSettingsPreview
 import com.android.axion.themepicker.ui.preview.WorkspacePreview
-import com.android.axion.themepicker.ui.theme.*
+import com.android.axion.themepicker.ui.theme.LocalAdaptiveLayoutInfo
 import com.android.axion.themepicker.utils.math.sdp
 import com.android.axion.themepicker.viewmodel.MainScreenViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorsSettingsScreen(
-    mainScreenViewModel: MainScreenViewModel = viewModel()
-) {
+fun ColorsSettingsScreen(mainScreenViewModel: MainScreenViewModel = viewModel()) {
     val colors = MaterialTheme.colorScheme
-    val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
-    
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        pageCount = { 3 }
-    )
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-    ) {
-        ExpressiveHeader(
-            title = stringResource(id = R.string.colors_title),
-            onBackClick = { mainScreenViewModel.resetToMain() },
-        )
-
+    AxionScaffold(
+        title = stringResource(id = R.string.colors_title),
+        onBackClick = { mainScreenViewModel.resetToMain() },
+        modifier = Modifier.background(colors.background),
+    ) { paddingValues ->
         if (layoutInfo.isDualPane) {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = design.spacing.screenPaddingTablet),
-                horizontalArrangement = Arrangement.spacedBy(design.spacing.large)
+                modifier =
+                    Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
             ) {
+                PreviewCarousel(
+                    pagerState = pagerState,
+                    isDualPane = true,
+                    modifier = Modifier.weight(0.4f).fillMaxHeight(),
+                )
+
                 Column(
-                    modifier = Modifier
-                        .weight(0.45f)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier =
+                        Modifier.weight(0.6f)
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState())
+                            .padding(vertical = 16.dp)
                 ) {
-                    PreviewCarousel(pagerState = pagerState)
-                }
-                
-                Column(
-                    modifier = Modifier
-                        .weight(0.55f)
-                        .fillMaxHeight()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    ColorsSectionHeader(
-                        modifier = Modifier.padding(vertical = design.spacing.medium)
-                    )
+                    ColorsSectionHeader(modifier = Modifier.padding(bottom = 16.dp))
                     BasicColorsSettings()
                 }
             }
         } else {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                modifier =
+                    Modifier.fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(paddingValues)
             ) {
-                PreviewCarousel(
-                    pagerState = pagerState,
-                    modifier = Modifier.padding(top = design.spacing.medium)
-                )
+                PreviewCarousel(pagerState = pagerState, modifier = Modifier.padding(top = 16.dp))
 
                 ColorsSectionHeader(
-                    modifier = Modifier.padding(
-                        horizontal = design.spacing.screenPadding,
-                        vertical = design.spacing.medium
-                    )
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
                 )
 
                 BasicColorsSettings()
@@ -117,61 +112,91 @@ fun ColorsSettingsScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PreviewCarousel(
     pagerState: PagerState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDualPane: Boolean = false,
 ) {
-    val layoutInfo = LocalAdaptiveLayoutInfo.current
-    val design = LocalExpressiveDesign.current
-    
-    val previewWidth = if (layoutInfo.isTablet) 200.sdp else 162.sdp
-    val previewHeight = if (layoutInfo.isTablet) 400.sdp else 320.sdp
-
-    HorizontalPager(
-        state = pagerState,
-        pageSize = PageSize.Fixed(previewWidth),
-        contentPadding = PaddingValues(horizontal = design.spacing.medium),
-        pageSpacing = design.spacing.small,
-        modifier = modifier.height(previewHeight)
-    ) { page ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(design.shapes.previewCorner))
+    if (isDualPane) {
+        Column(
+            modifier = modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            when (page) {
-                0 -> WorkspacePreview()
-                1 -> CalculatorPreview()
-                2 -> QuickSettingsPreview()
+            VerticalPager(
+                state = pagerState,
+                pageSize = PageSize.Fill,
+                contentPadding = PaddingValues(vertical = 16.dp),
+                pageSpacing = 8.dp,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            ) { page ->
+                Box(modifier = Modifier.fillMaxSize().clip(MaterialTheme.shapes.largeIncreased)) {
+                    when (page) {
+                        0 -> WorkspacePreview()
+                        1 -> CalculatorPreview()
+                        2 -> QuickSettingsPreview()
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                repeat(pagerState.pageCount) { index ->
+                    Box(
+                        modifier =
+                            Modifier.size(if (pagerState.currentPage == index) 8.dp else 6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (pagerState.currentPage == index)
+                                        MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.outlineVariant
+                                )
+                    )
+                }
+            }
+        }
+    } else {
+        val previewWidth = 162.sdp
+        val previewHeight = 320.sdp
+
+        HorizontalPager(
+            state = pagerState,
+            pageSize = PageSize.Fixed(previewWidth),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            pageSpacing = 8.dp,
+            modifier = modifier.height(previewHeight),
+        ) { page ->
+            Box(modifier = Modifier.fillMaxSize().clip(MaterialTheme.shapes.medium)) {
+                when (page) {
+                    0 -> WorkspacePreview()
+                    1 -> CalculatorPreview()
+                    2 -> QuickSettingsPreview()
+                }
             }
         }
     }
 }
 
 @Composable
-fun ColorsSectionHeader(
-    modifier: Modifier = Modifier
-) {
+fun ColorsSectionHeader(modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
-    val design = LocalExpressiveDesign.current
 
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(design.spacing.extraSmall)
-    ) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = stringResource(id = R.string.customize_palette_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = colors.onSurface
+            color = colors.onSurface,
         )
 
         Text(
             text = stringResource(id = R.string.customize_palette_description),
             style = MaterialTheme.typography.bodyMedium,
-            color = colors.onSurfaceVariant
+            color = colors.onSurfaceVariant,
         )
     }
 }

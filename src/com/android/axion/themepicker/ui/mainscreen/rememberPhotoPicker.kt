@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.mainscreen
 
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.compose.runtime.*
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.axion.themepicker.viewmodel.WallpaperViewModel
 
@@ -29,11 +30,10 @@ import com.android.axion.themepicker.viewmodel.WallpaperViewModel
 fun rememberPhotoPicker(
     context: Context,
     viewModel: WallpaperViewModel = viewModel(),
-    onImageDecoded: (Bitmap?) -> Unit
+    onImageDecoded: (Bitmap?) -> Unit,
 ): ManagedActivityResultLauncher<String, Uri?> {
-    return rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
+    return rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri
+        ->
         if (uri == null) return@rememberLauncherForActivityResult
         viewModel.handlePickedUri(context, uri, onImageDecoded)
     }

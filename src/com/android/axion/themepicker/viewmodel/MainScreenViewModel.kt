@@ -1,18 +1,34 @@
+/*
+ * Copyright (C) 2025-2026 AxionOS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.axion.themepicker.viewmodel
 
-import android.graphics.Bitmap
 import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.axion.themepicker.data.model.Screen
 import com.android.axion.themepicker.data.model.Screen.EntryPoint
 import com.android.axion.themepicker.data.model.WallpaperInfo
-import com.android.axion.themepicker.data.model.ZoomProperties
 import com.android.axion.themepicker.utils.wallpaper.loadWallpapers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.*
 
 class MainScreenViewModel : ViewModel() {
 
@@ -29,16 +45,16 @@ class MainScreenViewModel : ViewModel() {
     val currentScreen: StateFlow<Screen> = _currentScreen
 
     private val _screenStack = mutableListOf<Screen>()
-    private var _galleryReturnScreen: Screen.WallpaperGallery? = null
 
     private val _isNavigatingBack = MutableStateFlow(false)
     val isNavigatingBack: StateFlow<Boolean> = _isNavigatingBack
 
     fun initialize(context: Context) {
         if (_wallpapers.value.isNotEmpty()) return
+        val appContext = context.applicationContext
         viewModelScope.launch {
             _isLoading.value = true
-            val loaded = loadWallpapers(context)
+            val loaded = withContext(Dispatchers.IO) { loadWallpapers(appContext) }
             _wallpapers.value = loaded
             _isLoading.value = false
         }
@@ -57,12 +73,6 @@ class MainScreenViewModel : ViewModel() {
     fun goBack() {
         _isNavigatingBack.value = true
 
-        _galleryReturnScreen?.let {
-            _currentScreen.value = it
-            _galleryReturnScreen = null
-            return
-        }
-
         if (_screenStack.isNotEmpty()) {
             _currentScreen.value = _screenStack.removeAt(_screenStack.lastIndex)
         } else {
@@ -75,53 +85,58 @@ class MainScreenViewModel : ViewModel() {
         _isNavigatingBack.value = false
         _currentScreen.value = Screen.Main
         _screenStack.clear()
-        _galleryReturnScreen = null
         Log.d("MainScreenViewModel", "reset to main!")
-    }
-
-    fun onWallpaperSelected(wallpaper: WallpaperInfo) {
-        navigateTo(Screen.Preview(wallpaper))
-    }
-
-    fun onApplyConfirmed(wallpaper: WallpaperInfo, zoom: ZoomProperties = ZoomProperties(), bitmap: Bitmap? = null) {
-        navigateTo(Screen.Apply(wallpaper, zoom, bitmap))
-    }
-
-    fun onEditCurrent() {
-        navigateTo(Screen.EditCurrent)
     }
 
     fun onOpenColorsSettings() {
         navigateTo(Screen.ColorsSettings)
     }
-    
+
     fun onOpenAppGrid() {
         navigateTo(Screen.AppGrid)
     }
-    
-    fun onOpenFonts() {
-        navigateTo(Screen.Fonts)
+
+    fun onOpenIconShapes() {
+        navigateTo(Screen.IconShapes)
     }
 
-    fun onWallpaperSelectedFromGallery(wallpaper: WallpaperInfo) {
-        _isNavigatingBack.value = false
-        _galleryReturnScreen = Screen.WallpaperGallery
-        _currentScreen.value = Screen.Preview(wallpaper)
+    fun onOpenThemedIcons() {
+        navigateTo(Screen.ThemedIcons)
     }
-    
-    fun onUserUpload(wallpaper: WallpaperInfo, bitmap: Bitmap? = null) {
-        _isNavigatingBack.value = false
-        _galleryReturnScreen = Screen.WallpaperGallery
-        _currentScreen.value = Screen.Preview(wallpaper, bitmap)
+
+    fun onOpenFonts() {
+        navigateTo(Screen.Fonts)
     }
 
     fun onOpenGallery() {
         navigateTo(Screen.WallpaperGallery)
     }
-    
+
+    fun onOpenWallpaperEffects() {
+        navigateTo(Screen.WallpaperEffects)
+    }
+
+    var pendingPreviewBitmap: Bitmap? = null
+        private set
+
+    fun onOpenWallpaperCrop(sourceUri: Uri? = null, drawableRes: Int = 0, targetFlags: Int = 0) {
+        navigateTo(
+            Screen.WallpaperCrop(
+                sourceUri = sourceUri,
+                drawableRes = drawableRes,
+                targetFlags = targetFlags,
+            )
+        )
+    }
+
+    fun onCropCompleted(croppedBitmap: Bitmap, targetFlags: Int = 0) {
+        pendingPreviewBitmap = croppedBitmap
+        navigateTo(Screen.WallpaperPreview(targetFlags = targetFlags))
+    }
+
     fun onOpenLockscreenPreview(
         wallpaper: WallpaperInfo? = null,
-        entryPoint: EntryPoint = EntryPoint.DEFAULT
+        entryPoint: EntryPoint = EntryPoint.DEFAULT,
     ) {
         navigateTo(Screen.Lockscreen(wallpaper, entryPoint))
         Log.d("MainScreenViewModel", "entryPoint=$entryPoint")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.expressive
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.vector.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.MaterialTheme
 import com.android.axion.themepicker.R
 import com.android.axion.themepicker.ui.theme.LocalAdaptiveLayoutInfo
-import com.android.axion.themepicker.ui.theme.LocalExpressiveDesign
-import com.android.axion.themepicker.ui.theme.ExpressiveScale
 
 @Composable
 fun ExpressiveHeader(
@@ -48,48 +51,54 @@ fun ExpressiveHeader(
     onActionClick: (() -> Unit)? = null,
     actionIcon: ImageVector = Icons.Default.Refresh,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     val colors = MaterialTheme.colorScheme
-    val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
-    
     val horizontalPadding = if (layoutInfo.isTablet) 24.dp else 8.dp
-    val topPadding = if (layoutInfo.isTablet) 24.dp else 48.dp
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = Color.Transparent
-    ) {
+    Surface(modifier = modifier.fillMaxWidth(), color = Color.Transparent) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = horizontalPadding, top = topPadding, end = horizontalPadding, bottom = 16.dp)
+            modifier =
+                Modifier.fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(
+                        start = horizontalPadding,
+                        top = 8.dp,
+                        end = horizontalPadding,
+                        bottom = 16.dp,
+                    )
         ) {
             ExpressiveIconButton(
                 onClick = onBackClick,
-                modifier = Modifier.align(Alignment.CenterStart)
+                modifier = Modifier.align(Alignment.CenterStart),
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                )
             }
 
             if (onActionClick != null) {
                 ExpressiveIconButton(
                     onClick = onActionClick,
                     modifier = Modifier.align(Alignment.CenterEnd),
-                    enabled = enabled
+                    enabled = enabled,
                 ) {
                     Icon(actionIcon, contentDescription = "Action")
                 }
             }
 
             Column(
-                modifier = Modifier.align(
-                    if (layoutInfo.isTablet) Alignment.CenterStart else Alignment.Center
-                ).then(
-                    if (layoutInfo.isTablet) Modifier.padding(start = 56.dp) else Modifier
-                ),
-                horizontalAlignment = if (layoutInfo.isTablet) Alignment.Start else Alignment.CenterHorizontally
+                modifier =
+                    Modifier.align(
+                            if (layoutInfo.isTablet) Alignment.CenterStart else Alignment.Center
+                        )
+                        .then(
+                            if (layoutInfo.isTablet) Modifier.padding(start = 56.dp) else Modifier
+                        ),
+                horizontalAlignment =
+                    if (layoutInfo.isTablet) Alignment.Start else Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = title,
@@ -97,16 +106,16 @@ fun ExpressiveHeader(
                     fontWeight = FontWeight.SemiBold,
                     color = colors.onSurface,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
-                
+
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -119,15 +128,13 @@ private fun ExpressiveIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
-    val design = LocalExpressiveDesign.current
-    
     FilledTonalIconButton(
         onClick = onClick,
         modifier = modifier,
-        shape = RoundedCornerShape(design.shapes.buttonCorner),
-        enabled = enabled
+        shape = MaterialTheme.shapes.medium,
+        enabled = enabled,
     ) {
         content()
     }
@@ -138,45 +145,45 @@ fun ExpressiveLargeHeader(
     title: String,
     subtitle: String? = null,
     onBackClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
-    val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
-    
+
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = if (layoutInfo.isTablet) design.spacing.screenPaddingTablet else design.spacing.screenPadding,
-                vertical = design.spacing.medium
-            ),
-        verticalArrangement = Arrangement.spacedBy(design.spacing.extraSmall)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = if (layoutInfo.isTablet) 24.dp else 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(design.spacing.small)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (onBackClick != null) {
                 ExpressiveIconButton(onClick = onBackClick) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                    )
                 }
             }
-            
+
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = colors.onSurface
+                color = colors.onSurface,
             )
         }
-        
+
         if (subtitle != null) {
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyLarge,
                 color = colors.onSurfaceVariant,
-                modifier = Modifier.padding(start = if (onBackClick != null) 56.dp else 0.dp)
+                modifier = Modifier.padding(start = if (onBackClick != null) 56.dp else 0.dp),
             )
         }
     }

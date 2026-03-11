@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,294 +13,294 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.sections
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
 import com.android.axion.themepicker.R
+import com.android.axion.themepicker.ui.components.SettingsCard
 import com.android.axion.themepicker.ui.theme.*
 
 @Composable
 fun StyleSection(
     onOpenColors: () -> Unit,
     onOpenAppGrid: () -> Unit,
+    onOpenIconShapes: () -> Unit,
+    onOpenThemedIcons: () -> Unit,
     onOpenFonts: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val design = LocalExpressiveDesign.current
     val layoutInfo = LocalAdaptiveLayoutInfo.current
-    
-    val scrollState = rememberScrollState()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(
-                if (layoutInfo.isTablet) design.spacing.screenPaddingTablet
-                else design.spacing.screenPadding
-            ),
-        verticalArrangement = Arrangement.spacedBy(design.spacing.medium)
-    ) {
-        StyleHeader()
-        
-        ColorsCard(
-            title = stringResource(R.string.colors),
-            description = stringResource(R.string.wallpaper_colors_and_themes),
-            onClick = onOpenColors
-        )
-        
-        AppGridCard(
-            title = stringResource(R.string.app_grid),
-            description = stringResource(R.string.home_screen_layout),
-            onClick = onOpenAppGrid
-        )
-        
-        FontsCard(
-            title = stringResource(R.string.fonts),
-            description = stringResource(R.string.system_typography),
-            onClick = onOpenFonts
-        )
+    if (layoutInfo.isDualPane) {
+        Row(
+            modifier = modifier.fillMaxSize().padding(design.spacing.screenPaddingTablet),
+            horizontalArrangement = Arrangement.spacedBy(design.spacing.large),
+        ) {
+            Column(
+                modifier = Modifier.weight(0.5f).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(design.spacing.medium),
+            ) {
+                StyleHeader()
 
-        ProTip(
-            text = stringResource(R.string.pro_tip_colors_message)
-        )
+                ProTip(text = stringResource(R.string.pro_tip_colors_message))
+            }
+
+            Column(
+                modifier = Modifier.weight(0.5f).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(design.spacing.medium),
+            ) {
+                ColorsCardContent(onClick = onOpenColors)
+
+                AppGridCardContent(onClick = onOpenAppGrid)
+
+                IconShapesCardContent(onClick = onOpenIconShapes)
+
+                ThemedIconsCardContent(onClick = onOpenThemedIcons)
+
+                FontsCard(
+                    title = stringResource(R.string.fonts),
+                    description = stringResource(R.string.system_typography),
+                    onClick = onOpenFonts,
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(design.spacing.screenPadding),
+            verticalArrangement = Arrangement.spacedBy(design.spacing.medium),
+        ) {
+            StyleHeader()
+
+            ColorsCardContent(onClick = onOpenColors)
+
+            AppGridCardContent(onClick = onOpenAppGrid)
+
+            IconShapesCardContent(onClick = onOpenIconShapes)
+
+            ThemedIconsCardContent(onClick = onOpenThemedIcons)
+
+            FontsCard(
+                title = stringResource(R.string.fonts),
+                description = stringResource(R.string.system_typography),
+                onClick = onOpenFonts,
+            )
+
+            ProTip(text = stringResource(R.string.pro_tip_colors_message))
+        }
     }
 }
 
 @Composable
-private fun StyleHeader(
-    modifier: Modifier = Modifier
-) {
+private fun StyleHeader(modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val infiniteTransition = rememberInfiniteTransition(label = "header_gradient")
-    
-    val gradientOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "gradient_offset"
-    )
-    
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .width(50.dp)
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            colors.primary,
-                            colors.tertiary,
-                            colors.primary
-                        ),
-                        startX = gradientOffset
-                    )
-                )
+
+    val gradientOffset by
+        infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1000f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(20000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+            label = "gradient_offset",
         )
-        
+
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Box(
+            modifier =
+                Modifier.width(50.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).drawBehind {
+                    drawRect(
+                        brush =
+                            Brush.horizontalGradient(
+                                colors = listOf(colors.primary, colors.tertiary, colors.primary),
+                                startX = gradientOffset,
+                            )
+                    )
+                }
+        )
+
         Text(
             text = stringResource(R.string.personalize),
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
-            color = colors.onSurface
+            color = colors.onSurface,
         )
-        
+
         Text(
             text = stringResource(R.string.make_your_device_uniquely_yours),
             style = MaterialTheme.typography.bodyLarge,
-            color = colors.onSurfaceVariant
+            color = colors.onSurfaceVariant,
         )
     }
 }
 
 @Composable
-private fun ColorsCard(
-    title: String,
-    description: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun ColorsCardContent(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
-    
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceBright
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+
+    SettingsCard(
+        title = stringResource(R.string.colors),
+        description = stringResource(R.string.wallpaper_colors_and_themes),
+        onClick = onClick,
+        modifier = modifier,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier =
+                Modifier.size(32.dp)
+                    .offset(x = (-8).dp, y = (-4).dp)
+                    .clip(CircleShape)
+                    .background(colors.primary.copy(alpha = 0.6f))
+        )
+        Box(
+            modifier =
+                Modifier.size(28.dp)
+                    .offset(x = 8.dp, y = 8.dp)
+                    .clip(CircleShape)
+                    .background(colors.tertiary.copy(alpha = 0.6f))
+        )
+        Box(
+            modifier =
+                Modifier.size(24.dp)
+                    .offset(x = 6.dp, y = (-8).dp)
+                    .clip(CircleShape)
+                    .background(colors.secondary.copy(alpha = 0.6f))
+        )
+    }
+}
+
+@Composable
+private fun AppGridCardContent(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+
+    SettingsCard(
+        title = stringResource(R.string.app_grid),
+        description = stringResource(R.string.home_screen_layout),
+        onClick = onClick,
+        modifier = modifier,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.onSurface
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                repeat(2) {
+                    Box(
+                        modifier =
+                            Modifier.size(14.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(colors.primary.copy(alpha = 0.8f))
+                    )
+                }
             }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(colors.primaryContainer.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .offset(x = (-8).dp, y = (-4).dp)
-                        .clip(CircleShape)
-                        .background(colors.primary.copy(alpha = 0.6f))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .offset(x = 8.dp, y = 8.dp)
-                        .clip(CircleShape)
-                        .background(colors.tertiary.copy(alpha = 0.6f))
-                )
-                 Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .offset(x = 6.dp, y = (-8).dp)
-                        .clip(CircleShape)
-                        .background(colors.secondary.copy(alpha = 0.6f))
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                repeat(2) {
+                    Box(
+                        modifier =
+                            Modifier.size(14.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(colors.primary.copy(alpha = 0.4f))
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun AppGridCard(
-    title: String,
-    description: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun IconShapesCardContent(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
-    
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceBright
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+
+    SettingsCard(
+        title = stringResource(R.string.icon_shape_title),
+        description = stringResource(R.string.icon_shape_description),
+        onClick = onClick,
+        modifier = modifier,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.onSurface
+            Box(
+                modifier =
+                    Modifier.size(16.dp)
+                        .clip(CircleShape)
+                        .background(colors.primary.copy(alpha = 0.8f))
+            )
+            Box(
+                modifier =
+                    Modifier.size(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(colors.tertiary.copy(alpha = 0.7f))
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemedIconsCardContent(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+
+    SettingsCard(
+        title = stringResource(R.string.themed_icons_title),
+        description = stringResource(R.string.themed_icons_summary),
+        onClick = onClick,
+        modifier = modifier,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(
+                    modifier =
+                        Modifier.size(14.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(colors.primary.copy(alpha = 0.7f))
                 )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
+                Box(
+                    modifier =
+                        Modifier.size(14.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(colors.primary.copy(alpha = 0.5f))
                 )
             }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(colors.primaryContainer.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        repeat(2) {
-                             Box(
-                                modifier = Modifier
-                                    .size(14.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(colors.primary.copy(alpha = 0.8f))
-                            )
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        repeat(2) {
-                            Box(
-                                modifier = Modifier
-                                    .size(14.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(colors.primary.copy(alpha = 0.4f))
-                            )
-                        }
-                    }
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(
+                    modifier =
+                        Modifier.size(14.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(colors.primary.copy(alpha = 0.5f))
+                )
+                Box(
+                    modifier =
+                        Modifier.size(14.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(colors.primary.copy(alpha = 0.3f))
+                )
             }
         }
     }
@@ -311,60 +311,53 @@ private fun FontsCard(
     title: String,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
-    
+
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(160.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = colors.surfaceBright
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
             Column(
                 modifier = Modifier.align(Alignment.BottomStart),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = colors.onSurface
+                    color = colors.onSurface,
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
+                    color = colors.onSurfaceVariant,
                 )
             }
-            
+
             Column(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp),
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
                     text = "Aa",
                     style = MaterialTheme.typography.displayLarge,
                     fontWeight = FontWeight.Bold,
-                    color = colors.primary
+                    color = colors.primary,
                 )
                 Text(
                     text = "A is for Axion :)",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurfaceVariant
+                    color = colors.onSurfaceVariant,
                 )
             }
         }
@@ -372,37 +365,27 @@ private fun FontsCard(
 }
 
 @Composable
-private fun ProTip(
-    text: String,
-    modifier: Modifier = Modifier
-) {
+private fun ProTip(text: String, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val design = LocalExpressiveDesign.current
-    
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = colors.primaryContainer.copy(alpha = 0.3f),
-        border = BorderStroke(1.dp, colors.primary.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, colors.primary.copy(alpha = 0.3f)),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(design.spacing.medium),
+            modifier = Modifier.fillMaxWidth().padding(design.spacing.medium),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
         ) {
-            Surface(
-                shape = CircleShape,
-                color = colors.primary
-            ) {
+            Surface(shape = CircleShape, color = colors.primary) {
                 Icon(
                     Icons.Filled.AutoAwesome,
                     contentDescription = null,
                     tint = colors.onPrimary,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .size(16.dp)
+                    modifier = Modifier.padding(8.dp).size(16.dp),
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
@@ -410,12 +393,12 @@ private fun ProTip(
                     text = stringResource(R.string.pro_tip),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = colors.primary
+                    color = colors.primary,
                 )
                 Text(
                     text = text,
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurface
+                    color = colors.onSurface,
                 )
             }
         }

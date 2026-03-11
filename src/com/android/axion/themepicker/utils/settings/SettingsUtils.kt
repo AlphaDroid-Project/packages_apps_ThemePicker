@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2025-2026 AxionOS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.axion.themepicker.utils.settings
 
 import android.content.Context
@@ -11,19 +27,21 @@ import org.json.JSONObject
 
 fun getColorSettings(context: Context): JSONObject {
     return runCatching {
-        val currentJson = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES
-        ) ?: "{}"
-        JSONObject(currentJson)
-    }.getOrElse { JSONObject("{}") }
+            val currentJson =
+                Settings.Secure.getString(
+                    context.contentResolver,
+                    Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                ) ?: "{}"
+            JSONObject(currentJson)
+        }
+        .getOrElse { JSONObject("{}") }
 }
 
 fun applyColorSettings(context: Context, json: JSONObject) {
     Settings.Secure.putString(
         context.contentResolver,
         Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-        json.toString()
+        json.toString(),
     )
 }
 
@@ -51,35 +69,41 @@ fun applyColorSettings(context: Context, settings: ColorsSettingsData) {
 
 fun loadCurrentSettings(context: Context, defaultSeed: Color): ColorsSettingsData {
     runCatching {
-        val json = getColorSettings(context)
-        
-        val colorSource = json.optString("android.theme.customization.color_source", "home")
-        val useWallpaper = colorSource == "home" || colorSource == "lock"
+            val json = getColorSettings(context)
 
-        val styleStr = json.optString("android.theme.customization.theme_style", "TONAL_SPOT")
-        val style = ThemeStyle.values().find { it.systemValue == styleStr } ?: ThemeStyle.TONAL_SPOT
+            val colorSource = json.optString("android.theme.customization.color_source", "home")
+            val useWallpaper = colorSource == "home" || colorSource == "lock"
 
-        val seedColor: Color = runCatching {
-            val seedColorHex = json.optString("_base_seed_color", null)
-            if (seedColorHex.isNullOrBlank()) {
-                defaultSeed
-            } else {
-                Color(GraphicsColor.parseColor("#${seedColorHex.removePrefix("#")}"))
-            }
-        }.getOrElse { defaultSeed }
+            val styleStr = json.optString("android.theme.customization.theme_style", "TONAL_SPOT")
+            val style =
+                ThemeStyle.values().find { it.systemValue == styleStr } ?: ThemeStyle.TONAL_SPOT
 
-        val fidelity = json.optBoolean("_fidelity_enabled", true)
+            val seedColor: Color =
+                runCatching {
+                        val seedColorHex = json.optString("_base_seed_color", null)
+                        if (seedColorHex.isNullOrBlank()) {
+                            defaultSeed
+                        } else {
+                            Color(GraphicsColor.parseColor("#${seedColorHex.removePrefix("#")}"))
+                        }
+                    }
+                    .getOrElse { defaultSeed }
 
-        val contrast = json.optDouble("_contrast_level", 0.0).toFloat()
-        val chroma = json.optDouble("_chroma_boost", 0.0).toFloat()
+            val fidelity = json.optBoolean("_fidelity_enabled", true)
 
-        return ColorsSettingsData(
-            seedColor = seedColor,
-            style = style,
-            useWallpaperColors = useWallpaper,
-            contrastLevel = contrast,
-            fidelity = fidelity,
-            chromaBoost = chroma
-        )
-    }.getOrElse { return ColorsSettingsData() }
+            val contrast = json.optDouble("_contrast_level", 0.0).toFloat()
+            val chroma = json.optDouble("_chroma_boost", 0.0).toFloat()
+
+            return ColorsSettingsData(
+                seedColor = seedColor,
+                style = style,
+                useWallpaperColors = useWallpaper,
+                contrastLevel = contrast,
+                fidelity = fidelity,
+                chromaBoost = chroma,
+            )
+        }
+        .getOrElse {
+            return ColorsSettingsData()
+        }
 }

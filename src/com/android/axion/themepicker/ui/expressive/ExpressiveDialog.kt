@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.axion.themepicker.ui.expressive
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.*
 import androidx.compose.ui.text.font.*
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.*
 import com.android.axion.themepicker.R
 
 @Composable
@@ -34,7 +37,7 @@ fun ExpressiveDialog(
     confirmText: String = stringResource(R.string.confirm),
     dismissText: String = stringResource(R.string.cancel),
     confirmButtonColors: ButtonColors = ButtonDefaults.filledTonalButtonColors(),
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
     if (showDialog) {
@@ -45,35 +48,32 @@ fun ExpressiveDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             },
             text = {
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = colors.onSurfaceVariant
+                    color = colors.onSurfaceVariant,
                 )
             },
             containerColor = colors.surfaceContainerHigh,
             confirmButton = {
                 FilledTonalButton(
                     onClick = onConfirm,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = confirmButtonColors
+                    shape = MaterialTheme.shapes.large,
+                    colors = confirmButtonColors,
                 ) {
                     Text(confirmText, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = onDismiss,
-                    shape = RoundedCornerShape(16.dp)
-                ) {
+                TextButton(onClick = onDismiss, shape = MaterialTheme.shapes.large) {
                     Text(dismissText, fontWeight = FontWeight.Medium)
                 }
             },
-            shape = RoundedCornerShape(32.dp)
+            shape = MaterialTheme.shapes.extraLargeIncreased,
         )
     }
 }

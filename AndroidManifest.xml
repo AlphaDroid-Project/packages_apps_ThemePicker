@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest 
+<manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.axion.themepicker"
     android:sharedUserId="android.uid.system">
@@ -16,22 +16,27 @@
     <uses-permission android:name="android.permission.READ_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
+    <uses-permission android:name="android.permission.BIND_APPWIDGET" />
+    <uses-permission android:name="android.permission.CUSTOMIZE_SYSTEM_UI" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER_COMPONENT" />
+    <uses-permission android:name="android.permission.READ_WALLPAPER_INTERNAL" />
+    <uses-permission android:name="android.permission.BIND_WALLPAPER" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER_DIM_AMOUNT" />
 
     <application
-        android:label="Axion ThemePicker"
+        android:label="@string/app_name"
         android:allowBackup="false"
         android:extractNativeLibs="false"
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:directBootAware="true"
         android:largeHeap="false">
-        
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
@@ -44,16 +49,22 @@
         <activity
             android:name=".ui.WallpaperSetActivity"
             android:exported="true"
-            android:hardwareAccelerated="true"
-            android:resizeableActivity="true"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:relinquishTaskIdentity="true"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:taskAffinity=""
-            android:excludeFromRecents="false">
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.SET_WALLPAPER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.service.wallpaper.CROP_AND_SET_WALLPAPER" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.ATTACH_DATA" />
-                <action android:name="android.intent.action.GET_CONTENT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.axion.themepicker.ui.components
 
 import androidx.compose.animation.*
@@ -22,6 +25,7 @@ import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
@@ -31,7 +35,6 @@ import androidx.compose.ui.platform.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import androidx.compose.material3.MaterialTheme
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
 
@@ -54,125 +57,123 @@ fun CommonBottomSheet(
     title: String,
     heightFraction: Float = 0.4f,
     surfaceColor: Color? = null,
+    scrimAlpha: Float = 0.32f,
     onDismiss: () -> Unit,
     onOffsetChanged: ((currentOffset: Float, maxOffset: Float) -> Unit)? = null,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
+    val sheetSpatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
+    val sheetEffectsSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = Alignment.BottomCenter,
     ) {
         val screenHeightPx = with(density) { maxHeight.toPx() }
         val sheetHeightPx = screenHeightPx * heightFraction
 
         val offsetY = remember { Animatable(sheetHeightPx + 50f) }
+        var isDismissing by remember { mutableStateOf(false) }
+        val currentOnDismiss by rememberUpdatedState(onDismiss)
+        val currentOnOffsetChanged by rememberUpdatedState(onOffsetChanged)
 
-        LaunchedEffect(offsetY.value) {
-            onOffsetChanged?.invoke(offsetY.value, sheetHeightPx + 50f)
+        LaunchedEffect(sheetHeightPx) {
+            snapshotFlow { offsetY.value }
+                .collect { value -> currentOnOffsetChanged?.invoke(value, sheetHeightPx + 50f) }
         }
 
         LaunchedEffect(visible) {
             if (visible) {
-                offsetY.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(400, easing = FastOutSlowInEasing)
-                )
+                isDismissing = false
+                offsetY.animateTo(targetValue = 0f, animationSpec = sheetSpatialSpec)
             } else {
                 offsetY.animateTo(
                     targetValue = sheetHeightPx + 50f,
-                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    animationSpec = sheetSpatialSpec,
                 )
             }
         }
 
-        val backdropAlpha by animateFloatAsState(
-            targetValue = if (visible) 0.5f else 0f,
-            animationSpec = tween(durationMillis = 300),
-            label = "BackdropAlpha"
-        )
+        val backdropAlpha by
+            animateFloatAsState(
+                targetValue = if (visible) scrimAlpha else 0f,
+                animationSpec = sheetEffectsSpec,
+                label = "BackdropAlpha",
+            )
 
         if (visible || offsetY.value < sheetHeightPx) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = backdropAlpha))
-                    .pointerInput(Unit) {
-                        detectTapGestures(onTap = {
-                            coroutineScope.launch {
-                                offsetY.animateTo(
-                                    targetValue = sheetHeightPx + 50f,
-                                    animationSpec = tween(300, easing = FastOutSlowInEasing)
-                                )
-                                onOffsetChanged?.invoke(offsetY.value, sheetHeightPx + 50f)
-                                onDismiss()
-                            }
-                        })
-                    },
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(with(density) { sheetHeightPx.toDp() })
-                        .offset(y = with(density) { offsetY.value.toDp() })
-                        .background(
-                            surfaceColor ?: colors.surface,
-                            RoundedCornerShape(
-                                topStart = SheetDimens.SheetCorner,
-                                topEnd = SheetDimens.SheetCorner
-                            )
-                        )
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = SheetDimens.SheetCorner,
-                                topEnd = SheetDimens.SheetCorner
-                            )
-                        )
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures(
-                                onVerticalDrag = { _, dragAmount ->
-                                    val newOffset = (offsetY.value + dragAmount).coerceAtLeast(0f)
+                modifier =
+                    Modifier.fillMaxSize()
+                        .background(colors.scrim.copy(alpha = backdropAlpha))
+                        .pointerInput(sheetHeightPx) {
+                            detectTapGestures(
+                                onTap = {
+                                    if (isDismissing) return@detectTapGestures
+                                    isDismissing = true
                                     coroutineScope.launch {
-                                        offsetY.snapTo(newOffset)
-                                    }
-                                },
-                                onDragEnd = {
-                                    coroutineScope.launch {
-                                        if (offsetY.value > sheetHeightPx * 0.25f) {
-                                            offsetY.animateTo(
-                                                targetValue = sheetHeightPx + 50f,
-                                                animationSpec = tween(300, easing = FastOutSlowInEasing)
-                                            )
-                                            onOffsetChanged?.invoke(offsetY.value, sheetHeightPx + 50f)
-                                            onDismiss()
-                                        } else {
-                                            offsetY.animateTo(
-                                                targetValue = 0f,
-                                                animationSpec = tween(300, easing = FastOutSlowInEasing)
-                                            )
-                                            onOffsetChanged?.invoke(offsetY.value, sheetHeightPx + 50f)
-                                        }
+                                        offsetY.animateTo(
+                                            targetValue = sheetHeightPx + 50f,
+                                            animationSpec = sheetSpatialSpec,
+                                        )
+                                        currentOnDismiss()
                                     }
                                 }
                             )
-                        }
+                        },
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                val sheetShape =
+                    RoundedCornerShape(
+                        topStart = SheetDimens.SheetCorner,
+                        topEnd = SheetDimens.SheetCorner,
+                    )
+                Box(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .height(with(density) { sheetHeightPx.toDp() })
+                            .graphicsLayer { translationY = offsetY.value }
+                            .background(surfaceColor ?: colors.surface, sheetShape)
+                            .clip(sheetShape)
+                            .pointerInput(sheetHeightPx) {
+                                detectVerticalDragGestures(
+                                    onVerticalDrag = { _, dragAmount ->
+                                        val newOffset =
+                                            (offsetY.value + dragAmount).coerceAtLeast(0f)
+                                        coroutineScope.launch { offsetY.snapTo(newOffset) }
+                                    },
+                                    onDragEnd = {
+                                        coroutineScope.launch {
+                                            if (offsetY.value > sheetHeightPx * 0.25f) {
+                                                offsetY.animateTo(
+                                                    targetValue = sheetHeightPx + 50f,
+                                                    animationSpec = sheetSpatialSpec,
+                                                )
+                                                currentOnDismiss()
+                                            } else {
+                                                offsetY.animateTo(
+                                                    targetValue = 0f,
+                                                    animationSpec = sheetSpatialSpec,
+                                                )
+                                            }
+                                        }
+                                    },
+                                )
+                            }
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = SheetDimens.SheetTopPadding)
+                        modifier = Modifier.fillMaxSize().padding(top = SheetDimens.SheetTopPadding)
                     ) {
                         Box(
-                            modifier = Modifier
-                                .width(32.dp)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(colors.outlineVariant)
-                                .align(Alignment.CenterHorizontally)
+                            modifier =
+                                Modifier.width(32.dp)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(colors.outlineVariant)
+                                    .align(Alignment.CenterHorizontally)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -182,11 +183,11 @@ fun CommonBottomSheet(
                             fontSize = SheetDimens.SheetTitleFont,
                             fontWeight = FontWeight.SemiBold,
                             color = colors.onSurface,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = SheetDimens.SheetPagerPadding)
-                                .padding(bottom = 20.dp),
-                            textAlign = TextAlign.Start
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .padding(horizontal = SheetDimens.SheetPagerPadding)
+                                    .padding(bottom = 20.dp),
+                            textAlign = TextAlign.Start,
                         )
 
                         content()

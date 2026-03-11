@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.lockscreen
 
-import android.util.Log
-import android.content.ContentResolver
-import android.provider.Settings
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import android.graphics.Bitmap
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.interaction.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.*
-import androidx.compose.material.ripple.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -33,223 +29,263 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.vector.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import com.android.axion.themepicker.ui.components.CommonBottomSheet
-import com.android.axion.themepicker.ui.components.PagedTilePicker
-import androidx.compose.material3.MaterialTheme
+import androidx.core.graphics.drawable.toBitmap
 import com.android.axion.themepicker.R
+import com.android.axion.themepicker.ui.components.CommonBottomSheet
 
-data class AffordanceOption(
-    val key: String,
-    val label: String,
-    val icon: ImageVector
-)
-
-object AffordancesList {
-    val options = listOf(
-        AffordanceOption("none", "None", Icons.Default.Close),
-        AffordanceOption("mute", "Mute", Icons.Default.VolumeOff),
-        AffordanceOption("camera", "Camera", Icons.Default.CameraAlt),
-        AffordanceOption("home", "Device controls", Icons.Default.Home),
-        AffordanceOption("video_camera", "Video camera", Icons.Default.Videocam),
-        AffordanceOption("flashlight", "Flashlight", Icons.Default.FlashlightOff),
-        AffordanceOption("do_not_disturb", "Do Not Disturb", Icons.Default.DoNotDisturb),
-        AffordanceOption("wallet", "Wallet", Icons.Default.AccountBalanceWallet),
-        AffordanceOption("qr_code_scanner", "QR code scanner", Icons.Default.QrCodeScanner)
-    )
-}
-
-enum class AffordanceSlot(val settingsKey: String) {
-    BOTTOM_START("slot_bottom_start"),
-    BOTTOM_END("slot_bottom_end")
-}
-
-fun readAffordance(resolver: ContentResolver, slot: AffordanceSlot): String {
-    return Settings.Secure.getString(resolver, slot.settingsKey) ?: "none"
-}
-
-fun writeAffordance(resolver: ContentResolver, slot: AffordanceSlot, value: String) {
-    Settings.Secure.putString(resolver, slot.settingsKey, value)
+enum class AffordanceSlot(val slotId: String) {
+    BOTTOM_START("bottom_start"),
+    BOTTOM_END("bottom_end"),
 }
 
 @Composable
-fun BoxScope.AffordanceOverlay(
+fun AffordanceOverlay(
     isPreview: Boolean,
     scale: Float = 1f,
-    showPickerOnLaunch: AffordanceSlot? = null
+    selections: List<AffordanceSelection> = emptyList(),
+    affordances: List<AffordanceInfo> = emptyList(),
+    activeSlot: AffordanceSlot? = null,
+    onSlotClicked: (AffordanceSlot) -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val resolver = context.contentResolver
-    val colors = MaterialTheme.colorScheme
-    val bottomPadding = 24.dp
-
-    var startAffordance by remember { 
-        mutableStateOf(readAffordance(resolver, AffordanceSlot.BOTTOM_START)) 
-    }
-    var endAffordance by remember { 
-        mutableStateOf(readAffordance(resolver, AffordanceSlot.BOTTOM_END)) 
-    }
-    var showPicker by remember { mutableStateOf<AffordanceSlot?>(null) }
-
-    var sheetOffset by remember { mutableStateOf(0f) }
-    var sheetMaxOffset by remember { mutableStateOf(0f) }
-
-    val density = LocalDensity.current
-    val transY by animateDpAsState(
-        targetValue = with(density) {
-            val offsetPx = (sheetMaxOffset - sheetOffset).coerceAtLeast(0f)
-            val offsetDp = offsetPx.toDp()
-            (offsetDp - bottomPadding).coerceAtLeast(bottomPadding)
-        },
-        animationSpec = tween(durationMillis = 100, easing = LinearOutSlowInEasing),
-        label = "BottomSheetAnim"
-    )
-
-    LaunchedEffect(showPickerOnLaunch) {
-        if (!isPreview && showPickerOnLaunch != null) {
-            showPicker = showPickerOnLaunch
-            Log.d("AffordanceOverlay", "showPickerOnLaunch=$showPickerOnLaunch")
-        }
-    }
-    
-    val bottomOffset = bottomPadding * scale + transY
+    val startAffordanceId =
+        selections.firstOrNull { it.slotId == AffordanceSlot.BOTTOM_START.slotId }?.affordanceId
+    val endAffordanceId =
+        selections.firstOrNull { it.slotId == AffordanceSlot.BOTTOM_END.slotId }?.affordanceId
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.BottomCenter)
-            .padding(
-                bottom = if (isPreview) bottomPadding / 2 else bottomOffset,
-                start = 16.dp * scale,
-                end = 16.dp * scale
-            ),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = modifier.fillMaxWidth().padding(start = 16.dp * scale, end = 16.dp * scale),
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         AffordanceButton(
             isPreview = isPreview,
-            affordanceKey = startAffordance,
+            affordanceId = startAffordanceId,
+            affordances = affordances,
             scale = scale,
-            selected = showPicker == AffordanceSlot.BOTTOM_START || isPreview,
-            onClick = { showPicker = AffordanceSlot.BOTTOM_START }
+            selected = activeSlot == AffordanceSlot.BOTTOM_START || isPreview,
+            onClick = { onSlotClicked(AffordanceSlot.BOTTOM_START) },
         )
 
         AffordanceButton(
             isPreview = isPreview,
-            affordanceKey = endAffordance,
+            affordanceId = endAffordanceId,
+            affordances = affordances,
             scale = scale,
-            selected = showPicker == AffordanceSlot.BOTTOM_END || isPreview,
-            onClick = { showPicker = AffordanceSlot.BOTTOM_END }
-        )
-    }
-    
-    if (isPreview) return
-
-    showPicker?.let { slot ->
-        AffordancePickerSheet(
-            visible = true,
-            currentSlot = slot,
-            currentValue = if (slot == AffordanceSlot.BOTTOM_START) startAffordance else endAffordance,
-            onDismiss = { showPicker = null },
-            onSelect = { selected ->
-                writeAffordance(resolver, slot, selected.key)
-                if (slot == AffordanceSlot.BOTTOM_START) {
-                    startAffordance = selected.key
-                } else {
-                    endAffordance = selected.key
-                }
-            },
-            onOffsetChanged = { offset, maxOffset ->
-                sheetOffset = offset
-                sheetMaxOffset = maxOffset
-            }
+            selected = activeSlot == AffordanceSlot.BOTTOM_END || isPreview,
+            onClick = { onSlotClicked(AffordanceSlot.BOTTOM_END) },
         )
     }
 }
 
 @Composable
 private fun AffordanceButton(
-    affordanceKey: String,
+    affordanceId: String?,
+    affordances: List<AffordanceInfo>,
     scale: Float,
     onClick: () -> Unit,
     isPreview: Boolean,
-    selected: Boolean = false 
+    selected: Boolean = false,
 ) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
-    val affordance = AffordancesList.options.find { it.key == affordanceKey }
-    val showIcon = affordance != null && affordanceKey != "none"
+    val affordance = affordances.firstOrNull { it.id == affordanceId }
+    val hasAffordance = affordance != null
     val buttonSize = if (isPreview) 48.dp else 64.dp
     val iconSize = if (isPreview) 18.dp else 28.dp
-    
-    val hide = !showIcon && isPreview
+    val density = context.resources.displayMetrics.density
+
+    val hide = !hasAffordance && isPreview
     val unselected = !selected && !hide
-    
+
+    val iconBitmap =
+        remember(affordance?.iconResourceId) {
+            affordance?.iconResourceId?.let { resId ->
+                AffordanceRepository.loadAffordanceIcon(context, resId)?.let { drawable ->
+                    val px = (28 * density).toInt()
+                    drawable.toBitmap(width = px, height = px)
+                }
+            }
+        }
+
     Box(
-        modifier = Modifier
-            .size(buttonSize * scale)
-            .clip(CircleShape)
-            .background(
-                color = if (selected && showIcon) colors.surface else Color.Transparent,
-                shape = CircleShape
-            )
-            .border(
-                width = if (unselected) 1.dp else 0.dp,
-                color = if (unselected) Color.White else Color.Transparent,
-                shape = CircleShape
-            )
-            .clickable(
-                enabled = !isPreview,
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            ) { onClick() },
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier.size(buttonSize * scale)
+                .clip(CircleShape)
+                .background(
+                    color = if (selected && hasAffordance) colors.surface else Color.Transparent,
+                    shape = CircleShape,
+                )
+                .border(
+                    width = if (unselected) 1.dp else 0.dp,
+                    color = if (unselected) Color.White else Color.Transparent,
+                    shape = CircleShape,
+                )
+                .clickable(
+                    enabled = !isPreview,
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                ) {
+                    onClick()
+                },
+        contentAlignment = Alignment.Center,
     ) {
-        if (showIcon) {
-            Icon(
-                imageVector = affordance.icon,
-                contentDescription = affordance.label,
-                tint = if (selected) colors.onSurface else Color.White,
-                modifier = Modifier.size(iconSize * scale)
+        if (hasAffordance && iconBitmap != null) {
+            Image(
+                bitmap = iconBitmap.asImageBitmap(),
+                contentDescription = affordance?.name,
+                modifier = Modifier.size(iconSize * scale),
+                colorFilter = ColorFilter.tint(if (selected) colors.onSurface else Color.White),
             )
         } else {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.add_affordance),
                 tint = if (hide) Color.Transparent else Color.White,
-                modifier = Modifier.size(iconSize * scale)
+                modifier = Modifier.size(iconSize * scale),
             )
         }
     }
 }
 
 @Composable
-fun AffordancePickerSheet(
+internal fun AffordancePickerSheet(
     visible: Boolean,
     currentSlot: AffordanceSlot,
-    currentValue: String,
+    currentAffordanceId: String?,
+    affordances: List<AffordanceInfo>,
     onDismiss: () -> Unit,
-    onSelect: (AffordanceOption) -> Unit,
-    onOffsetChanged: ((Float, Float) -> Unit)? = null
+    onSelect: (AffordanceInfo) -> Unit,
+    onRemove: () -> Unit,
 ) {
-    val titleText = if (currentSlot == AffordanceSlot.BOTTOM_START) 
-        stringResource(R.string.left_affordance) else stringResource(R.string.right_affordance)
+    val titleText =
+        if (currentSlot == AffordanceSlot.BOTTOM_START) stringResource(R.string.left_affordance)
+        else stringResource(R.string.right_affordance)
 
     CommonBottomSheet(
         visible = visible,
         title = titleText,
+        heightFraction = 0.5f,
         onDismiss = onDismiss,
-        onOffsetChanged = onOffsetChanged
     ) {
-        PagedTilePicker(
-            items = AffordancesList.options,
-            icon = { it.icon },
-            label = { it.label },
-            selected = { it.key == currentValue },
-            onSelect = onSelect
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            item {
+                AffordancePickerItem(
+                    name = stringResource(R.string.affordance_none),
+                    iconBitmap = null,
+                    fallbackIcon = Icons.Default.Close,
+                    isSelected = currentAffordanceId == null,
+                    isEnabled = true,
+                    onClick = {
+                        onRemove()
+                        onDismiss()
+                    },
+                )
+            }
+
+            items(count = affordances.size, key = { affordances[it].id }) { index ->
+                val affordance = affordances[index]
+                AffordancePickerItem(
+                    name = affordance.name,
+                    iconResourceId = affordance.iconResourceId,
+                    isSelected = affordance.id == currentAffordanceId,
+                    isEnabled = affordance.isEnabled,
+                    enablementExplanation = affordance.enablementExplanation,
+                    onClick = {
+                        if (affordance.isEnabled) {
+                            onSelect(affordance)
+                            onDismiss()
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AffordancePickerItem(
+    name: String,
+    iconResourceId: Int? = null,
+    iconBitmap: Bitmap? = null,
+    fallbackIcon: ImageVector? = null,
+    isSelected: Boolean,
+    isEnabled: Boolean,
+    enablementExplanation: String? = null,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    val colors = MaterialTheme.colorScheme
+    val density = context.resources.displayMetrics.density
+
+    val resolvedBitmap =
+        iconBitmap
+            ?: remember(iconResourceId) {
+                iconResourceId?.let { resId ->
+                    AffordanceRepository.loadAffordanceIcon(context, resId)?.let { drawable ->
+                        val px = (24 * density).toInt()
+                        drawable.toBitmap(width = px, height = px)
+                    }
+                }
+            }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier =
+            Modifier.clip(MaterialTheme.shapes.medium)
+                .clickable(enabled = isEnabled) { onClick() }
+                .padding(4.dp)
+                .alpha(if (isEnabled) 1f else 0.4f),
+    ) {
+        Box(
+            modifier =
+                Modifier.size(48.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelected) colors.primaryContainer else colors.surfaceContainerHigh
+                    ),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (resolvedBitmap != null) {
+                Image(
+                    bitmap = resolvedBitmap.asImageBitmap(),
+                    contentDescription = name,
+                    modifier = Modifier.size(24.dp),
+                    colorFilter =
+                        ColorFilter.tint(
+                            if (isSelected) colors.onPrimaryContainer else colors.onSurface
+                        ),
+                )
+            } else if (fallbackIcon != null) {
+                Icon(
+                    imageVector = fallbackIcon,
+                    contentDescription = name,
+                    tint = if (isSelected) colors.onPrimaryContainer else colors.onSurface,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            color = colors.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.widthIn(max = 64.dp),
         )
     }
 }

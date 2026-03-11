@@ -71,6 +71,7 @@
     <string name="select_at_least_one">En az birini seçin</string>
     <string name="set_wallpaper">Duvar kağıdı ayarla</string>
     <string name="set_wallpaper_on">Duvar kağıdını şurada ayarla</string>
+    <string name="home_lock_both">Her ikisi</string>
     <string name="wallpaper_info">Duvar kağıdı bilgisi</string>
 
     <!-- Effects -->
@@ -83,6 +84,15 @@
     <string name="app_grid_title">Uygulama Izgarası</string>
     <string name="home_screen_layout">Ana ekran düzeni</string>
     <string name="home_screen_layout_title">Ana Ekran Düzeni</string>
+    <string name="icon_shape_title">Simge Şekli</string>
+    <string name="icon_shape_description">Uygulama simge görünümü</string>
+    <string name="themed_icons_title">Simgeler</string>
+    <string name="themed_icons_summary">Temalı simgeler ve simge paketleri</string>
+    <string name="themed_icons_card_title">Temalı Simgeler</string>
+    <string name="themed_icons_description">Duvar kağıdı renklerinize uyum sağlayan tek renkli simgeler</string>
+    <string name="themed_icons_style">Simge Stili</string>
+    <string name="themed_icons_neutral">Nötr</string>
+    <string name="themed_icons_accent">Vurgulu</string>
     <string name="make_your_device_uniquely_yours">Cihazınızı benzersiz kılın</string>
     <string name="personalize">Kişiselleştir</string>
     <string name="pro_tip">Profesyonel İpucu</string>
@@ -178,20 +188,16 @@
     <string name="right_affordance">Sağ Kısayol</string>
     <string name="selected_widgets">Seçili Widget\'lar</string>
     <string name="selected_widgets_empty">Widget seçilmedi</string>
-    <string name="selected_widgets_guide">Sürükleyip bırakmak için uzun basın, kaldırmak için widget\'a dokunun.</string>
+    <string name="selected_widgets_guide">Widget eklemek için bir hücreye, kaldırmak için widget\'a dokunun.</string>
+    <string name="search_widgets">Widget ara</string>
+    <string name="no_results">Sonuç bulunamadı</string>
+    <string name="no_widgets_available">Kullanılabilir widget yok</string>
     <string name="tap_the_preview_to_see_all_customization_options">Tüm özelleştirme seçeneklerini görmek için önizlemeye dokunun</string>
     <string name="tap_to_customize">Özelleştirmek için dokunun</string>
     <string name="temperature_prev">27°</string>
     <string name="video_camera">Video Kamera</string>
     <string name="wallet">Cüzdan</string>
     <string name="weather_prev">Parçalı Bulutlu</string>
-    <string name="widget_bluetooth">Bluetooth</string>
-    <string name="widget_data">Veri</string>
-    <string name="widget_hotspot">Erişim Noktası</string>
-    <string name="widget_removed">Widget kaldırıldı</string>
-    <string name="widget_ringer">Zil Sesi</string>
-    <string name="widget_torch">El Feneri</string>
-    <string name="widget_wifi">Wi-Fi</string>
     <string name="widgets_title">Widget\'lar</string>
 
     <!-- Preferences -->

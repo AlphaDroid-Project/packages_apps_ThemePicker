@@ -18,6 +18,7 @@ android_app {
 
     required: [
         "privapp-permissions-axthemepicker",
+        "AxWallpaperEffects",
     ],
 
     optimize: {
@@ -27,11 +28,14 @@ android_app {
     use_embedded_native_libs: true,
 
     static_libs: [
+        "ax_compose",
+        "ax_kt",
+        "ax.androidx.compose.material3_material3",
+        "com.composables_icons-material-symbols-rounded-filled-android",
         "androidx.activity_activity-compose",
         "androidx.core_core-ktx",
         "androidx.appcompat_appcompat",
         "com.google.android.material_material",
-        "androidx.activity_activity-compose",
         "androidx.compose.animation_animation-core",
         "androidx.compose.animation_animation-graphics",
         "androidx.compose.foundation_foundation",
@@ -50,7 +54,8 @@ android_app {
         "gson-prebuilt-jar-2.9.1",
         "hilt_android",
         "ThemePickerLib",
-        "SystemUICustomizationLib"
+        "SystemUICustomizationLib",
+        "androidx.graphics_graphics-shapes",
     ],
 
     jni_libs: [

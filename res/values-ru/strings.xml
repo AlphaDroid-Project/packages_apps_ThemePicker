@@ -75,6 +75,7 @@
     <string name="select_at_least_one">Выберите хотя бы один</string>
     <string name="set_wallpaper">Установить обои</string>
     <string name="set_wallpaper_on">Установить обои на</string>
+    <string name="home_lock_both">Оба</string>
     <string name="wallpaper_info">Информация об обоях</string>
 
     <!-- Effects -->
@@ -87,6 +88,15 @@
     <string name="app_grid_title">Сетка приложений</string>
     <string name="home_screen_layout">Макет главного экрана</string>
     <string name="home_screen_layout_title">Макет главного экрана</string>
+    <string name="icon_shape_title">Форма иконок</string>
+    <string name="icon_shape_description">Внешний вид иконок</string>
+    <string name="themed_icons_title">Иконки</string>
+    <string name="themed_icons_summary">Тематические иконки и наборы иконок</string>
+    <string name="themed_icons_card_title">Тематические иконки</string>
+    <string name="themed_icons_description">Монохромные иконки, адаптирующиеся к цветам обоев</string>
+    <string name="themed_icons_style">Стиль иконок</string>
+    <string name="themed_icons_neutral">Нейтральный</string>
+    <string name="themed_icons_accent">Акцентный</string>
     <string name="make_your_device_uniquely_yours">Сделайте устройство уникальным</string>
     <string name="personalize">Персонализация</string>
     <string name="pro_tip">Совет</string>
@@ -182,20 +192,16 @@
     <string name="right_affordance">Правый быстрый доступ</string>
     <string name="selected_widgets">Выбранные виджеты</string>
     <string name="selected_widgets_empty">Виджеты не выбраны</string>
-    <string name="selected_widgets_guide">Долгое нажатие для перетаскивания, нажмите на виджет для удаления.</string>
+    <string name="selected_widgets_guide">Нажмите на ячейку, чтобы добавить виджет, нажмите на виджет, чтобы удалить его.</string>
+    <string name="search_widgets">Поиск виджетов</string>
+    <string name="no_results">Нет результатов</string>
+    <string name="no_widgets_available">Нет доступных виджетов</string>
     <string name="tap_the_preview_to_see_all_customization_options">Нажмите на предпросмотр, чтобы увидеть все параметры настройки</string>
     <string name="tap_to_customize">Нажмите для настройки</string>
     <string name="temperature_prev">27°</string>
     <string name="video_camera">Видеокамера</string>
     <string name="wallet">Кошелёк</string>
     <string name="weather_prev">Переменная облачность</string>
-    <string name="widget_bluetooth">Bluetooth</string>
-    <string name="widget_data">Данные</string>
-    <string name="widget_hotspot">Точка доступа</string>
-    <string name="widget_removed">Виджет удалён</string>
-    <string name="widget_ringer">Звонок</string>
-    <string name="widget_torch">Фонарик</string>
-    <string name="widget_wifi">Wi-Fi</string>
     <string name="widgets_title">Виджеты</string>
 
     <!-- Preferences -->

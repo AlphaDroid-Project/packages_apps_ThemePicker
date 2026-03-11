@@ -71,6 +71,7 @@
     <string name="select_at_least_one">至少选择一个</string>
     <string name="set_wallpaper">设置壁纸</string>
     <string name="set_wallpaper_on">设置壁纸到</string>
+    <string name="home_lock_both">全部</string>
     <string name="wallpaper_info">壁纸信息</string>
 
     <!-- Effects -->
@@ -82,6 +83,15 @@
     <string name="app_grid_title">应用网格</string>
     <string name="home_screen_layout">主屏幕布局</string>
     <string name="home_screen_layout_title">主屏幕布局</string>
+    <string name="icon_shape_title">图标形状</string>
+    <string name="icon_shape_description">应用图标外观</string>
+    <string name="themed_icons_title">图标</string>
+    <string name="themed_icons_summary">主题图标和图标包</string>
+    <string name="themed_icons_card_title">主题图标</string>
+    <string name="themed_icons_description">随壁纸颜色自动适配的单色图标</string>
+    <string name="themed_icons_style">图标风格</string>
+    <string name="themed_icons_neutral">中性</string>
+    <string name="themed_icons_accent">强调色</string>
     <string name="make_your_device_uniquely_yours">让您的设备独一无二</string>
     <string name="personalize">个性化</string>
     <string name="pro_tip">专业提示</string>
@@ -177,20 +187,16 @@
     <string name="right_affordance">右侧快捷方式</string>
     <string name="selected_widgets">已选择的小部件</string>
     <string name="selected_widgets_empty">未选择小部件</string>
-    <string name="selected_widgets_guide">长按拖放，点击小部件以删除。</string>
+    <string name="selected_widgets_guide">点击单元格添加小部件，点击小部件将其删除。</string>
+    <string name="search_widgets">搜索小部件</string>
+    <string name="no_results">无结果</string>
+    <string name="no_widgets_available">没有可用的小部件</string>
     <string name="tap_the_preview_to_see_all_customization_options">点击预览以查看所有自定义选项</string>
     <string name="tap_to_customize">点击以自定义</string>
     <string name="temperature_prev">27°</string>
     <string name="video_camera">摄像机</string>
     <string name="wallet">钱包</string>
     <string name="weather_prev">多云</string>
-    <string name="widget_bluetooth">蓝牙</string>
-    <string name="widget_data">数据</string>
-    <string name="widget_hotspot">热点</string>
-    <string name="widget_removed">小部件已删除</string>
-    <string name="widget_ringer">铃声</string>
-    <string name="widget_torch">手电筒</string>
-    <string name="widget_wifi">Wi-Fi</string>
     <string name="widgets_title">小部件</string>
 
     <!-- Preferences -->

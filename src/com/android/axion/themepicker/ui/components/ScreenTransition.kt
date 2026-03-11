@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,113 +13,105 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.components
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
-import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
-import com.android.axion.themepicker.ui.theme.LocalExpressiveDesign
 
+private const val SCALE_INITIAL = 0.92f
+private const val SCALE_TARGET = 1.05f
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun <T> ScreenTransition(
     targetState: T,
     isNavigatingBack: Boolean = false,
     modifier: Modifier = Modifier,
-    content: @Composable (T) -> Unit
+    content: @Composable (T) -> Unit,
 ) {
-    val design = LocalExpressiveDesign.current
-    
+    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+    val effectsSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
+
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            val back = isNavigatingBack
-            val direction = if (back) SlideDirection.End else SlideDirection.Start
-            val oppositeDirection = if (back) SlideDirection.Start else SlideDirection.End
-            
-            val enterSpec = spring<IntOffset>(
-                dampingRatio = design.motion.screenEnter.dampingRatio,
-                stiffness = design.motion.screenEnter.stiffness
-            )
-            val exitSpec = tween<IntOffset>(
-                durationMillis = design.motion.durationMedium,
-                easing = FastOutSlowInEasing
-            )
-            
-            (slideIntoContainer(towards = direction, animationSpec = enterSpec) + 
-             fadeIn(animationSpec = tween(design.motion.durationShort))) togetherWith
-            (slideOutOfContainer(towards = direction, animationSpec = exitSpec) + 
-             fadeOut(animationSpec = tween(design.motion.durationShort)))
+            val direction = if (isNavigatingBack) SlideDirection.End else SlideDirection.Start
+
+            (slideIntoContainer(towards = direction, animationSpec = spatialSpec) +
+                fadeIn(animationSpec = effectsSpec)) togetherWith
+                (slideOutOfContainer(towards = direction, animationSpec = spatialSpec) +
+                    fadeOut(animationSpec = effectsSpec)) using
+                SizeTransform(clip = false)
         },
         label = "screen_transition",
-        modifier = modifier
+        modifier = modifier,
     ) { state ->
         content(state)
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun <T> SharedElementTransition(
     targetState: T,
     modifier: Modifier = Modifier,
-    content: @Composable AnimatedContentScope.(T) -> Unit
+    content: @Composable AnimatedContentScope.(T) -> Unit,
 ) {
-    val design = LocalExpressiveDesign.current
-    
+    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
+    val effectsSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
+
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            fadeIn(animationSpec = tween(design.motion.durationMedium)) +
-            scaleIn(
-                initialScale = 0.92f,
-                animationSpec = spring(
-                    dampingRatio = design.motion.containerTransform.dampingRatio,
-                    stiffness = design.motion.containerTransform.stiffness
-                )
-            ) togetherWith
-            fadeOut(animationSpec = tween(design.motion.durationShort)) +
-            scaleOut(
-                targetScale = 1.05f,
-                animationSpec = tween(design.motion.durationShort)
-            )
+            (fadeIn(animationSpec = effectsSpec) +
+                scaleIn(initialScale = SCALE_INITIAL, animationSpec = spatialSpec)) togetherWith
+                (fadeOut(animationSpec = effectsSpec) +
+                    scaleOut(targetScale = SCALE_TARGET, animationSpec = spatialSpec)) using
+                SizeTransform(clip = false)
         },
         label = "shared_element_transition",
-        modifier = modifier
+        modifier = modifier,
     ) { state ->
         content(state)
     }
 }
 
-/**
- * Vertical slide transition for bottom sheets and dialogs
- */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun <T> VerticalSlideTransition(
     targetState: T,
     modifier: Modifier = Modifier,
-    content: @Composable (T) -> Unit
+    content: @Composable (T) -> Unit,
 ) {
-    val design = LocalExpressiveDesign.current
-    
+    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+    val effectsSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
+
     AnimatedContent(
         targetState = targetState,
         transitionSpec = {
-            slideInVertically(
-                initialOffsetY = { it },
-                animationSpec = spring(
-                    dampingRatio = design.motion.emphasisMedium.dampingRatio,
-                    stiffness = design.motion.emphasisMedium.stiffness
-                )
-            ) + fadeIn() togetherWith
-            slideOutVertically(
-                targetOffsetY = { it },
-                animationSpec = tween(design.motion.durationMedium)
-            ) + fadeOut()
+            (slideInVertically(initialOffsetY = { it }, animationSpec = spatialSpec) +
+                fadeIn(animationSpec = effectsSpec)) togetherWith
+                (slideOutVertically(targetOffsetY = { it }, animationSpec = spatialSpec) +
+                    fadeOut(animationSpec = effectsSpec)) using
+                SizeTransform(clip = false)
         },
         label = "vertical_slide_transition",
-        modifier = modifier
+        modifier = modifier,
     ) { state ->
         content(state)
     }

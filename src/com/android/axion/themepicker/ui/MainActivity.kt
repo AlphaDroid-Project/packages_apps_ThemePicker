@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
 package com.android.axion.themepicker.ui
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import com.android.axion.themepicker.ui.app.ThemePickerApp
 import com.android.axion.themepicker.ui.theme.AxTheme
 
@@ -41,25 +29,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        setContent {
-            val context = LocalContext.current
-            val isDarkTheme = isSystemInDarkTheme()
-            val materialColors = if (isDarkTheme) dynamicDarkColorScheme(context)
-            else dynamicLightColorScheme(context)
-
-            MaterialExpressiveTheme(
-                colorScheme = materialColors,
-                motionScheme = MotionScheme.expressive()
-            ) {
-                AxTheme {
-                    Surface(
-                        modifier = Modifier,
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        ThemePickerApp()
-                    }
-                }
-            }
-        }
+        setContent { AxTheme { ThemePickerApp() } }
     }
 }

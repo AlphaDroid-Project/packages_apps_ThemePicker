@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.ui.app
 
+import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.axion.themepicker.R
-import com.android.axion.themepicker.ui.lockscreen.LockscreenPreview
+import com.android.axion.themepicker.ui.lockscreen.SimpleLockscreenPreview
 import com.android.axion.themepicker.ui.preview.HomescreenPreview
 import com.android.axion.themepicker.utils.wallpaper.centerCrop
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 val WallpaperMiniPreviewsWidth = 140.dp
 val WallpaperMiniPreviewsHeight = 300.dp
@@ -40,40 +42,35 @@ val WallpaperPreviewsWidth = 160.dp
 val WallpaperPreviewsHeight = 340.dp
 
 @Composable
-fun PreviewsPage(
-    isHome: Boolean,
-    refreshKey: Any? = null,
-    modifier: Modifier = Modifier
-) {
+fun PreviewsPage(isHome: Boolean, refreshKey: Any? = null, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val wallpaperBitmap = remember(refreshKey) {
-        getCurrentWallpaperBitmap(context, isHome)
-    }
-    
+    val wallpaperBitmap by
+        produceState<Bitmap?>(null, refreshKey, isHome) {
+            value = withContext(Dispatchers.IO) { getCurrentWallpaperBitmap(context, isHome) }
+        }
+
     Box(modifier = modifier) {
         if (isHome) {
             wallpaperBitmap?.let { bitmap ->
+                val imageBitmap = remember(bitmap) { bitmap.asImageBitmap() }
                 Image(
-                    bitmap = bitmap.asImageBitmap(),
+                    bitmap = imageBitmap,
                     contentDescription = stringResource(R.string.home_screen_preview),
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
                 )
-                
+
                 HomescreenPreview(
                     modifier = Modifier.fillMaxSize(),
-                    wallpaperDrawable = BitmapDrawable(
-                        context.resources,
-                        centerCrop(context, bitmap)
-                    ),
-                    refreshKey = refreshKey
+                    wallpaperDrawable =
+                        BitmapDrawable(context.resources, centerCrop(context, bitmap)),
+                    refreshKey = refreshKey,
                 )
             }
         } else {
-            LockscreenPreview(
-                isPreview = true,
+            SimpleLockscreenPreview(
                 wallpaperBitmap = wallpaperBitmap,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }

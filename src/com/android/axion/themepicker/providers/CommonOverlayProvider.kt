@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.providers
 
 import android.content.Context
@@ -22,11 +23,11 @@ import android.graphics.Typeface
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
+import com.android.axion.themepicker.data.model.FontOverlayOption
+import com.android.axion.themepicker.data.model.OverlayOption
 import com.android.customization.model.ResourceConstants
 import com.android.customization.model.theme.OverlayManagerCompat
 import com.android.themepicker.R
-import com.android.axion.themepicker.data.model.FontOverlayOption
-import com.android.axion.themepicker.data.model.OverlayOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONException
@@ -35,7 +36,7 @@ import org.json.JSONObject
 class CommonOverlayProvider(
     private val context: Context,
     private val overlayManager: OverlayManagerCompat,
-    private val category: String
+    private val category: String,
 ) {
     private val packageManager: PackageManager = context.packageManager
     private val overlayPackages: List<String>
@@ -43,77 +44,96 @@ class CommonOverlayProvider(
 
     init {
         val packagesToOverlay = ResourceConstants.getPackagesToOverlay(context)
-        overlayPackages = overlayManager.getOverlayPackagesForCategory(
-            category,
-            UserHandle.myUserId(),
-            *packagesToOverlay
-        )
-        activeOverlay = overlayManager.getEnabledPackageName(
-            ResourceConstants.ANDROID_PACKAGE,
-            category
-        )
+        overlayPackages =
+            overlayManager.getOverlayPackagesForCategory(
+                category,
+                UserHandle.myUserId(),
+                *packagesToOverlay,
+            )
+        activeOverlay =
+            overlayManager.getEnabledPackageName(ResourceConstants.ANDROID_PACKAGE, category)
     }
 
-    suspend fun loadOptions(): List<OverlayOption> = withContext(Dispatchers.IO) {
-        val options = mutableListOf<OverlayOption>()
-        
-        options.add(createDefaultOption())
-        
-        val customOptions = overlayPackages.mapNotNull { overlayPackage ->
-            try {
-                val label = packageManager.getApplicationInfo(overlayPackage, 0)
-                    .loadLabel(packageManager).toString()
-                
-                OverlayOption(
-                    packageName = overlayPackage,
-                    label = label,
-                    isActive = overlayPackage == activeOverlay
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "Couldn't load overlay $overlayPackage, will skip it", e)
-                null
-            }
-        }
-        
-        options.addAll(customOptions.sortedBy { it.label })
-        options
-    }
+    suspend fun loadOptions(): List<OverlayOption> =
+        withContext(Dispatchers.IO) {
+            val options = mutableListOf<OverlayOption>()
 
-    suspend fun loadFontOptions(): List<FontOverlayOption> = withContext(Dispatchers.IO) {
-        val options = mutableListOf<FontOverlayOption>()
-        
-        options.add(createDefaultFontOption())
-        
-        val customOptions = overlayPackages.mapNotNull { overlayPackage ->
-            try {
-                val overlayRes = packageManager.getResourcesForApplication(overlayPackage)
-                val headlineFont = Typeface.create(
-                    getFontFamily(overlayPackage, overlayRes, ResourceConstants.CONFIG_HEADLINE_FONT_FAMILY),
-                    Typeface.NORMAL
-                )
-                val bodyFont = Typeface.create(
-                    getFontFamily(overlayPackage, overlayRes, ResourceConstants.CONFIG_BODY_FONT_FAMILY),
-                    Typeface.NORMAL
-                )
-                val label = packageManager.getApplicationInfo(overlayPackage, 0)
-                    .loadLabel(packageManager).toString()
-                
-                FontOverlayOption(
-                    packageName = overlayPackage,
-                    label = label,
-                    headlineFont = headlineFont,
-                    bodyFont = bodyFont,
-                    isActive = overlayPackage == activeOverlay
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "Couldn't load font overlay $overlayPackage, will skip it", e)
-                null
-            }
+            options.add(createDefaultOption())
+
+            val customOptions =
+                overlayPackages.mapNotNull { overlayPackage ->
+                    try {
+                        val label =
+                            packageManager
+                                .getApplicationInfo(overlayPackage, 0)
+                                .loadLabel(packageManager)
+                                .toString()
+
+                        OverlayOption(
+                            packageName = overlayPackage,
+                            label = label,
+                            isActive = overlayPackage == activeOverlay,
+                        )
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Couldn't load overlay $overlayPackage, will skip it", e)
+                        null
+                    }
+                }
+
+            options.addAll(customOptions.sortedBy { it.label })
+            options
         }
-        
-        options.addAll(customOptions.sortedBy { it.label })
-        options
-    }
+
+    suspend fun loadFontOptions(): List<FontOverlayOption> =
+        withContext(Dispatchers.IO) {
+            val options = mutableListOf<FontOverlayOption>()
+
+            options.add(createDefaultFontOption())
+
+            val customOptions =
+                overlayPackages.mapNotNull { overlayPackage ->
+                    try {
+                        val overlayRes = packageManager.getResourcesForApplication(overlayPackage)
+                        val headlineFont =
+                            Typeface.create(
+                                getFontFamily(
+                                    overlayPackage,
+                                    overlayRes,
+                                    ResourceConstants.CONFIG_HEADLINE_FONT_FAMILY,
+                                ),
+                                Typeface.NORMAL,
+                            )
+                        val bodyFont =
+                            Typeface.create(
+                                getFontFamily(
+                                    overlayPackage,
+                                    overlayRes,
+                                    ResourceConstants.CONFIG_BODY_FONT_FAMILY,
+                                ),
+                                Typeface.NORMAL,
+                            )
+                        val label =
+                            packageManager
+                                .getApplicationInfo(overlayPackage, 0)
+                                .loadLabel(packageManager)
+                                .toString()
+
+                        FontOverlayOption(
+                            packageName = overlayPackage,
+                            label = label,
+                            headlineFont = headlineFont,
+                            bodyFont = bodyFont,
+                            isActive = overlayPackage == activeOverlay,
+                        )
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Couldn't load font overlay $overlayPackage, will skip it", e)
+                        null
+                    }
+                }
+
+            options.addAll(customOptions.sortedBy { it.label })
+            options
+        }
 
     fun applyOverlay(option: OverlayOption): Boolean {
         return try {
@@ -122,7 +142,7 @@ class CommonOverlayProvider(
             } else {
                 overlayManager.setEnabledExclusiveInCategory(
                     option.packageName,
-                    UserHandle.myUserId()
+                    UserHandle.myUserId(),
                 )
             }
 
@@ -160,43 +180,49 @@ class CommonOverlayProvider(
         return OverlayOption(
             packageName = null,
             label = context.getString(R.string.default_theme_title),
-            isActive = activeOverlay == null
+            isActive = activeOverlay == null,
         )
     }
 
     private fun createDefaultFontOption(): FontOverlayOption {
         val system = Resources.getSystem()
-        val headlineFont = Typeface.create(
-            system.getString(
-                system.getIdentifier(
-                    ResourceConstants.CONFIG_HEADLINE_FONT_FAMILY,
-                    "string",
-                    ResourceConstants.ANDROID_PACKAGE
-                )
-            ),
-            Typeface.NORMAL
-        )
-        val bodyFont = Typeface.create(
-            system.getString(
-                system.getIdentifier(
-                    ResourceConstants.CONFIG_BODY_FONT_FAMILY,
-                    "string",
-                    ResourceConstants.ANDROID_PACKAGE
-                )
-            ),
-            Typeface.NORMAL
-        )
-        
+        val headlineFont =
+            Typeface.create(
+                system.getString(
+                    system.getIdentifier(
+                        ResourceConstants.CONFIG_HEADLINE_FONT_FAMILY,
+                        "string",
+                        ResourceConstants.ANDROID_PACKAGE,
+                    )
+                ),
+                Typeface.NORMAL,
+            )
+        val bodyFont =
+            Typeface.create(
+                system.getString(
+                    system.getIdentifier(
+                        ResourceConstants.CONFIG_BODY_FONT_FAMILY,
+                        "string",
+                        ResourceConstants.ANDROID_PACKAGE,
+                    )
+                ),
+                Typeface.NORMAL,
+            )
+
         return FontOverlayOption(
             packageName = null,
             label = context.getString(R.string.default_theme_title),
             headlineFont = headlineFont,
             bodyFont = bodyFont,
-            isActive = activeOverlay == null
+            isActive = activeOverlay == null,
         )
     }
 
-    private fun getFontFamily(overlayPackage: String, overlayRes: Resources, configName: String): String {
+    private fun getFontFamily(
+        overlayPackage: String,
+        overlayRes: Resources,
+        configName: String,
+    ): String {
         return overlayRes.getString(overlayRes.getIdentifier(configName, "string", overlayPackage))
     }
 
@@ -204,32 +230,30 @@ class CommonOverlayProvider(
         val resolver = context.contentResolver
         val userId = UserHandle.myUserId()
 
-        val value = Settings.Secure.getStringForUser(
-            resolver,
-            Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-            userId
-        )
+        val value =
+            Settings.Secure.getStringForUser(
+                resolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                userId,
+            )
 
-        val json = try {
-            if (value.isNullOrEmpty()) JSONObject() else JSONObject(value)
-        } catch (e: JSONException) {
-            Log.e(TAG, "Error parsing current settings value:\n${e.message}")
-            return false
-        }
+        val json =
+            try {
+                if (value.isNullOrEmpty()) JSONObject() else JSONObject(value)
+            } catch (e: JSONException) {
+                Log.e(TAG, "Error parsing current settings value:\n${e.message}")
+                return false
+            }
 
         try {
             json.remove(category)
-            option.packageName?.let { pkg ->
-                json.put(category, pkg)
-            }
+            option.packageName?.let { pkg -> json.put(category, pkg) }
             Settings.Secure.putStringForUser(
                 resolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
                 json.toString(),
-                userId
+                userId,
             )
-            
-            Typeface.changeFont()
 
             return true
         } catch (e: JSONException) {

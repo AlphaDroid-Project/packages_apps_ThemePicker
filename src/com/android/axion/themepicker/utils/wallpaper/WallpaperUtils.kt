@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.axion.themepicker.utils.wallpaper
 
 import android.app.WallpaperManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Point
+import android.graphics.Rect
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.Matrix
-import android.graphics.Paint
 import android.net.Uri
 import android.os.*
-import android.view.View
 import android.util.Log
 import android.util.LruCache
-import androidx.core.graphics.drawable.toBitmap
+import android.view.View
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -43,55 +44,48 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.graphics.painter.*
+import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.*
 import androidx.compose.ui.unit.*
+import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import com.android.axion.themepicker.data.model.EffectConfig
 import com.android.axion.themepicker.data.model.WallpaperCategory
 import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.data.model.ZoomProperties
 import com.android.axion.themepicker.utils.effects.applyAtmosphereEffect
 import com.android.axion.themepicker.utils.effects.applyGlassEffect
-import org.xmlpull.v1.XmlPullParser
-import kotlin.coroutines.*
-import kotlinx.coroutines.*
-import kotlin.math.*
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
+import kotlin.coroutines.*
+import kotlin.math.*
+import kotlinx.coroutines.*
+import org.xmlpull.v1.XmlPullParser
 
 private val TAG = "WallpaperUtils"
 
 private val BACKGROUNDS_PKG_NAME = "com.android.backgrounds"
+private const val EFFECTS_PKG = "com.android.axion.wallpapereffects"
 
-private val bitmapCache = LruCache<Int, Bitmap>((Runtime.getRuntime().maxMemory() / 1024 / 8).toInt())
+private val bitmapCache =
+    LruCache<Int, Bitmap>((Runtime.getRuntime().maxMemory() / 1024 / 8).toInt())
 
-private val MAIN_HANDLER by lazy(LazyThreadSafetyMode.NONE) {
-    Handler(Looper.getMainLooper())
-}
+private val MAIN_HANDLER by lazy(LazyThreadSafetyMode.NONE) { Handler(Looper.getMainLooper()) }
 
-/**
- * A [Painter] which draws an Android [Drawable] and supports [Animatable] drawables. Instances
- * should be remembered to be able to start and stop [Animatable] animations.
- *
- * Instances are usually retrieved from [rememberDrawablePainter].
- */
-class DrawablePainter(
-    val drawable: Drawable
-) : Painter(), RememberObserver {
+class DrawablePainter(val drawable: Drawable) : Painter(), RememberObserver {
     private var drawInvalidateTick by mutableStateOf(0)
     private var drawableIntrinsicSize by mutableStateOf(drawable.intrinsicSize)
 
     private val callback: Drawable.Callback by lazy {
         object : Drawable.Callback {
             override fun invalidateDrawable(d: Drawable) {
-                // Update the tick so that we get re-drawn
+
                 drawInvalidateTick++
-                // Update our intrinsic size too
+
                 drawableIntrinsicSize = drawable.intrinsicSize
             }
 
@@ -107,7 +101,7 @@ class DrawablePainter(
 
     init {
         if (drawable.intrinsicWidth >= 0 && drawable.intrinsicHeight >= 0) {
-            // Update the drawable's bounds to match the intrinsic size
+
             drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         }
     }
@@ -145,58 +139,89 @@ class DrawablePainter(
         )
     }
 
-    override val intrinsicSize: Size get() = drawableIntrinsicSize
+    override val intrinsicSize: Size
+        get() = drawableIntrinsicSize
 
     override fun DrawScope.onDraw() {
         drawIntoCanvas { canvas ->
-            // Reading this ensures that we invalidate when invalidateDrawable() is called
             drawInvalidateTick
 
-            // Update the Drawable's bounds
             drawable.setBounds(0, 0, size.width.roundToInt(), size.height.roundToInt())
 
-            canvas.withSave {
-                drawable.draw(canvas.nativeCanvas)
-            }
+            canvas.withSave { drawable.draw(canvas.nativeCanvas) }
         }
     }
 }
 
 @Composable
-fun rememberDrawablePainter(drawable: Drawable?): Painter = remember(drawable) {
-    when (drawable) {
-        null -> EmptyPainter
-        is BitmapDrawable -> BitmapPainter(drawable.bitmap.asImageBitmap())
-        is ColorDrawable -> ColorPainter(Color(drawable.color))
-        else -> DrawablePainter(drawable.mutate())
+fun rememberDrawablePainter(drawable: Drawable?): Painter =
+    remember(drawable) {
+        when (drawable) {
+            null -> EmptyPainter
+            is BitmapDrawable -> BitmapPainter(drawable.bitmap.asImageBitmap())
+            is ColorDrawable -> ColorPainter(Color(drawable.color))
+            else -> DrawablePainter(drawable.mutate())
+        }
     }
-}
 
 private val Drawable.intrinsicSize: Size
-    get() = when {
-        intrinsicWidth >= 0 && intrinsicHeight >= 0 -> {
-            Size(width = intrinsicWidth.toFloat(), height = intrinsicHeight.toFloat())
+    get() =
+        when {
+            intrinsicWidth >= 0 && intrinsicHeight >= 0 -> {
+                Size(width = intrinsicWidth.toFloat(), height = intrinsicHeight.toFloat())
+            }
+            else -> Size.Unspecified
         }
-        else -> Size.Unspecified
-    }
 
 internal object EmptyPainter : Painter() {
-    override val intrinsicSize: Size get() = Size.Unspecified
+    override val intrinsicSize: Size
+        get() = Size.Unspecified
+
     override fun DrawScope.onDraw() {}
 }
 
 fun getCurrentWallpaperBitmap(context: Context, isHome: Boolean = true): Bitmap? {
-    return getCurrentWallpaperDrawable(context, isHome)?.toBitmap()
+    val wm = WallpaperManager.getInstance(context)
+    val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
+
+    if (wm.wallpaperInfo != null) {
+        readEffectsWallpaperBitmap(context)?.let {
+            return it
+        }
+    }
+
+    return try {
+        (wm.getDrawable(flag) ?: wm.drawable ?: wm.getBuiltInDrawable())?.toBitmap()
+    } catch (e: Exception) {
+        null
+    }
 }
 
 fun getCurrentWallpaperDrawable(context: Context, isHome: Boolean = true): Drawable? {
-    val wallpaperManager = WallpaperManager.getInstance(context)
+    val wm = WallpaperManager.getInstance(context)
     val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
+
+    if (wm.wallpaperInfo != null) {
+        readEffectsWallpaperBitmap(context)?.let {
+            return BitmapDrawable(context.resources, it)
+        }
+    }
+
     return try {
-        wallpaperManager.getDrawable(flag)
-            ?: wallpaperManager.drawable
-            ?: wallpaperManager.getBuiltInDrawable()
+        wm.getDrawable(flag) ?: wm.drawable ?: wm.getBuiltInDrawable()
     } catch (e: Exception) {
+        null
+    }
+}
+
+private fun readEffectsWallpaperBitmap(context: Context): Bitmap? {
+    return try {
+        val effectsCtx = context.createPackageContext(EFFECTS_PKG, Context.CONTEXT_IGNORE_SECURITY)
+        val deCtx = effectsCtx.createDeviceProtectedStorageContext()
+        val file = File(deCtx.filesDir, "wallpaper.jpg")
+        if (file.exists()) BitmapFactory.decodeFile(file.absolutePath) else null
+    } catch (e: Exception) {
+        Log.w(TAG, "Failed to read wallpaper from effects DE storage", e)
         null
     }
 }
@@ -206,21 +231,54 @@ fun applyWallpaper(
     lockscreenBitmap: Bitmap?,
     homescreenBitmap: Bitmap?,
     lockscreenSelected: Boolean,
-    homescreenSelected: Boolean
+    homescreenSelected: Boolean,
+    cropHints: Map<Point, Rect>? = null,
 ) {
+
+    val primaryCropHint =
+        cropHints?.let { hints ->
+            val primarySize = DisplayHelper.getWallpaperDisplaySize(context)
+            hints[primarySize] ?: hints.values.firstOrNull()
+        }
+
     WallpaperManager.getInstance(context).apply {
         try {
-            homescreenBitmap?.takeIf { homescreenSelected }?.let { bitmap ->
-                val flags = if (lockscreenSelected)
-                    WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
-                else
-                    WallpaperManager.FLAG_SYSTEM
-                setBitmap(bitmap, null, false, flags)
-            }
+            homescreenBitmap
+                ?.takeIf { homescreenSelected }
+                ?.let { bitmap ->
+                    val flags =
+                        if (lockscreenSelected)
+                            WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
+                        else WallpaperManager.FLAG_SYSTEM
 
-            lockscreenBitmap?.takeIf { lockscreenSelected }?.let { bitmap ->
-                setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
-            }
+                    if (cropHints != null && cropHints.isNotEmpty()) {
+                        try {
+                            setBitmapWithCrops(bitmap, cropHints, true, flags)
+                        } catch (e: NoSuchMethodError) {
+                            Log.w(
+                                TAG,
+                                "setBitmapWithCrops not available, falling back to setBitmap",
+                            )
+                            setBitmap(bitmap, primaryCropHint, true, flags)
+                        }
+                    } else {
+                        setBitmap(bitmap, null, false, flags)
+                    }
+                }
+
+            lockscreenBitmap
+                ?.takeIf { lockscreenSelected && !homescreenSelected }
+                ?.let { bitmap ->
+                    if (cropHints != null && cropHints.isNotEmpty()) {
+                        try {
+                            setBitmapWithCrops(bitmap, cropHints, true, WallpaperManager.FLAG_LOCK)
+                        } catch (e: NoSuchMethodError) {
+                            setBitmap(bitmap, primaryCropHint, true, WallpaperManager.FLAG_LOCK)
+                        }
+                    } else {
+                        setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
+                    }
+                }
         } catch (e: Exception) {
             Log.e(TAG, "Error applying wallpaper", e)
         }
@@ -265,7 +323,6 @@ fun loadWallpapers(context: Context): List<WallpaperInfo> {
 
         Log.d(TAG, "Parsed ${result.size} wallpapers")
         return result.asReversed().take(8)
-
     } catch (e: PackageManager.NameNotFoundException) {
         Log.e(TAG, "Backgrounds package not found", e)
     } catch (e: Exception) {
@@ -283,18 +340,13 @@ fun getWallpaperDrawable(context: Context, resId: Int): Drawable? {
     return drawable
 }
 
-fun decodeSampledBitmapFromUri(
-    context: Context,
-    uri: Uri
-): Bitmap? {
+fun decodeSampledBitmapFromUri(context: Context, uri: Uri, targetSize: Point? = null): Bitmap? {
     return try {
-        val displayMetrics = context.resources.displayMetrics
-        val reqWidth = displayMetrics.widthPixels
-        val reqHeight = displayMetrics.heightPixels
+        val target = targetSize ?: DisplayHelper.getWallpaperDisplaySize(context)
+        val reqWidth = target.x
+        val reqHeight = target.y
 
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
 
         context.contentResolver.openInputStream(uri)?.use {
             BitmapFactory.decodeStream(it, null, options)
@@ -308,9 +360,10 @@ fun decodeSampledBitmapFromUri(
 
         options.inPreferredConfig = Bitmap.Config.ARGB_8888
 
-        val decoded = context.contentResolver.openInputStream(uri)?.use {
-            BitmapFactory.decodeStream(it, null, options)
-        } ?: return null
+        val decoded =
+            context.contentResolver.openInputStream(uri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            } ?: return null
 
         val baos = ByteArrayOutputStream()
         decoded.compress(Bitmap.CompressFormat.PNG, 100, baos)
@@ -332,7 +385,7 @@ fun decodeSampledBitmapFromUri(
 private fun calculateSampleSize(
     options: BitmapFactory.Options,
     reqWidth: Int,
-    reqHeight: Int
+    reqHeight: Int,
 ): Int {
     val (srcWidth, srcHeight) = options.outWidth to options.outHeight
     var inSampleSize = 1
@@ -341,9 +394,7 @@ private fun calculateSampleSize(
         var halfHeight = srcHeight / 2
         var halfWidth = srcWidth / 2
 
-        while ((halfHeight / inSampleSize) >= reqHeight &&
-            (halfWidth / inSampleSize) >= reqWidth
-        ) {
+        while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
             inSampleSize *= 2
         }
     }
@@ -357,31 +408,29 @@ private fun calculateSampleSize(
     return inSampleSize
 }
 
-
 class BitmapProcessor(private val context: Context) {
     private val cache = mutableMapOf<String, Bitmap>()
-    fun processBitmap(
-        source: Bitmap,
-        config: EffectConfig,
-        cacheKey: String? = null
-    ): Bitmap {
+
+    fun processBitmap(source: Bitmap, config: EffectConfig, cacheKey: String? = null): Bitmap {
         val key = cacheKey ?: "${source.hashCode()}_${config.hashCode()}"
-        
-        cache[key]?.let { return it }
+
+        cache[key]?.let {
+            return it
+        }
 
         var result = source.copy(Bitmap.Config.ARGB_8888, true)
         if (config.atmosphere) {
             result = applyAtmosphereEffect(context, result)
         }
-        
+
         if (config.glass) {
             result = applyGlassEffect(context, result)
         }
-        
+
         cache[key] = result
         return result
     }
-    
+
     fun clearCache() {
         cache.clear()
     }
@@ -391,7 +440,7 @@ fun applyZoomToBitmap(
     source: Bitmap,
     zoom: ZoomProperties,
     targetWidth: Int,
-    targetHeight: Int
+    targetHeight: Int,
 ): Bitmap {
     if (zoom.scale <= 1f) return source
 
@@ -412,75 +461,72 @@ fun applyZoomToBitmap(
     val maxCropX = (scaledWidth - targetWidth).coerceAtLeast(0)
     val maxCropY = (scaledHeight - targetHeight).coerceAtLeast(0)
 
-    val cropX = (centerX - targetWidth / 2 - zoom.offsetX)
-        .toInt()
-        .coerceIn(0, maxCropX)
+    val cropX = (centerX - targetWidth / 2 - zoom.offsetX).toInt().coerceIn(0, maxCropX)
 
-    val cropY = (centerY - targetHeight / 2 - zoom.offsetY)
-        .toInt()
-        .coerceIn(0, maxCropY)
+    val cropY = (centerY - targetHeight / 2 - zoom.offsetY).toInt().coerceIn(0, maxCropY)
 
     return Bitmap.createBitmap(
         scaledBitmap,
         cropX,
         cropY,
         targetWidth.coerceAtMost(scaledBitmap.width),
-        targetHeight.coerceAtMost(scaledBitmap.height)
+        targetHeight.coerceAtMost(scaledBitmap.height),
     )
 }
 
 @Composable
-fun rememberBitmap(
-    drawableRes: Int,
-    targetSizeWidth: Dp,
-    targetSizeHeight: Dp
-): Bitmap? {
+fun rememberBitmap(drawableRes: Int, targetSizeWidth: Dp, targetSizeHeight: Dp): Bitmap? {
     val context = LocalContext.current
     val density = LocalDensity.current
     val targetWidthPx = with(density) { targetSizeWidth.roundToPx() }
     val targetHeightPx = with(density) { targetSizeHeight.roundToPx() }
 
     return produceState<Bitmap?>(initialValue = null, drawableRes) {
-        bitmapCache.get(drawableRes)?.let {
-            value = it
-            return@produceState
-        }
+            bitmapCache.get(drawableRes)?.let {
+                value = it
+                return@produceState
+            }
 
-        val bmp = withContext(Dispatchers.IO) {
-            getWallpaperDrawable(context, drawableRes)?.toBitmap()?.let { original ->
-                val targetAspectRatio = targetWidthPx.toFloat() / targetHeightPx
-                val bmpAspectRatio = original.width.toFloat() / original.height
+            val bmp =
+                withContext(Dispatchers.IO) {
+                    getWallpaperDrawable(context, drawableRes)?.toBitmap()?.let { original ->
+                        val targetAspectRatio = targetWidthPx.toFloat() / targetHeightPx
+                        val bmpAspectRatio = original.width.toFloat() / original.height
 
-                val (cropWidth, cropHeight, cropLeft, cropTop) = if (bmpAspectRatio > targetAspectRatio) {
-                    val h = original.height
-                    val w = (h * targetAspectRatio).toInt()
-                    Quad(w, h, (original.width - w) / 2, 0)
-                } else {
-                    val w = original.width
-                    val h = (w / targetAspectRatio).toInt()
-                    Quad(w, h, 0, (original.height - h) / 2)
+                        val (cropWidth, cropHeight, cropLeft, cropTop) =
+                            if (bmpAspectRatio > targetAspectRatio) {
+                                val h = original.height
+                                val w = (h * targetAspectRatio).toInt()
+                                Quad(w, h, (original.width - w) / 2, 0)
+                            } else {
+                                val w = original.width
+                                val h = (w / targetAspectRatio).toInt()
+                                Quad(w, h, 0, (original.height - h) / 2)
+                            }
+
+                        val cropped =
+                            Bitmap.createBitmap(
+                                original,
+                                cropLeft.coerceAtLeast(0),
+                                cropTop.coerceAtLeast(0),
+                                cropWidth.coerceAtLeast(1),
+                                cropHeight.coerceAtLeast(1),
+                            )
+
+                        val scaled =
+                            Bitmap.createScaledBitmap(cropped, targetWidthPx, targetHeightPx, true)
+
+                        val outputStream = ByteArrayOutputStream()
+                        scaled.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                        val compressedBytes = outputStream.toByteArray()
+                        BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
+                    }
                 }
 
-                val cropped = Bitmap.createBitmap(
-                    original,
-                    cropLeft.coerceAtLeast(0),
-                    cropTop.coerceAtLeast(0),
-                    cropWidth.coerceAtLeast(1),
-                    cropHeight.coerceAtLeast(1)
-                )
-
-                val scaled = Bitmap.createScaledBitmap(cropped, targetWidthPx, targetHeightPx, true)
-
-                val outputStream = ByteArrayOutputStream()
-                scaled.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-                val compressedBytes = outputStream.toByteArray()
-                BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
-            }
+            bmp?.let { bitmapCache.put(drawableRes, it) }
+            value = bmp
         }
-
-        bmp?.let { bitmapCache.put(drawableRes, it) }
-        value = bmp
-    }.value
+        .value
 }
 
 fun loadAllCategories(context: Context): List<WallpaperCategory> {
@@ -490,7 +536,7 @@ fun loadAllCategories(context: Context): List<WallpaperCategory> {
         val pm = context.packageManager
         val res = pm.getResourcesForApplication(BACKGROUNDS_PKG_NAME)
         val xmlId = res.getIdentifier("wallpapers", "xml", BACKGROUNDS_PKG_NAME)
-        
+
         if (xmlId == 0) return emptyList()
 
         val parser = res.getXml(xmlId)
@@ -509,33 +555,41 @@ fun loadAllCategories(context: Context): List<WallpaperCategory> {
                                     WallpaperCategory(
                                         id = currentCategory,
                                         title = currentTitle ?: currentCategory,
-                                        wallpapers = currentWallpapers.toList()
+                                        wallpapers = currentWallpapers.toList(),
                                     )
                                 )
                                 currentWallpapers.clear()
                             }
-                            
+
                             currentCategory = parser.getAttributeValue(null, "id")
                             val titleRes = parser.getAttributeResourceValue(null, "title", 0)
-                            currentTitle = if (titleRes != 0) {
-                                try { res.getString(titleRes) } catch (e: Exception) { currentCategory }
-                            } else {
-                                currentCategory
-                            }
+                            currentTitle =
+                                if (titleRes != 0) {
+                                    try {
+                                        res.getString(titleRes)
+                                    } catch (e: Exception) {
+                                        currentCategory
+                                    }
+                                } else {
+                                    currentCategory
+                                }
                         }
                         "static-wallpaper" -> {
                             val id = parser.getAttributeValue(null, "id") ?: ""
                             val drawableRes = parser.getAttributeResourceValue(null, "src", 0)
                             val titleRes = parser.getAttributeResourceValue(null, "title", 0)
-                            
+
                             if (drawableRes != 0) {
-                                val title = if (titleRes != 0) {
-                                    try { res.getString(titleRes) } catch (e: Exception) { null }
-                                } else null
-                                
-                                currentWallpapers.add(
-                                    WallpaperInfo(id, title, drawableRes)
-                                )
+                                val title =
+                                    if (titleRes != 0) {
+                                        try {
+                                            res.getString(titleRes)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    } else null
+
+                                currentWallpapers.add(WallpaperInfo(id, title, drawableRes))
                             }
                         }
                     }
@@ -549,13 +603,12 @@ fun loadAllCategories(context: Context): List<WallpaperCategory> {
                 WallpaperCategory(
                     id = currentCategory,
                     title = currentTitle ?: currentCategory,
-                    wallpapers = currentWallpapers.toList()
+                    wallpapers = currentWallpapers.toList(),
                 )
             )
         }
 
         Log.d(TAG, "Loaded ${categories.size} categories")
-        
     } catch (e: PackageManager.NameNotFoundException) {
         Log.e(TAG, "Backgrounds package not found", e)
     } catch (e: Exception) {
@@ -565,20 +618,17 @@ fun loadAllCategories(context: Context): List<WallpaperCategory> {
     return categories
 }
 
-fun centerCrop(context: Context, bmp: Bitmap?): Bitmap? {
+fun centerCrop(context: Context, bmp: Bitmap?, targetSize: Point? = null): Bitmap? {
     if (bmp == null) return null
 
-    val displayMetrics = context.resources.displayMetrics
-    val targetWidth = displayMetrics.widthPixels
-    val targetHeight = displayMetrics.heightPixels
+    val target = targetSize ?: DisplayHelper.getWallpaperDisplaySize(context)
+    val targetWidth = target.x
+    val targetHeight = target.y
 
     val srcWidth = bmp.width.toFloat()
     val srcHeight = bmp.height.toFloat()
 
-    val scale = maxOf(
-        targetWidth / srcWidth,
-        targetHeight / srcHeight
-    )
+    val scale = maxOf(targetWidth / srcWidth, targetHeight / srcHeight)
 
     val scaledWidth = scale * srcWidth
     val scaledHeight = scale * srcHeight
@@ -586,25 +636,109 @@ fun centerCrop(context: Context, bmp: Bitmap?): Bitmap? {
     val left = (scaledWidth - targetWidth) / 2f
     val top = (scaledHeight - targetHeight) / 2f
 
-    val matrix = Matrix().apply {
-        setScale(scale, scale)
-    }
+    val matrix = Matrix().apply { setScale(scale, scale) }
 
-    val scaledBmp = Bitmap.createBitmap(
-        bmp, 0, 0, bmp.width, bmp.height, matrix, true
-    )
+    val scaledBmp = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true)
 
-    val croppedBmp = Bitmap.createBitmap(
-        scaledBmp,
-        left.toInt().coerceAtLeast(0),
-        top.toInt().coerceAtLeast(0),
-        targetWidth.coerceAtMost(scaledBmp.width - left.toInt()),
-        targetHeight.coerceAtMost(scaledBmp.height - top.toInt())
-    )
+    val croppedBmp =
+        Bitmap.createBitmap(
+            scaledBmp,
+            left.toInt().coerceAtLeast(0),
+            top.toInt().coerceAtLeast(0),
+            targetWidth.coerceAtMost(scaledBmp.width - left.toInt()),
+            targetHeight.coerceAtMost(scaledBmp.height - top.toInt()),
+        )
 
     if (scaledBmp != bmp) scaledBmp.recycle()
 
     return croppedBmp
 }
-        
+
+fun getOriginalWallpaperUri(context: Context): Uri? {
+    val wm = WallpaperManager.getInstance(context)
+
+    if (wm.wallpaperInfo != null) {
+        try {
+            val effectsCtx =
+                context.createPackageContext(EFFECTS_PKG, Context.CONTEXT_IGNORE_SECURITY)
+            val deCtx = effectsCtx.createDeviceProtectedStorageContext()
+            val file = File(deCtx.filesDir, "wallpaper.jpg")
+            if (file.exists()) {
+                return FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    copyToLocalTemp(context, file),
+                )
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read effects wallpaper for edit", e)
+        }
+    }
+
+    try {
+        val pfd = wm.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)
+        if (pfd != null) {
+            pfd.use { fd ->
+                val bitmap = BitmapFactory.decodeFileDescriptor(fd.fileDescriptor)
+                if (bitmap != null) {
+                    val tempFile = File(context.filesDir, "temp_wallpaper_original.jpg")
+                    tempFile.outputStream().use {
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it)
+                    }
+                    bitmap.recycle()
+                    return FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        tempFile,
+                    )
+                }
+            }
+        }
+    } catch (e: Exception) {
+        Log.w(TAG, "Failed to get original wallpaper file", e)
+    }
+
+    return null
+}
+
+private fun copyToLocalTemp(context: Context, source: File): File {
+    val dest = File(context.filesDir, "temp_wallpaper_original.jpg")
+    source.inputStream().use { input -> dest.outputStream().use { output -> input.copyTo(output) } }
+    return dest
+}
+
+fun launchWallpaperPreview(context: Context, bitmap: Bitmap) {
+    Log.d(TAG, "launchWallpaperPreview: bitmap=${bitmap.width}x${bitmap.height}")
+    try {
+        val file = File(context.filesDir, "temp_wallpaper.jpg")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+        Log.d(TAG, "launchWallpaperPreview: saved to ${file.absolutePath}, size=${file.length()}")
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        Log.d(TAG, "launchWallpaperPreview: uri=$uri")
+        launchWallpaperPreviewFromUri(context, uri)
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to launch wallpaper preview", e)
+    }
+}
+
+fun launchWallpaperPreviewFromUri(context: Context, uri: Uri) {
+    Log.d(TAG, "launchWallpaperPreviewFromUri: uri=$uri")
+    try {
+        val intent =
+            Intent(Intent.ACTION_ATTACH_DATA).apply {
+                setDataAndType(uri, "image/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to launch wallpaper set", e)
+    }
+}
+
+fun launchWallpaperPreviewFromRes(context: Context, drawableRes: Int) {
+    val drawable = getWallpaperDrawable(context, drawableRes) ?: return
+    val bitmap = drawable.toBitmap()
+    launchWallpaperPreview(context, bitmap)
+}
+
 private data class Quad(val width: Int, val height: Int, val left: Int, val top: Int)

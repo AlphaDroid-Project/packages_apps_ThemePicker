@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Axion ThemePicker</string>
+
     <!-- Common Actions -->
     <string name="apply">Apply</string>
     <string name="applied">Applied</string>
@@ -23,6 +25,11 @@
     <string name="unknown">Unknown</string>
 
     <!-- Navigation Sections -->
+    <!-- Navigation Tabs -->
+    <string name="nav_wallpaper">Wallpaper</string>
+    <string name="nav_style">Style</string>
+    <string name="nav_lockscreen">Lock screen</string>
+
     <string name="colors">Colors</string>
     <string name="fonts">Fonts</string>
     <string name="shortcuts">Shortcuts</string>
@@ -71,17 +78,91 @@
     <string name="select_at_least_one">Select at least one</string>
     <string name="set_wallpaper">Set wallpaper</string>
     <string name="set_wallpaper_on">Set wallpaper on</string>
+    <string name="home_lock_both">Both</string>
     <string name="wallpaper_info">Wallpaper info</string>
 
     <!-- Effects -->
-    <string name="effects_beta_notice_title">AxEffects Beta™</string>
-    <string name="effects_beta_notice_desc">Effects are temporary and won\'t persist. Apply a new wallpaper to remove them.</string>
+    <string name="wallpaper_effects_title">Effects</string>
+    <string name="wallpaper_effects_description">Add visual effects to your wallpaper</string>
+    <string name="effect_none">None</string>
+    <string name="effect_none_description">No effect applied</string>
+    <string name="effect_atmosphere">Atmosphere</string>
+    <string name="effect_atmosphere_description">Dreamy blur with dynamic color blobs</string>
+    <string name="effect_glass">Glass</string>
+    <string name="effect_glass_description">Ribbed glass distortion effect</string>
+    <string name="effect_preview">Effect Preview</string>
+    <string name="effect_apply">Apply Effect</string>
+    <string name="effect_applying">Applying effect\u2026</string>
+    <string name="effect_applied">Effect applied</string>
+    <string name="effect_removed">Effect removed</string>
+    <string name="effect_service_not_found">Effect service not installed</string>
+    <string name="effect_apply_to">Apply to</string>
+    <string name="effect_home_screen_only">Home screen only</string>
+    <string name="effect_lock_screen_only">Lock screen only</string>
+    <string name="effect_home_and_lock">Home &amp; Lock screen</string>
+    <string name="effect_weather">Weather</string>
+    <string name="effect_weather_description">Weather-reactive animated overlay</string>
+    <string name="effect_magic_portrait">Magic Portrait</string>
+    <string name="effect_magic_portrait_description">Shaped frame with color background around your subject</string>
+
+    <!-- Weather Config -->
+    <string name="weather_type_label">Weather Type</string>
+    <string name="weather_type_auto">Auto</string>
+    <string name="weather_type_rain">Rain</string>
+    <string name="weather_type_snow">Snow</string>
+    <string name="weather_type_fog">Fog</string>
+    <string name="weather_type_clouds">Clouds</string>
+    <string name="weather_type_sun">Sun</string>
+    <string name="weather_intensity_label">Intensity</string>
+
+    <!-- Portrait Config -->
+    <string name="portrait_shape_label">Shape</string>
+    <string name="portrait_color_label">Background Color</string>
+    <string name="portrait_shape_oval">Oval</string>
+    <string name="portrait_shape_square">Square</string>
+    <string name="portrait_shape_arch">Arch</string>
+    <string name="portrait_shape_clover">Clover</string>
+    <string name="portrait_shape_flower">Flower</string>
+    <string name="portrait_brightness_label">Brightness</string>
+
+    <!-- Effect Tabs -->
+    <string name="tab_shape">Shape</string>
+    <string name="tab_weather">Weather</string>
+    <string name="tab_atmosphere">Atmosphere</string>
+    <string name="tab_cinematic">Cinematic</string>
+    <string name="tab_glass">Glass</string>
+    <string name="effect_cinematic">Cinematic</string>
+    <string name="effect_cinematic_description">Depth-based 3D parallax with gyroscope tracking</string>
+    <string name="effect_remove">Remove effect</string>
+    <string name="effect_preparing">Preparing photo\u2026</string>
+    <string name="effect_connecting">Connecting to effect\u2026</string>
+    <string name="effect_processing">Processing effect\u2026</string>
+
+    <!-- Display preview labels -->
+    <string name="folded_display">Folded</string>
+    <string name="unfolded_display">Unfolded</string>
+    <string name="preview_title">Preview</string>
+    <string name="next_button">Next</string>
+    <string name="applying_wallpaper">Applying\u2026</string>
 
     <!-- Style Section -->
     <string name="app_grid">App Grid</string>
     <string name="app_grid_title">App Grid</string>
     <string name="home_screen_layout">Home screen layout</string>
-    <string name="home_screen_layout_title">Home screen Layout</string>
+    <string name="home_screen_layout_title">Home Screen Layout</string>
+    <string name="icon_shape_title">Icon Shape</string>
+    <string name="icon_shape_description">App icon appearance</string>
+    <string name="themed_icons_title">Icons</string>
+    <string name="themed_icons_summary">Themed icons &amp; icon packs</string>
+    <string name="themed_icons_card_title">Themed Icons</string>
+    <string name="themed_icons_description">Monochrome icons that adapt to your wallpaper colors</string>
+    <string name="themed_icons_style">Icon Style</string>
+    <string name="themed_icons_neutral">Neutral</string>
+    <string name="themed_icons_accent">Accent</string>
+    <string name="icon_pack_title">Icon Pack</string>
+    <string name="icon_pack_description">Third-party icon packs change the look of your app icons</string>
+    <string name="icon_pack_system_default">System Default</string>
+    <string name="icon_pack_active">Active</string>
     <string name="make_your_device_uniquely_yours">Make your device uniquely yours</string>
     <string name="personalize">Personalize</string>
     <string name="pro_tip">Pro Tip</string>
@@ -125,6 +206,7 @@
     <string name="use_wallpaper_colors_title">Use Wallpaper Colors</string>
     <string name="use_wallpaper_colors_desc">Extract colors from your wallpaper</string>
     <string name="using_custom_color">Using custom color</string>
+    <string name="choose_custom_color_method">Choose how to pick your custom color:</string>
 
     <!-- Fonts Screen -->
     <string name="active_content_desc">Active</string>
@@ -153,11 +235,25 @@
 
     <!-- Lockscreen Section -->
     <string name="add_affordance">Add affordance</string>
+    <string name="affordance_none">None</string>
     <string name="add_information_at_a_glance">Add information at a glance</string>
     <string name="camera">Camera</string>
     <string name="choose_your_time_format">Choose your time format</string>
     <string name="clock">Clock</string>
+    <string name="clock_face">Clock face</string>
     <string name="clock_style">Clock Style</string>
+    <string name="clock_face_style">Face Style</string>
+    <string name="clock_size">Clock Size</string>
+    <string name="clock_size_default">Default</string>
+    <string name="clock_size_large">Large</string>
+    <string name="clock_alignment">Alignment</string>
+    <string name="clock_align_left">Left</string>
+    <string name="clock_align_center">Center</string>
+    <string name="clock_align_right">Right</string>
+    <string name="clock_date_position">Date Position</string>
+    <string name="clock_date_above">Above</string>
+    <string name="clock_date_below">Below</string>
+    <string name="clock_color">Clock Color</string>
     <string name="device_controls">Device controls</string>
     <string name="do_not_disturb">Do Not Disturb</string>
     <string name="flashlight">Flashlight</string>
@@ -170,6 +266,8 @@
     <string name="lockscreen_widgets_enabled_summary">Allow widgets on lockscreen</string>
     <string name="mute">Mute</string>
     <string name="no_space_available">No space available for more widgets</string>
+    <string name="resize_widget">Resize Widget</string>
+    <string name="no_space_for_size">No space available for this size</string>
     <string name="personalize_your_experience">Personalize your experience</string>
     <string name="pick_widgets">Pick Widgets</string>
     <string name="qr_code_scanner">QR code scanner</string>
@@ -177,20 +275,21 @@
     <string name="right_affordance">Right Affordance</string>
     <string name="selected_widgets">Selected Widgets</string>
     <string name="selected_widgets_empty">No widgets selected</string>
-    <string name="selected_widgets_guide">Long press to drag and drop, tap widget to remove.</string>
+    <string name="selected_widgets_guide">Tap a cell to add a widget, tap a widget to remove it.</string>
+    <string name="no_widgets_available">No widgets available</string>
+    <string name="search_widgets">Search widgets</string>
+    <string name="no_results">No results</string>
+    <string name="widget_bind_failed">Failed to add widget</string>
     <string name="tap_the_preview_to_see_all_customization_options">Tap the preview to see all customization options</string>
+    <string name="depth_effect">Depth effect</string>
+    <string name="at_a_glance">At a glance</string>
+    <string name="quick_access">Quick access</string>
+    <string name="time_style">Time style</string>
     <string name="tap_to_customize">Tap to customize</string>
     <string name="temperature_prev">27°</string>
     <string name="video_camera">Video camera</string>
     <string name="wallet">Wallet</string>
     <string name="weather_prev">Mostly Cloudy</string>
-    <string name="widget_bluetooth">Bluetooth</string>
-    <string name="widget_data">Data</string>
-    <string name="widget_hotspot">Hotspot</string>
-    <string name="widget_removed">Widget removed</string>
-    <string name="widget_ringer">Ringer</string>
-    <string name="widget_torch">Torch</string>
-    <string name="widget_wifi">Wi-Fi</string>
     <string name="widgets_title">Widgets</string>
 
     <!-- Preferences -->
@@ -200,10 +299,13 @@
     <!-- WallpaperSetActivity -->
     <string name="failed_to_load_image">Failed to load image</string>
     <string name="no_image_provided">No image provided</string>
+    <string name="setting_wallpaper">Setting wallpaper\u2026</string>
     <string name="shared_image">Shared Image</string>
     <string name="unable_to_load_image">Unable to load image</string>
+    <string name="wallpaper_set_success">Wallpaper set</string>
 
     <!-- Content Descriptions (Accessibility) -->
     <string name="home_screen_preview">Home screen preview</string>
     <string name="wallpaper_background">Wallpaper background</string>
+    <string name="loading">Loading\u2026</string>
 </resources>

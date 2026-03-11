@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 AxionOS
+ * Copyright (C) 2025-2026 AxionOS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,162 +13,178 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.axion.themepicker.ui
 
+import android.Manifest
+import android.app.WallpaperManager
 import android.content.Intent
-import android.graphics.Bitmap
+import android.content.pm.PackageManager
+import android.graphics.Point
+import android.graphics.Rect
 import android.net.Uri
+import android.os.Binder
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.lifecycle.lifecycleScope
 import com.android.axion.themepicker.R
-import com.android.axion.themepicker.data.model.WallpaperInfo
-import com.android.axion.themepicker.data.model.WallpaperSettings
-import com.android.axion.themepicker.ui.mainscreen.StandaloneWallpaperApplyScreen
 import com.android.axion.themepicker.ui.theme.AxTheme
-import com.android.axion.themepicker.utils.wallpaper.decodeSampledBitmapFromUri
+import com.android.axion.themepicker.ui.wallpaperset.WallpaperCropScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.pow
 
 class WallpaperSetActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "WallpaperSetActivity"
+        private const val PERMISSION_REQUEST_CODE = 1
     }
-
-    private var interceptedBitmap by mutableStateOf<Bitmap?>(null)
-    private var isLoadingImage by mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-        handleImageIntent()
+        val imageUri: Uri? = intent.data ?: intent.getParcelableExtra(Intent.EXTRA_STREAM)
 
+        if (imageUri == null) {
+            Log.e(TAG, "No URI found in intent; finishing.")
+            Toast.makeText(this, getString(R.string.no_image_provided), Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        val isUriPermissionGranted =
+            checkUriPermission(
+                imageUri,
+                Binder.getCallingPid(),
+                Binder.getCallingUid(),
+                Intent.FLAG_GRANT_READ_URI_PERMISSION,
+            ) == PackageManager.PERMISSION_GRANTED
+
+        if (!isUriPermissionGranted && !isReadMediaPermissionGranted()) {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
+                PERMISSION_REQUEST_CODE,
+            )
+            return
+        }
+
+        showCropScreen(imageUri)
+    }
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            val isGranted =
+                grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+
+            if (!isGranted) {
+                Log.e(TAG, "Permission denied; finishing.")
+                finish()
+                return
+            }
+
+            val imageUri = intent.data ?: intent.getParcelableExtra(Intent.EXTRA_STREAM)
+            if (imageUri != null) {
+                showCropScreen(imageUri)
+            } else {
+                finish()
+            }
+        }
+    }
+
+    private fun showCropScreen(uri: Uri) {
         setContent {
             AxTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    when {
-                        isLoadingImage -> LoadingScreen()
-                        interceptedBitmap != null -> {
-                            StandaloneWallpaperApplyScreen(
-                                wallpaper = WallpaperInfo(
-                                    id = "shared_image",
-                                    title = stringResource(R.string.shared_image),
-                                    drawableRes = -1
-                                ),
-                                settings = WallpaperSettings(
-                                    lockscreen = true,
-                                    homescreen = true
-                                ),
-                                bitmap = interceptedBitmap,
-                                onBackClick = { finish() },
-                                onApplyComplete = { finish() }
-                            )
-                        }
-                        else -> ErrorScreen()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun handleImageIntent() {
-        when (intent?.action) {
-            Intent.ACTION_SET_WALLPAPER,
-            Intent.ACTION_ATTACH_DATA,
-            Intent.ACTION_GET_CONTENT -> {
-                val uri: Uri? = intent.data ?: intent.getParcelableExtra(Intent.EXTRA_STREAM)
-                
-                if (uri != null) {
-                    Log.d(TAG, "Processing image URI: $uri")
-                    loadImageFromUri(uri)
-                } else {
-                    Log.e(TAG, "No URI found in intent")
-                    Toast.makeText(this, getString(R.string.no_image_provided), Toast.LENGTH_SHORT).show()
-                    isLoadingImage = false
-                }
-            }
-            else -> {
-                Log.e(TAG, "Unsupported intent action: ${intent?.action}")
-                isLoadingImage = false
-            }
-        }
-    }
-
-    private fun loadImageFromUri(uri: Uri) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val context = this@WallpaperSetActivity
-            try {
-                val bitmap = decodeSampledBitmapFromUri(context, uri)
-                withContext(Dispatchers.Main) {
-                    if (bitmap != null) {
-                        interceptedBitmap = bitmap
-                    } else {
-                        Toast.makeText(
-                            context,
-                            getString(R.string.failed_to_load_image),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    isLoadingImage = false
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading image", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        context,
-                        "Error: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    isLoadingImage = false
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun LoadingScreen() {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-
-    @Composable
-    private fun ErrorScreen() {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.unable_to_load_image),
-                    style = MaterialTheme.typography.titleMedium
+                WallpaperCropScreen(
+                    imageUri = uri,
+                    onApply = { imageUri, cropRect, multiCropHints, flags ->
+                        applyWallpaper(imageUri, cropRect, multiCropHints, flags)
+                    },
+                    onCancel = { finish() },
                 )
-                TextButton(onClick = { finish() }) {
-                    Text(stringResource(R.string.close))
-                }
             }
         }
+    }
+
+    private fun applyWallpaper(
+        uri: Uri,
+        cropRect: Rect,
+        multiCropHints: Map<Point, Rect>?,
+        flags: Int,
+    ) {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val wm = WallpaperManager.getInstance(this@WallpaperSetActivity)
+
+                    if (multiCropHints != null && multiCropHints.isNotEmpty()) {
+
+                        try {
+                            Log.d(
+                                TAG,
+                                "Applying with multi-crop: " +
+                                    "${multiCropHints.size} display hints, flags=$flags",
+                            )
+                            contentResolver.openInputStream(uri)?.use { stream ->
+                                wm.setStreamWithCrops(stream, multiCropHints, true, flags)
+                            } ?: throw Exception("Failed to open image stream")
+                        } catch (e: NoSuchMethodError) {
+
+                            Log.w(
+                                TAG,
+                                "setStreamWithCrops not available, " + "falling back to setStream",
+                            )
+                            contentResolver.openInputStream(uri)?.use { stream ->
+                                wm.setStream(stream, cropRect, true, flags)
+                            } ?: throw Exception("Failed to open image stream")
+                        }
+                    } else {
+
+                        Log.d(TAG, "Applying: cropHint=$cropRect, flags=$flags")
+                        contentResolver.openInputStream(uri)?.use { stream ->
+                            wm.setStream(stream, cropRect, true, flags)
+                        } ?: throw Exception("Failed to open image stream")
+                    }
+                }
+
+                Toast.makeText(
+                        this@WallpaperSetActivity,
+                        getString(R.string.wallpaper_set_success),
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+                goHome()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set wallpaper", e)
+                Toast.makeText(
+                        this@WallpaperSetActivity,
+                        getString(R.string.failed_to_load_image),
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+                goHome()
+            }
+        }
+    }
+
+    private fun goHome() = restartApp()
+
+    private fun isReadMediaPermissionGranted(): Boolean {
+        return packageManager.checkPermission(Manifest.permission.READ_MEDIA_IMAGES, packageName) ==
+            PackageManager.PERMISSION_GRANTED
     }
 }
