@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Typeface
+import android.os.SystemProperties
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
@@ -161,7 +162,15 @@ class CommonOverlayProvider(
     }
 
     fun applyOverlay(option: FontOverlayOption): Boolean {
-        return applyOverlay(option as OverlayOption)
+        val success = applyOverlay(option as OverlayOption)
+        if (success && category == ResourceConstants.OVERLAY_CATEGORY_FONT) {
+            if (option.packageName != null) {
+                setOverlayFontProp(option.packageName)
+            } else {
+                SystemProperties.set(PROP_OVERLAY_FONTS, "")
+            }
+        }
+        return success
     }
 
     private fun disableAllOverlays() {
@@ -262,7 +271,24 @@ class CommonOverlayProvider(
         }
     }
 
+    private fun setOverlayFontProp(overlayPackage: String) {
+        try {
+            val overlayRes = packageManager.getResourcesForApplication(overlayPackage)
+            val body = getFontFamily(overlayPackage, overlayRes, ResourceConstants.CONFIG_BODY_FONT_FAMILY)
+            val bodyMed = getFontFamily(overlayPackage, overlayRes, CONFIG_BODY_FONT_FAMILY_MEDIUM)
+            val headline = getFontFamily(overlayPackage, overlayRes, ResourceConstants.CONFIG_HEADLINE_FONT_FAMILY)
+            val headlineMed = getFontFamily(overlayPackage, overlayRes, CONFIG_HEADLINE_FONT_FAMILY_MEDIUM)
+            SystemProperties.set(PROP_OVERLAY_FONTS, "$body:$bodyMed:$headline:$headlineMed")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to resolve font config for $overlayPackage", e)
+            SystemProperties.set(PROP_OVERLAY_FONTS, "")
+        }
+    }
+
     companion object {
         private const val TAG = "CommonOverlayProvider"
+        private const val PROP_OVERLAY_FONTS = "persist.sys.ax_overlay_fonts"
+        private const val CONFIG_BODY_FONT_FAMILY_MEDIUM = "config_bodyFontFamilyMedium"
+        private const val CONFIG_HEADLINE_FONT_FAMILY_MEDIUM = "config_headlineFontFamilyMedium"
     }
 }

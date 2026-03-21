@@ -23,10 +23,13 @@ import android.graphics.fonts.FontFileUpdateRequest
 import android.graphics.fonts.FontFileUtil
 import android.graphics.fonts.FontManager
 import android.graphics.fonts.FontStyle
+import android.graphics.fonts.Font as GraphicsFont
+import android.graphics.fonts.FontVariationAxis
 import android.net.Uri
 import android.os.FileUtils
 import android.os.ParcelFileDescriptor
 import android.os.ServiceManager
+import android.os.SystemProperties
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
@@ -49,6 +52,8 @@ class ExternalFontInstaller(private val context: Context) {
         private const val OVERLAY_CATEGORY_FONT = "android.theme.customization.font"
         const val DEFAULT_FONT_FAMILY = "Rookery-Regular"
         private const val DEFAULT_FONT_OVERLAY = "com.android.theme.font.rookery"
+        private const val PROP_OVERLAY_FONTS = "persist.sys.ax_overlay_fonts"
+        private val FONT_WEIGHTS = intArrayOf(100, 200, 300, 400, 500, 600, 700, 800, 900)
 
         fun rebootDevice() {
             runCatching {
@@ -95,6 +100,8 @@ class ExternalFontInstaller(private val context: Context) {
             return null
         }
 
+        val fontProp = "$DEFAULT_FONT_FAMILY:$DEFAULT_FONT_FAMILY:$DEFAULT_FONT_FAMILY:$DEFAULT_FONT_FAMILY"
+        SystemProperties.set(PROP_OVERLAY_FONTS, fontProp)
         updateThemeOverlays()
         cleanupPreviewFont()
         return postScriptName
@@ -122,25 +129,53 @@ class ExternalFontInstaller(private val context: Context) {
             FontFileUtil.getPostScriptName(buffer, 0)
         }
 
+    private fun isVariableFont(fontFile: File): Boolean =
+        runCatching {
+            val font = GraphicsFont.Builder(fontFile).build()
+            font.axes?.any { it.tag == "wght" } == true
+        }.getOrDefault(false)
+
     private fun applyFontToSystem(fontFile: File, postScriptName: String): Boolean {
         return runCatching {
+                fontManager.clearUpdates()
                 val pfd = ParcelFileDescriptor.open(fontFile, ParcelFileDescriptor.MODE_READ_ONLY)
                 val fontFileUpdateRequest = FontFileUpdateRequest(pfd, ByteArray(0))
 
-                val fontRegular =
-                    FontFamilyUpdateRequest.Font.Builder(postScriptName, FontStyle()).build()
-
-                val familyRegular =
-                    FontFamilyUpdateRequest.FontFamily.Builder(
-                            DEFAULT_FONT_FAMILY,
-                            listOf(fontRegular),
+                val isVariable = isVariableFont(fontFile)
+                val fonts = if (isVariable) {
+                    FONT_WEIGHTS.flatMap { weight ->
+                        val axes = listOf(FontVariationAxis("wght", weight.toFloat()))
+                        listOf(
+                            FontFamilyUpdateRequest.Font.Builder(
+                                postScriptName,
+                                FontStyle(weight, FontStyle.FONT_SLANT_UPRIGHT),
+                            ).setAxes(axes).build(),
+                            FontFamilyUpdateRequest.Font.Builder(
+                                postScriptName,
+                                FontStyle(weight, FontStyle.FONT_SLANT_ITALIC),
+                            ).setAxes(axes).build(),
                         )
-                        .build()
+                    }
+                } else {
+                    listOf(
+                        FontFamilyUpdateRequest.Font.Builder(
+                            postScriptName,
+                            FontStyle(FontStyle.FONT_WEIGHT_NORMAL, FontStyle.FONT_SLANT_UPRIGHT),
+                        ).build(),
+                        FontFamilyUpdateRequest.Font.Builder(
+                            postScriptName,
+                            FontStyle(FontStyle.FONT_WEIGHT_BOLD, FontStyle.FONT_SLANT_UPRIGHT),
+                        ).build(),
+                    )
+                }
+
+                val family =
+                    FontFamilyUpdateRequest.FontFamily.Builder(DEFAULT_FONT_FAMILY, fonts).build()
 
                 val updateRequest =
                     FontFamilyUpdateRequest.Builder()
                         .addFontFileUpdateRequest(fontFileUpdateRequest)
-                        .addFontFamily(familyRegular)
+                        .addFontFamily(family)
                         .build()
 
                 val result =
@@ -195,7 +230,9 @@ class ExternalFontInstaller(private val context: Context) {
     }
 
     fun resetFontUpdates() {
-
+        runCatching { fontManager.clearUpdates() }
+            .onFailure { Log.e(TAG, "Failed to clear font updates", it) }
+        SystemProperties.set(PROP_OVERLAY_FONTS, "")
         cleanupPreviewFont()
     }
 
