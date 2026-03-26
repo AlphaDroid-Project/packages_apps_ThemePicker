@@ -65,7 +65,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,12 +80,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.os.Handler
+import android.os.Looper
 import com.android.axion.themepicker.R
 import com.android.axion.themepicker.utils.wallpaper.DisplayHelper
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private const val RESULT_DISPLAY_MS = 1500L
 
 @Composable
 fun WallpaperPreviewScreen(
@@ -110,6 +112,7 @@ fun WallpaperPreviewScreen(
     val hasPresetTarget = targetFlags != 0
 
     var showTargetDialog by remember { mutableStateOf(false) }
+    val handler = remember { Handler(Looper.getMainLooper()) }
     var isApplying by remember { mutableStateOf(false) }
     var applyResultMessage by remember { mutableStateOf<String?>(null) }
 
@@ -190,6 +193,7 @@ fun WallpaperPreviewScreen(
                                 isApplying = false
                                 applyResultMessage =
                                     context.getString(R.string.wallpaper_set_success)
+                                handler.postDelayed({ onApplySuccess() }, RESULT_DISPLAY_MS)
                             }
                         }
                     } else {
@@ -228,6 +232,7 @@ fun WallpaperPreviewScreen(
                         withContext(Dispatchers.IO) { onApply(bmp, flags) }
                         isApplying = false
                         applyResultMessage = context.getString(R.string.wallpaper_set_success)
+                        handler.postDelayed({ onApplySuccess() }, RESULT_DISPLAY_MS)
                     }
                 }
             },
@@ -237,10 +242,6 @@ fun WallpaperPreviewScreen(
     ApplyingWallpaperDialog(
         isApplying = isApplying,
         resultMessage = applyResultMessage,
-        onDismissResult = {
-            applyResultMessage = null
-            onApplySuccess()
-        },
     )
 }
 
@@ -248,21 +249,13 @@ fun WallpaperPreviewScreen(
 private fun ApplyingWallpaperDialog(
     isApplying: Boolean,
     resultMessage: String?,
-    onDismissResult: () -> Unit,
 ) {
     val showDialog = isApplying || resultMessage != null
     if (!showDialog) return
 
     val colors = MaterialTheme.colorScheme
 
-    if (resultMessage != null) {
-        LaunchedEffect(resultMessage) {
-            delay(1500)
-            onDismissResult()
-        }
-    }
-
-    BasicAlertDialog(onDismissRequest = { if (resultMessage != null) onDismissResult() }) {
+    BasicAlertDialog(onDismissRequest = {}) {
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
             color = colors.surfaceContainerHigh,
