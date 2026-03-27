@@ -226,7 +226,7 @@ fun LockscreenPreview(
 
         val intent =
             Intent().apply {
-                setClassName("com.android.systemui", "KeyguardWidgetConfigActivity")
+                setClassName("com.android.systemui", "com.android.systemui.lockscreen.KeyguardWidgetConfigActivity")
                 putExtra("extra_provider", selected.provider)
                 putExtra("extra_cell_x", selected.cellX)
                 putExtra("extra_cell_y", selected.cellY)

@@ -673,7 +673,7 @@ private fun launchLiveWallpaperPicker(context: Context) {
     try {
         val intent =
             Intent().apply {
-                setClassName("com.android.wallpaper.livepicker", "LiveWallpaperActivity")
+                setClassName("com.android.wallpaper.livepicker", "com.android.wallpaper.livepicker.LiveWallpaperActivity")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
         context.startActivity(intent)
