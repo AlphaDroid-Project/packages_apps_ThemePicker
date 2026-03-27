@@ -127,7 +127,7 @@ fun FontScreen(mainScreenViewModel: MainScreenViewModel) {
         AxionScaffold(
             title = stringResource(R.string.font_title),
             onBackClick = { mainScreenViewModel.goBack() },
-            modifier = Modifier.background(colors.background),
+            modifier = Modifier,
             actions = {
                 IconButton(onClick = { showResetDialog = true }) {
                     Icon(Icons.Default.Refresh, contentDescription = null)
@@ -143,22 +143,21 @@ fun FontScreen(mainScreenViewModel: MainScreenViewModel) {
                 }
             } else {
                 FontContent(
+                    paddingValues = paddingValues,
                     fontOptions = fontOptions,
                     selectedIndex = selectedIndex,
                     onSelect = { selectedIndex = it },
                     onApply = {
                         scope.launch {
                             isApplying = true
-                            if (selectedIndex > 0) {
-                                externalFontInstaller.resetFontUpdates()
-                                Settings.Secure.putString(
-                                    context.contentResolver,
-                                    "custom_font_name",
-                                    "",
-                                )
-                                hasCustomFont = false
-                                customFontName = ""
-                            }
+                            externalFontInstaller.resetFontUpdates()
+                            Settings.Secure.putString(
+                                context.contentResolver,
+                                "custom_font_name",
+                                "",
+                            )
+                            hasCustomFont = false
+                            customFontName = ""
                             val success = overlayProvider.applyOverlay(fontOptions[selectedIndex])
                             if (success) {
                                 fontOptions =
@@ -385,6 +384,7 @@ private fun FontPreviewDialog(
 
 @Composable
 private fun FontContent(
+    paddingValues: PaddingValues,
     fontOptions: List<FontOverlayOption>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -399,7 +399,7 @@ private fun FontContent(
 ) {
     val colors = MaterialTheme.colorScheme
 
-    Box(modifier = Modifier.fillMaxSize().background(colors.background)) {
+    Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
         Column(
             modifier =
                 Modifier.verticalScroll(rememberScrollState())
@@ -457,9 +457,8 @@ private fun FontPreviewCard(
     val colors = MaterialTheme.colorScheme
     Surface(
         modifier = Modifier.fillMaxWidth().height(160.sdp).padding(horizontal = 24.sdp),
-        color = colors.surfaceContainerLow,
+        color = colors.surfaceContainerHigh,
         shape = MaterialTheme.shapes.extraLargeIncreased,
-        border = BorderStroke(2.sdp, colors.outlineVariant.copy(alpha = 0.5f)),
     ) {
         Box(Modifier.fillMaxSize().padding(16.sdp), contentAlignment = Alignment.Center) {
             if (fontOptions.isNotEmpty() && selectedIndex < fontOptions.size) {
@@ -491,8 +490,6 @@ private fun FontStyleList(
                 isSelected = index == selectedIndex,
                 onClick = { onSelect(index) },
                 uiFontFamily = uiFontFamily,
-                hasCustomFont = hasCustomFont,
-                customFontName = customFontName,
             )
         }
     }
@@ -763,18 +760,9 @@ private fun FontOptionCard(
     isSelected: Boolean,
     onClick: () -> Unit,
     uiFontFamily: FontFamily,
-    hasCustomFont: Boolean,
-    customFontName: String,
 ) {
     val colors = MaterialTheme.colorScheme
     val haptic = LocalHapticFeedback.current
-
-    val displayLabel =
-        if (option.label.contains("default", ignoreCase = true) && hasCustomFont) {
-            customFontName.ifEmpty { "Custom" }
-        } else {
-            option.label
-        }
 
     val scale by
         animateFloatAsState(targetValue = if (isSelected) 1f else 0.96f, label = "font_card_scale")
@@ -789,13 +777,9 @@ private fun FontOptionCard(
                 scaleX = scale
                 scaleY = scale
             },
-        color = if (isSelected) colors.primaryContainer else colors.surfaceContainerLow,
+        color = if (isSelected) colors.primaryContainer else colors.surfaceContainerHigh,
         shape = MaterialTheme.shapes.extraLarge,
-        border =
-            BorderStroke(
-                width = if (isSelected) 2.5.sdp else 2.sdp,
-                color = if (isSelected) colors.primary else colors.outlineVariant.copy(alpha = 0.5f),
-            ),
+        border = if (isSelected) BorderStroke(2.5.sdp, colors.primary) else null,
     ) {
         Box(
             modifier = Modifier.fillMaxSize().padding(14.sdp),
@@ -825,7 +809,7 @@ private fun FontOptionCard(
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = displayLabel,
+                        text = option.label,
                         style =
                             MaterialTheme.typography.labelLarge.copy(
                                 fontFamily = FontFamily(option.bodyFont),

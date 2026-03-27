@@ -281,7 +281,6 @@ class CommonOverlayProvider(
             SystemProperties.set(PROP_OVERLAY_FONTS, "$body:$bodyMed:$headline:$headlineMed")
         } catch (e: Exception) {
             Log.w(TAG, "Failed to resolve font config for $overlayPackage", e)
-            SystemProperties.set(PROP_OVERLAY_FONTS, "")
         }
     }
 

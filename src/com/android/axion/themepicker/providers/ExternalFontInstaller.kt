@@ -50,8 +50,8 @@ class ExternalFontInstaller(private val context: Context) {
         private const val CUSTOM_FONT_FILE = "cust_font.ttf"
         private const val TEMP_PREVIEW_FONT = "preview_font.ttf"
         private const val OVERLAY_CATEGORY_FONT = "android.theme.customization.font"
-        const val DEFAULT_FONT_FAMILY = "Rookery-Regular"
-        private const val DEFAULT_FONT_OVERLAY = "com.android.theme.font.rookery"
+        const val DEFAULT_FONT_FAMILY = "ext_font"
+        private const val DEFAULT_FONT_OVERLAY = "com.android.theme.font.extfont"
         private const val PROP_OVERLAY_FONTS = "persist.sys.ax_overlay_fonts"
         private val FONT_WEIGHTS = intArrayOf(100, 200, 300, 400, 500, 600, 700, 800, 900)
 
@@ -212,9 +212,16 @@ class ExternalFontInstaller(private val context: Context) {
                 .getOrElse { JSONObject() }
 
         runCatching {
-                if (json.has(OVERLAY_CATEGORY_FONT)) json.remove(OVERLAY_CATEGORY_FONT)
+                if (json.has(OVERLAY_CATEGORY_FONT)) {
+                    json.remove(OVERLAY_CATEGORY_FONT)
+                    Settings.Secure.putStringForUser(
+                        resolver,
+                        Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                        json.toString(),
+                        userId,
+                    )
+                }
                 json.put(OVERLAY_CATEGORY_FONT, DEFAULT_FONT_OVERLAY)
-
                 Settings.Secure.putStringForUser(
                     resolver,
                     Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
