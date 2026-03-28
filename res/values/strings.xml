@@ -163,6 +163,9 @@
     <string name="icon_pack_description">Third-party icon packs change the look of your app icons</string>
     <string name="icon_pack_system_default">System Default</string>
     <string name="icon_pack_active">Active</string>
+    <string name="themed_icon_pack_title">Themed Icon Pack</string>
+    <string name="themed_icon_pack_description">Third-party themed icons like Lawnicons provide monochrome icons for more apps</string>
+    <string name="themed_icon_pack_none">None</string>
     <string name="make_your_device_uniquely_yours">Make your device uniquely yours</string>
     <string name="personalize">Personalize</string>
     <string name="pro_tip">Pro Tip</string>

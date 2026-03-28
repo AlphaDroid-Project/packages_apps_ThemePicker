@@ -93,15 +93,19 @@ import org.json.JSONObject
 
 private const val SETTING_THEMED_ICON_STYLE = "themed_icon_style"
 private const val SETTING_THEMED_ICONS_ENABLED = "themed_icons"
+private const val SETTING_THEMED_ICON_PACK = "themed_icon_pack"
 private const val SETTINGS_THEME_ENGINE_DATA = "theme_engine_data"
 private const val CATEGORY_ICON_PACK = "icon_pack"
 private const val STYLE_AXION = "axion"
 private const val STYLE_AOSP = "aosp"
 
+private const val ACTION_THEMED_ICON = "app.lawnchair.icons.THEMED_ICON"
+
 private data class IconPackInfo(
     val packageName: String,
     val label: String,
     val icon: Drawable? = null,
+    val isThemedPack: Boolean = false,
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -124,6 +128,8 @@ fun ThemedIconsScreen(mainScreenViewModel: MainScreenViewModel) {
 
     var iconPacks by remember { mutableStateOf<List<IconPackInfo>>(emptyList()) }
     var activeIconPack by remember { mutableStateOf<String?>(null) }
+    var themedIconPacks by remember { mutableStateOf<List<IconPackInfo>>(emptyList()) }
+    var activeThemedIconPack by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -146,6 +152,48 @@ fun ThemedIconsScreen(mainScreenViewModel: MainScreenViewModel) {
 
             iconPacks = packs
             activeIconPack = engine?.getIconPackPackage()
+
+            try {
+                val themedPacks = mutableListOf(
+                    IconPackInfo("", context.getString(R.string.themed_icon_pack_none), isThemedPack = true)
+                )
+                val seenPackages = mutableSetOf<String>()
+
+                try {
+                    val themedIntent = android.content.Intent(ACTION_THEMED_ICON)
+                    val themedResults = pm.queryIntentActivities(themedIntent, 0)
+                    for (ri in themedResults) {
+                        val pkg = ri.activityInfo.packageName
+                        if (seenPackages.contains(pkg)) continue
+                        seenPackages.add(pkg)
+                        try {
+                            val appInfo = pm.getApplicationInfo(pkg, 0)
+                            val label = pm.getApplicationLabel(appInfo).toString()
+                            val icon = pm.getApplicationIcon(appInfo)
+                            themedPacks.add(IconPackInfo(pkg, label, icon, isThemedPack = true))
+                        } catch (_: PackageManager.NameNotFoundException) {}
+                    }
+                } catch (_: Exception) {}
+
+                installed?.forEach { pkg ->
+                    if (seenPackages.contains(pkg)) return@forEach
+                    try {
+                        val res = pm.getResourcesForApplication(pkg)
+                        val mapId = res.getIdentifier("grayscale_icon_map", "xml", pkg)
+                        if (mapId != 0) {
+                            val appInfo = pm.getApplicationInfo(pkg, 0)
+                            val label = pm.getApplicationLabel(appInfo).toString()
+                            val icon = pm.getApplicationIcon(appInfo)
+                            themedPacks.add(IconPackInfo(pkg, label, icon, isThemedPack = true))
+                            seenPackages.add(pkg)
+                        }
+                    } catch (_: Exception) {}
+                }
+
+                themedIconPacks = themedPacks
+                activeThemedIconPack = Settings.Secure.getString(
+                    resolver, SETTING_THEMED_ICON_PACK)
+            } catch (_: Exception) {}
         }
     }
 
@@ -209,6 +257,19 @@ fun ThemedIconsScreen(mainScreenViewModel: MainScreenViewModel) {
                             activeIconPack = pkg.ifEmpty { null }
                         },
                     )
+
+                    if (themedIconPacks.size > 1) {
+                        ThemedIconPackCard(
+                            themedPacks = themedIconPacks,
+                            activeThemedPack = activeThemedIconPack,
+                            onSelectPack = { pkg ->
+                                Settings.Secure.putString(
+                                    resolver, SETTING_THEMED_ICON_PACK,
+                                    pkg.ifEmpty { null })
+                                activeThemedIconPack = pkg.ifEmpty { null }
+                            },
+                        )
+                    }
                 }
             }
         } else {
@@ -257,6 +318,22 @@ fun ThemedIconsScreen(mainScreenViewModel: MainScreenViewModel) {
                     },
                     modifier = Modifier.padding(horizontal = 16.dp * scale),
                 )
+
+                if (themedIconPacks.size > 1) {
+                    Spacer(modifier = Modifier.height(16.dp * scale))
+
+                    ThemedIconPackCard(
+                        themedPacks = themedIconPacks,
+                        activeThemedPack = activeThemedIconPack,
+                        onSelectPack = { pkg ->
+                            Settings.Secure.putString(
+                                resolver, SETTING_THEMED_ICON_PACK,
+                                pkg.ifEmpty { null })
+                            activeThemedIconPack = pkg.ifEmpty { null }
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp * scale),
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -547,6 +624,56 @@ private fun IconPackItem(pack: IconPackInfo, isActive: Boolean, onClick: () -> U
                     contentDescription = stringResource(R.string.icon_pack_active),
                     tint = colors.primary,
                     modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemedIconPackCard(
+    themedPacks: List<IconPackInfo>,
+    activeThemedPack: String?,
+    onSelectPack: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    val scale = LocalContext.current.scaleRatio
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceBright),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(20.dp * scale)) {
+            Text(
+                text = stringResource(R.string.themed_icon_pack_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.onSurface,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.themed_icon_pack_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+
+            Spacer(modifier = Modifier.height(16.dp * scale))
+
+            themedPacks.forEach { pack ->
+                val isActive =
+                    if (pack.packageName.isEmpty()) {
+                        activeThemedPack.isNullOrEmpty()
+                    } else {
+                        pack.packageName == activeThemedPack
+                    }
+
+                IconPackItem(
+                    pack = pack,
+                    isActive = isActive,
+                    onClick = { onSelectPack(pack.packageName) },
                 )
             }
         }
