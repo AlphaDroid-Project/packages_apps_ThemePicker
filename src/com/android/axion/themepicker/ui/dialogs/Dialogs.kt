@@ -28,6 +28,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -41,7 +42,11 @@ import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -129,6 +134,8 @@ fun ColorPickerDialog(
     var hue by remember { mutableStateOf(0f) }
     var saturation by remember { mutableStateOf(0.5f) }
     var brightness by remember { mutableStateOf(0.5f) }
+    var hexField by remember { mutableStateOf(TextFieldValue("")) }
+    var hexEditedByUser by remember { mutableStateOf(false) }
 
     LaunchedEffect(initialColor) {
         val hsv = FloatArray(3)
@@ -137,6 +144,16 @@ fun ColorPickerDialog(
         saturation = hsv[1]
         brightness = hsv[2]
         selectedColor = Color.hsv(hue, saturation, brightness)
+        val hex = String.format("%06X", 0xFFFFFF and selectedColor.toArgb())
+        hexField = TextFieldValue(hex, TextRange(hex.length))
+    }
+
+    LaunchedEffect(selectedColor) {
+        if (!hexEditedByUser) {
+            val hex = String.format("%06X", 0xFFFFFF and selectedColor.toArgb())
+            hexField = TextFieldValue(hex, TextRange(hex.length))
+        }
+        hexEditedByUser = false
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -211,11 +228,32 @@ fun ColorPickerDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text =
-                        "HEX: #${String.format("%06X", 0xFFFFFF and selectedColor.toArgb())} saturation: $saturation brightness: $brightness",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 16.dp),
+                OutlinedTextField(
+                    value = hexField,
+                    onValueChange = { newValue ->
+                        val filtered = newValue.text.uppercase().filter { it in "0123456789ABCDEF" }.take(6)
+                        hexField = TextFieldValue(filtered, TextRange(filtered.length.coerceAtMost(newValue.selection.start)))
+                        if (filtered.length == 6) {
+                            try {
+                                val argb = GraphicsColor.parseColor("#$filtered")
+                                val hsv = FloatArray(3)
+                                GraphicsColor.colorToHSV(argb, hsv)
+                                hexEditedByUser = true
+                                hue = hsv[0]
+                                saturation = hsv[1]
+                                brightness = hsv[2]
+                                selectedColor = Color.hsv(hue, saturation, brightness)
+                            } catch (_: Exception) {}
+                        }
+                    },
+                    label = { Text("HEX") },
+                    prefix = { Text("#") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Characters,
+                        keyboardType = KeyboardType.Ascii,
+                    ),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 )
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
