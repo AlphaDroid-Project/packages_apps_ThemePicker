@@ -182,16 +182,15 @@ internal object EmptyPainter : Painter() {
 
 fun getCurrentWallpaperBitmap(context: Context, isHome: Boolean = true): Bitmap? {
     val wm = WallpaperManager.getInstance(context)
-    val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
 
-    if (wm.wallpaperInfo != null) {
+    if (isHome && wm.wallpaperInfo != null) {
         readEffectsWallpaperBitmap(context)?.let {
             return it
         }
     }
 
     return try {
-        (wm.getDrawable(flag) ?: wm.drawable ?: wm.getBuiltInDrawable())?.toBitmap()
+        resolveWallpaperDrawable(context, wm, isHome)?.toBitmap()
     } catch (e: Exception) {
         null
     }
@@ -199,20 +198,31 @@ fun getCurrentWallpaperBitmap(context: Context, isHome: Boolean = true): Bitmap?
 
 fun getCurrentWallpaperDrawable(context: Context, isHome: Boolean = true): Drawable? {
     val wm = WallpaperManager.getInstance(context)
-    val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
 
-    if (wm.wallpaperInfo != null) {
+    if (isHome && wm.wallpaperInfo != null) {
         readEffectsWallpaperBitmap(context)?.let {
             return BitmapDrawable(context.resources, it)
         }
     }
 
     return try {
-        wm.getDrawable(flag) ?: wm.drawable ?: wm.getBuiltInDrawable()
+        resolveWallpaperDrawable(context, wm, isHome)
     } catch (e: Exception) {
         null
     }
 }
+
+private fun resolveWallpaperDrawable(context: Context, wm: WallpaperManager, isHome: Boolean): Drawable? {
+    val flag = if (isHome) WallpaperManager.FLAG_SYSTEM else WallpaperManager.FLAG_LOCK
+    return wm.getDrawable(flag)
+        ?: (if (!isHome) getLockWallpaperBitmap(wm)?.let { BitmapDrawable(context.resources, it) } else null)
+        ?: wm.drawable ?: wm.getBuiltInDrawable()
+}
+
+private fun getLockWallpaperBitmap(wm: WallpaperManager): Bitmap? =
+    wm.getWallpaperFile(WallpaperManager.FLAG_LOCK)?.use { pfd ->
+        BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
+    }
 
 private fun readEffectsWallpaperBitmap(context: Context): Bitmap? {
     return try {
