@@ -16,75 +16,86 @@
 
 package com.android.axion.themepicker.ui.lockscreen.widgets
 
-import android.content.ClipData
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.draganddrop.dragAndDropSource
-import androidx.compose.foundation.draganddrop.dragAndDropTarget
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropEvent
-import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
-import androidx.compose.ui.draganddrop.mimeTypes
-import androidx.compose.ui.draganddrop.toAndroidDragEvent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import kotlin.math.roundToInt
 
 data class DropTarget(val cellX: Int, val cellY: Int, val isValid: Boolean)
 
 class WidgetDragDropState {
 
     private var originalWidgets: List<GridWidgetItem> = emptyList()
+    private var startCellX: Int = 0
+    private var startCellY: Int = 0
+    private var totalDelta: Offset = Offset.Zero
 
     var previewWidgets by mutableStateOf<List<GridWidgetItem>>(emptyList())
         private set
 
-    var draggedProvider by mutableStateOf<String?>(null)
+    var draggingWidgetId by mutableStateOf<Int?>(null)
+        private set
+
+    var draggingItemOffset by mutableStateOf(Offset.Zero)
         private set
 
     var dropTarget by mutableStateOf<DropTarget?>(null)
         private set
 
     val dragInProgress: Boolean
-        get() = draggedProvider != null
+        get() = draggingWidgetId != null
 
     fun isDragging(widget: GridWidgetItem): Boolean =
-        draggedProvider != null && draggedProvider == widget.provider
+        draggingWidgetId != null && draggingWidgetId == widget.appWidgetId
 
-    fun onStarted(widget: GridWidgetItem, allWidgets: List<GridWidgetItem>) {
+    fun onDragStart(widget: GridWidgetItem, allWidgets: List<GridWidgetItem>) {
         originalWidgets = allWidgets.toList()
         previewWidgets = allWidgets.toList()
-        draggedProvider = widget.provider
+        draggingWidgetId = widget.appWidgetId
+        draggingItemOffset = Offset.Zero
+        totalDelta = Offset.Zero
+        startCellX = widget.cellX
+        startCellY = widget.cellY
         dropTarget = null
     }
 
-    fun onMoved(offset: Offset, gridOrigin: Offset, cellSizePx: Float, gapPx: Float) {
-        val dragProv = draggedProvider ?: return
-        val dragged = originalWidgets.firstOrNull { it.provider == dragProv } ?: return
+    fun onDrag(delta: Offset, cellSizePx: Float, gapPx: Float) {
+        val dragId = draggingWidgetId ?: return
+        val dragged = originalWidgets.firstOrNull { it.appWidgetId == dragId } ?: return
 
-        val relX = offset.x - gridOrigin.x
-        val relY = offset.y - gridOrigin.y
+        totalDelta += delta
+
         val cellStep = cellSizePx + gapPx
-        val col = (relX / cellStep).toInt().coerceIn(0, GRID_COLUMNS - 1)
-        val row = (relY / cellStep).toInt().coerceIn(0, MAX_ROWS - 1)
+        val dxCells = (totalDelta.x / cellStep).roundToInt()
+        val dyCells = (totalDelta.y / cellStep).roundToInt()
+        val col = (startCellX + dxCells).coerceIn(0, GRID_COLUMNS - 1)
+        val row = (startCellY + dyCells).coerceIn(0, MAX_ROWS - 1)
 
         val current = dropTarget
-        if (current != null && current.cellX == col && current.cellY == row) return
+        if (current != null && current.cellX == col && current.cellY == row) {
+            val draggedNow = previewWidgets.firstOrNull { it.appWidgetId == dragId } ?: dragged
+            draggingItemOffset = Offset(
+                totalDelta.x - (draggedNow.cellX - startCellX) * cellStep,
+                totalDelta.y - (draggedNow.cellY - startCellY) * cellStep,
+            )
+            return
+        }
 
         val overlapping =
             originalWidgets.filter { w ->
-                w.provider != dragProv && wouldOverlap(w, col, row, dragged.spanX, dragged.spanY)
+                w.appWidgetId != dragId && wouldOverlap(w, col, row, dragged.spanX, dragged.spanY)
             }
 
         val preview = originalWidgets.toMutableList()
-        val dragIdx = preview.indexOfFirst { it.provider == dragProv }
+        val dragIdx = preview.indexOfFirst { it.appWidgetId == dragId }
 
-        val involvedProviders = buildSet {
-            add(dragProv)
-            overlapping.forEach { add(it.provider) }
+        val involvedIds = buildSet {
+            add(dragId)
+            overlapping.forEach { add(it.appWidgetId) }
         }
         val baseGrid =
-            buildOccupiedGrid(originalWidgets.filter { it.provider !in involvedProviders })
+            buildOccupiedGrid(originalWidgets.filter { it.appWidgetId !in involvedIds })
 
         if (!canPlaceOn(baseGrid, col, row, dragged.spanX, dragged.spanY)) {
             dropTarget = DropTarget(col, row, false)
@@ -98,10 +109,12 @@ class WidgetDragDropState {
 
             val placements = mutableListOf<Pair<Int, Pair<Int, Int>>>()
             var allFit = true
-            for (ow in overlapping) {
-                val pos = findPositionOnGrid(workingGrid, ow.spanX, ow.spanY)
+            for ((ownIndex, ow) in overlapping.withIndex()) {
+                val preferX = if (ownIndex == 0) dragged.cellX else -1
+                val preferY = if (ownIndex == 0) dragged.cellY else -1
+                val pos = findPositionOnGrid(workingGrid, ow.spanX, ow.spanY, preferX, preferY)
                 if (pos != null) {
-                    val owIdx = preview.indexOfFirst { it.provider == ow.provider }
+                    val owIdx = preview.indexOfFirst { it.appWidgetId == ow.appWidgetId }
                     placements.add(owIdx to pos)
                     markOccupied(workingGrid, pos.first, pos.second, ow.spanX, ow.spanY)
                 } else {
@@ -120,19 +133,16 @@ class WidgetDragDropState {
         }
 
         previewWidgets = preview
+
+        val draggedNow = preview.firstOrNull { it.appWidgetId == dragId } ?: dragged
+        draggingItemOffset = Offset(
+            totalDelta.x - (draggedNow.cellX - startCellX) * cellStep,
+            totalDelta.y - (draggedNow.cellY - startCellY) * cellStep,
+        )
     }
 
-    fun onExited() {
-        dropTarget = null
-        previewWidgets = originalWidgets.toList()
-    }
-
-    fun onDrop(): List<GridWidgetItem>? {
-        if (dropTarget?.isValid != true) {
-            reset()
-            return null
-        }
-        val result = previewWidgets.toList()
+    fun onDragEnd(): List<GridWidgetItem>? {
+        val result = if (dropTarget?.isValid == true) previewWidgets.toList() else null
         reset()
         return result
     }
@@ -142,10 +152,14 @@ class WidgetDragDropState {
     }
 
     private fun reset() {
-        draggedProvider = null
+        draggingWidgetId = null
+        draggingItemOffset = Offset.Zero
+        totalDelta = Offset.Zero
         dropTarget = null
         previewWidgets = emptyList()
         originalWidgets = emptyList()
+        startCellX = 0
+        startCellY = 0
     }
 }
 
@@ -193,88 +207,22 @@ private fun markOccupied(
     }
 }
 
-private fun findPositionOnGrid(grid: Array<BooleanArray>, spanX: Int, spanY: Int): Pair<Int, Int>? {
+private fun findPositionOnGrid(
+    grid: Array<BooleanArray>,
+    spanX: Int,
+    spanY: Int,
+    preferredX: Int = -1,
+    preferredY: Int = -1,
+): Pair<Int, Int>? {
+    if (preferredX in 0 until GRID_COLUMNS &&
+            preferredY in 0 until MAX_ROWS &&
+            canPlaceOn(grid, preferredX, preferredY, spanX, spanY)) {
+        return preferredX to preferredY
+    }
     for (r in 0 until MAX_ROWS) {
         for (c in 0 until GRID_COLUMNS) {
             if (canPlaceOn(grid, c, r, spanX, spanY)) return c to r
         }
     }
     return null
-}
-
-private fun DragAndDropEvent.toOffset(): Offset {
-    return toAndroidDragEvent().run { Offset(x, y) }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun Modifier.widgetDragSource(
-    widget: GridWidgetItem,
-    allWidgets: List<GridWidgetItem>,
-    state: WidgetDragDropState,
-): Modifier {
-    val currentState by rememberUpdatedState(state)
-    val currentWidgets by rememberUpdatedState(allWidgets)
-
-    return dragAndDropSource(
-        block = {
-            detectDragGesturesAfterLongPress(
-                onDrag = { _, _ -> },
-                onDragStart = {
-                    currentState.onStarted(widget, currentWidgets)
-                    startTransfer(
-                        DragAndDropTransferData(ClipData.newPlainText("widget", widget.provider))
-                    )
-                },
-            )
-        }
-    )
-}
-
-@Composable
-fun Modifier.widgetDropTarget(
-    gridOrigin: () -> Offset,
-    cellSizePx: Float,
-    gapPx: Float,
-    state: WidgetDragDropState,
-    onDrop: (List<GridWidgetItem>) -> Unit,
-): Modifier {
-    val currentState by rememberUpdatedState(state)
-    val currentOnDrop by rememberUpdatedState(onDrop)
-
-    val target = remember {
-        object : DragAndDropTarget {
-            override fun onEntered(event: DragAndDropEvent) {}
-
-            override fun onMoved(event: DragAndDropEvent) {
-                currentState.onMoved(
-                    offset = event.toOffset(),
-                    gridOrigin = gridOrigin(),
-                    cellSizePx = cellSizePx,
-                    gapPx = gapPx,
-                )
-            }
-
-            override fun onExited(event: DragAndDropEvent) {
-                currentState.onExited()
-            }
-
-            override fun onDrop(event: DragAndDropEvent): Boolean {
-                val result = currentState.onDrop() ?: return false
-                currentOnDrop(result)
-                return true
-            }
-
-            override fun onEnded(event: DragAndDropEvent) {
-                if (currentState.dragInProgress) {
-                    currentState.onCancelled()
-                }
-            }
-        }
-    }
-
-    return dragAndDropTarget(
-        shouldStartDragAndDrop = { event -> event.mimeTypes().contains("text/plain") },
-        target = target,
-    )
 }

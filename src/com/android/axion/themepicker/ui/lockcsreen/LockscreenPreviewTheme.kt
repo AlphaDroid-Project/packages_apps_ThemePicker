@@ -43,8 +43,8 @@ object Dimens {
     val ClockTopPadding = 32.dp
     val ClockSpacer = 16.dp
 
-    val WidgetCellSize = 72.dp
-    val WidgetCellGap = 6.dp
+    val WidgetCellSize = 84.dp
+    val WidgetCellGap = 8.dp
     val WidgetCellCorner = 16.dp
 
     val NotificationCardHeight = 56.dp

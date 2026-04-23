@@ -19,6 +19,7 @@ package com.android.axion.themepicker.ui.lockscreen
 import android.app.Activity
 import android.app.WallpaperColors
 import android.appwidget.AppWidgetHostView
+import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
@@ -27,7 +28,9 @@ import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.os.UserHandle
+import android.content.Context
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -278,7 +281,8 @@ fun LockscreenPreview(
                 onAffordanceSlotClicked = { slot -> showAffordancePicker = slot },
                 onRemoveWidget = { if (!isPreview) updateWidgets(widgetItems - it) },
                 onPickWidget = { if (!isPreview) showPicker = true },
-                onResizeWidget = if (!isPreview) { widget -> resizeTarget = widget } else null,
+                onResizeWidget = if (!isPreview) ::handleWidgetResized else null,
+                onConfigureWidget = if (!isPreview) { widget -> launchWidgetConfigure(context, widget) } else null,
                 onWidgetsMoved =
                     if (!isPreview) { newWidgets -> updateWidgets(newWidgets) } else null,
                 onEditWallpaper = onEditWallpaper,
@@ -301,7 +305,8 @@ fun LockscreenPreview(
                 onAffordanceSlotClicked = { slot -> showAffordancePicker = slot },
                 onRemoveWidget = { if (!isPreview) updateWidgets(widgetItems - it) },
                 onPickWidget = { if (!isPreview) showPicker = true },
-                onResizeWidget = if (!isPreview) { widget -> resizeTarget = widget } else null,
+                onResizeWidget = if (!isPreview) ::handleWidgetResized else null,
+                onConfigureWidget = if (!isPreview) { widget -> launchWidgetConfigure(context, widget) } else null,
                 onWidgetsMoved =
                     if (!isPreview) { newWidgets -> updateWidgets(newWidgets) } else null,
                 onEditWallpaper = onEditWallpaper,
@@ -416,6 +421,7 @@ private fun PortraitLayout(
     onRemoveWidget: (GridWidgetItem) -> Unit,
     onPickWidget: () -> Unit,
     onResizeWidget: ((GridWidgetItem) -> Unit)?,
+    onConfigureWidget: ((GridWidgetItem) -> Unit)?,
     onWidgetsMoved: ((List<GridWidgetItem>) -> Unit)?,
     onEditWallpaper: (() -> Unit)? = null,
     onClockTapped: (() -> Unit)? = null,
@@ -444,9 +450,9 @@ private fun PortraitLayout(
         WidgetGrid(
             isPreview = isPreview,
             widgets = widgetItems,
-            hostViews = hostViews,
             onRemove = onRemoveWidget,
             onPickWidget = onPickWidget,
+            onConfigure = onConfigureWidget,
             onResizeWidget = onResizeWidget,
             dragDropState = if (!isPreview) dragDropState else null,
             onWidgetsMoved = onWidgetsMoved,
@@ -487,6 +493,7 @@ private fun LandscapeLayout(
     onRemoveWidget: (GridWidgetItem) -> Unit,
     onPickWidget: () -> Unit,
     onResizeWidget: ((GridWidgetItem) -> Unit)?,
+    onConfigureWidget: ((GridWidgetItem) -> Unit)?,
     onWidgetsMoved: ((List<GridWidgetItem>) -> Unit)?,
     onEditWallpaper: (() -> Unit)? = null,
     onClockTapped: (() -> Unit)? = null,
@@ -511,9 +518,9 @@ private fun LandscapeLayout(
             WidgetGrid(
                 isPreview = isPreview,
                 widgets = widgetItems,
-                hostViews = hostViews,
                 onRemove = onRemoveWidget,
                 onPickWidget = onPickWidget,
+                onConfigure = onConfigureWidget,
                 onResizeWidget = onResizeWidget,
                 dragDropState = if (!isPreview) dragDropState else null,
                 onWidgetsMoved = onWidgetsMoved,
@@ -680,3 +687,40 @@ private fun WidgetResizeSheet(
 
 private const val MAX_VIEW_REFRESH_RETRIES = 10
 private const val VIEW_REFRESH_INTERVAL_MS = 2000L
+private const val WIDGET_CONFIGURE_REQUEST = 4242
+
+private fun launchWidgetConfigure(context: Context, widget: GridWidgetItem) {
+    if (widget.appWidgetId < 0) {
+        Log.w("AxConfigure", "widget has no appWidgetId")
+        Toast.makeText(context, "Configure unavailable", Toast.LENGTH_SHORT).show()
+        return
+    }
+    val info = widget.providerInfo(context)
+    val configure = info?.configure
+    if (configure == null) {
+        Log.w("AxConfigure", "provider has no configure activity id=${widget.appWidgetId}")
+        Toast.makeText(context, "Configure unavailable", Toast.LENGTH_SHORT).show()
+        return
+    }
+    val activity = context as? Activity
+    val intent =
+        Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).apply {
+            component = configure
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widget.appWidgetId)
+            if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    Log.d(
+        "AxConfigure",
+        "launch id=${widget.appWidgetId} configure=$configure activity=${activity != null}",
+    )
+    try {
+        if (activity != null) {
+            activity.startActivityForResult(intent, WIDGET_CONFIGURE_REQUEST)
+        } else {
+            context.startActivity(intent)
+        }
+    } catch (e: Exception) {
+        Log.e("AxConfigure", "launch failed", e)
+        Toast.makeText(context, "Configure unavailable: ${e.message}", Toast.LENGTH_LONG).show()
+    }
+}
