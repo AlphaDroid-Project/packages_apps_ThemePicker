@@ -33,6 +33,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -66,15 +68,7 @@ fun LockscreenSection(onOpenFullPreview: (EntryPoint) -> Unit, modifier: Modifie
             value =
                 withContext(Dispatchers.IO) {
                     getCurrentWallpaperBitmap(context, false)?.let { bmp ->
-                        val sharp = bmp.asImageBitmap()
-                        val small =
-                            Bitmap.createScaledBitmap(
-                                bmp,
-                                (bmp.width / 6).coerceAtLeast(1),
-                                (bmp.height / 6).coerceAtLeast(1),
-                                true,
-                            )
-                        LockWallpaperImages(sharp, small.asImageBitmap(), bmp)
+                        LockWallpaperImages(bmp.asImageBitmap(), bmp)
                     }
                 }
         }
@@ -211,11 +205,13 @@ private fun LockPreview(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            lockImages?.blurred?.let { blurBitmap ->
+            lockImages?.sharp?.let { bmp ->
                 Image(
-                    bitmap = blurBitmap,
+                    bitmap = bmp,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier =
+                        Modifier.fillMaxSize()
+                            .blur(20.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded),
                     contentScale = ContentScale.Crop,
                 )
             }
@@ -459,8 +455,4 @@ private fun TipCard(text: String, modifier: Modifier = Modifier) {
     }
 }
 
-private data class LockWallpaperImages(
-    val sharp: ImageBitmap,
-    val blurred: ImageBitmap,
-    val raw: Bitmap,
-)
+private data class LockWallpaperImages(val sharp: ImageBitmap, val raw: Bitmap)

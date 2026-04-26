@@ -66,6 +66,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -123,6 +124,7 @@ fun BasicColorsSettings() {
 
         ThemeStyleCard(
             currentStyle = settings.style.displayName,
+            enabled = !settings.fidelity,
             onClick = { showStylePicker = true },
         )
 
@@ -394,13 +396,20 @@ private fun ActionButton(
 @Composable
 private fun ThemeStyleCard(
     currentStyle: String,
+    enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
+    val cardModifier =
+        if (enabled) modifier.fillMaxWidth().bounceable(onClick = onClick, scale = 0.97f)
+        else modifier.fillMaxWidth().alpha(0.5f)
+    val subtitleText =
+        if (enabled) currentStyle else stringResource(R.string.theme_style_disabled_by_fidelity)
+    val subtitleColor = if (enabled) colors.primary else colors.onSurfaceVariant
 
     Card(
-        modifier = modifier.fillMaxWidth().bounceable(onClick = onClick, scale = 0.97f),
+        modifier = cardModifier,
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(containerColor = colors.surfaceBright),
     ) {
@@ -434,9 +443,9 @@ private fun ThemeStyleCard(
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = currentStyle,
+                        text = subtitleText,
                         style = MaterialTheme.typography.bodySmall,
-                        color = colors.primary,
+                        color = subtitleColor,
                         fontWeight = FontWeight.Medium,
                     )
                 }

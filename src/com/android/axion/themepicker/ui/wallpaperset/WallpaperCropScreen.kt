@@ -18,10 +18,14 @@
 
 package com.android.axion.themepicker.ui.wallpaperset
 
+import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas as AndroidCanvas
+import android.graphics.Matrix
+import android.graphics.Paint
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
@@ -32,27 +36,38 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.withSave
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.core.graphics.drawable.toBitmap
 import com.android.axion.themepicker.R
 import com.android.axion.themepicker.utils.wallpaper.DisplayHelper
 import com.android.axion.themepicker.utils.wallpaper.getCurrentWallpaperBitmap
 import com.android.axion.themepicker.utils.wallpaper.getWallpaperDrawable
+import com.google.android.renderscript.Toolkit
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -65,10 +80,12 @@ fun WallpaperCropScreen(
     drawableRes: Int = 0,
     onNext: ((Bitmap) -> Unit)? = null,
     onApply: ((Uri, Rect, Map<Point, Rect>?, Int) -> Unit)? = null,
+    onApplyBitmap: ((Bitmap, Int) -> Unit)? = null,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
-    val isStandaloneMode = onApply != null
+    val isStandaloneMode = onApply != null || onApplyBitmap != null
+    val showFitModeToggle = isStandaloneMode || onNext != null
 
     val wallpaperDisplaySize = remember { DisplayHelper.getWallpaperDisplaySize(context) }
 
@@ -80,6 +97,8 @@ fun WallpaperCropScreen(
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var minScale by remember { mutableFloatStateOf(1f) }
+    var fitMode by remember { mutableStateOf(false) }
+    var fitBgColor by remember { mutableStateOf(Color.Black) }
 
     var screenW by remember { mutableFloatStateOf(0f) }
     var screenH by remember { mutableFloatStateOf(0f) }
@@ -123,6 +142,8 @@ fun WallpaperCropScreen(
 
                 bitmap = decoded
                 Log.d(TAG, "Decoded: ${decoded.width}x${decoded.height}")
+
+                fitBgColor = Color(WallpaperColors.fromBitmap(decoded).primaryColor.toArgb())
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to decode image", e)
                 loadError = true
@@ -131,25 +152,29 @@ fun WallpaperCropScreen(
         }
     }
 
-    LaunchedEffect(bitmap, screenW, screenH) {
+    LaunchedEffect(bitmap, screenW, screenH, fitMode) {
         val bmp = bitmap ?: return@LaunchedEffect
         if (screenW <= 0f || screenH <= 0f) return@LaunchedEffect
 
-        val ms = calculateMinScale(screenW, screenH, bmp.width.toFloat(), bmp.height.toFloat())
-
-        if (isStandaloneMode) {
-
-            val msForWallpaperDisplay =
-                calculateMinScale(
-                    wallpaperDisplaySize.x.toFloat(),
-                    wallpaperDisplaySize.y.toFloat(),
-                    bmp.width.toFloat(),
-                    bmp.height.toFloat(),
-                )
-            minScale = maxOf(ms, msForWallpaperDisplay)
+        if (fitMode) {
+            minScale =
+                min(screenW / bmp.width.toFloat(), screenH / bmp.height.toFloat())
+                    .coerceAtMost(1f)
         } else {
-
-            minScale = ms
+            val ms = calculateMinScale(screenW, screenH, bmp.width.toFloat(), bmp.height.toFloat())
+            minScale =
+                if (isStandaloneMode) {
+                    val msForWallpaperDisplay =
+                        calculateMinScale(
+                            wallpaperDisplaySize.x.toFloat(),
+                            wallpaperDisplaySize.y.toFloat(),
+                            bmp.width.toFloat(),
+                            bmp.height.toFloat(),
+                        )
+                    maxOf(ms, msForWallpaperDisplay)
+                } else {
+                    ms
+                }
         }
         scale = minScale
         offsetX = 0f
@@ -167,6 +192,10 @@ fun WallpaperCropScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) { drawRect(Color.Black) }
+
+        if (fitMode) {
+            Box(modifier = Modifier.fillMaxSize().background(fitBgColor))
+        }
 
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -189,56 +218,68 @@ fun WallpaperCropScreen(
                 Canvas(
                     modifier =
                         Modifier.fillMaxSize()
-                            .pointerInput(bmp) {
-                                detectTransformGestures { _, pan, zoom, _ ->
-                                    showHint = false
-                                    val newScale =
-                                        (scale * zoom).coerceIn(
-                                            minScale,
-                                            minScale * MAX_ZOOM_FACTOR,
-                                        )
-                                    val scaleChange = newScale / scale
-                                    val newOffsetX = offsetX * scaleChange + pan.x
-                                    val newOffsetY = offsetY * scaleChange + pan.y
-
-                                    scale = newScale
-                                    offsetX = clampOffset(newOffsetX, imgW * newScale, screenW)
-                                    offsetY = clampOffset(newOffsetY, imgH * newScale, screenH)
-                                }
-                            }
-                            .pointerInput(bmp) {
-                                detectTapGestures(
-                                    onDoubleTap = { tapOffset ->
-                                        if (scale > minScale * 1.1f) {
-                                            scale = minScale
-                                            offsetX = 0f
-                                            offsetY = 0f
-                                        } else {
-                                            val targetScale =
-                                                (minScale * 3f).coerceAtMost(
-                                                    minScale * MAX_ZOOM_FACTOR
+                            .then(
+                                if (fitMode) Modifier
+                                else
+                                    Modifier.pointerInput(bmp) {
+                                        detectTransformGestures { _, pan, zoom, _ ->
+                                            showHint = false
+                                            val newScale =
+                                                (scale * zoom).coerceIn(
+                                                    minScale,
+                                                    minScale * MAX_ZOOM_FACTOR,
                                                 )
-                                            val focusX = tapOffset.x - screenW / 2f
-                                            val focusY = tapOffset.y - screenH / 2f
-                                            val scaleChange = targetScale / scale
+                                            val scaleChange = newScale / scale
+                                            val newOffsetX = offsetX * scaleChange + pan.x
+                                            val newOffsetY = offsetY * scaleChange + pan.y
 
-                                            scale = targetScale
+                                            scale = newScale
                                             offsetX =
-                                                clampOffset(
-                                                    (offsetX - focusX) * scaleChange + focusX,
-                                                    imgW * targetScale,
-                                                    screenW,
-                                                )
+                                                clampOffset(newOffsetX, imgW * newScale, screenW)
                                             offsetY =
-                                                clampOffset(
-                                                    (offsetY - focusY) * scaleChange + focusY,
-                                                    imgH * targetScale,
-                                                    screenH,
-                                                )
+                                                clampOffset(newOffsetY, imgH * newScale, screenH)
                                         }
                                     }
-                                )
-                            }
+                            )
+                            .then(
+                                if (fitMode) Modifier
+                                else
+                                    Modifier.pointerInput(bmp) {
+                                        detectTapGestures(
+                                            onDoubleTap = { tapOffset ->
+                                                if (scale > minScale * 1.1f) {
+                                                    scale = minScale
+                                                    offsetX = 0f
+                                                    offsetY = 0f
+                                                } else {
+                                                    val targetScale =
+                                                        (minScale * 3f).coerceAtMost(
+                                                            minScale * MAX_ZOOM_FACTOR
+                                                        )
+                                                    val focusX = tapOffset.x - screenW / 2f
+                                                    val focusY = tapOffset.y - screenH / 2f
+                                                    val scaleChange = targetScale / scale
+
+                                                    scale = targetScale
+                                                    offsetX =
+                                                        clampOffset(
+                                                            (offsetX - focusX) * scaleChange +
+                                                                focusX,
+                                                            imgW * targetScale,
+                                                            screenW,
+                                                        )
+                                                    offsetY =
+                                                        clampOffset(
+                                                            (offsetY - focusY) * scaleChange +
+                                                                focusY,
+                                                            imgH * targetScale,
+                                                            screenH,
+                                                        )
+                                                }
+                                            }
+                                        )
+                                    }
+                            )
                 ) {
                     screenW = size.width
                     screenH = size.height
@@ -280,7 +321,7 @@ fun WallpaperCropScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AnimatedVisibility(
-                visible = showHint && !isLoading && !loadError,
+                visible = showHint && !isLoading && !loadError && !fitMode,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
@@ -292,15 +333,66 @@ fun WallpaperCropScreen(
                 )
             }
 
+            if (showFitModeToggle && !isLoading && !loadError) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().widthIn(max = 400.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surfaceBright,
+                ) {
+                    ButtonGroup(
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ToggleButton(
+                            checked = !fitMode,
+                            onCheckedChange = { fitMode = false },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shapes = ToggleButtonDefaults.shapesFor(100.dp),
+                            colors = ToggleButtonDefaults.toggleButtonColors(
+                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+                                checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = MaterialTheme.colorScheme.surfaceBright,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                            ),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.wallpaper_fill_mode),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                        ToggleButton(
+                            checked = fitMode,
+                            onCheckedChange = { fitMode = true },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shapes = ToggleButtonDefaults.shapesFor(100.dp),
+                            colors = ToggleButtonDefaults.toggleButtonColors(
+                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+                                checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = MaterialTheme.colorScheme.surfaceBright,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                            ),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.wallpaper_fit_mode),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                    }
+                }
+            }
+
             Button(
                 onClick = {
                     if (isStandaloneMode) {
                         showTargetDialog = true
                     } else {
                         bitmap?.let { bmp ->
-                            val cropped =
-                                extractVisibleBitmap(bmp, screenW, screenH, scale, offsetX, offsetY)
-                            onNext?.invoke(cropped)
+                            val result =
+                                if (fitMode) buildFitWp(bmp, wallpaperDisplaySize)
+                                else extractVisibleBitmap(bmp, screenW, screenH, scale, offsetX, offsetY)
+                            onNext?.invoke(result)
                         }
                     }
                 },
@@ -343,6 +435,18 @@ fun WallpaperCropScreen(
                 isApplying = true
 
                 val bmp = bitmap ?: return@WallpaperTargetDialog
+
+                if (fitMode) {
+                    val composite = buildFitWp(bmp, wallpaperDisplaySize)
+                    Log.d(
+                        TAG,
+                        "Apply (fit): flags=$flags, " +
+                            "composite=${composite.width}x${composite.height}",
+                    )
+                    onApplyBitmap?.invoke(composite, flags)
+                    return@WallpaperTargetDialog
+                }
+
                 val cropRect =
                     calculateCropRect(
                         screenW,
@@ -374,6 +478,31 @@ fun WallpaperCropScreen(
             },
         )
     }
+}
+
+private fun buildFitWp(src: Bitmap, target: Point): Bitmap {
+    val targetW = target.x.coerceAtLeast(1)
+    val targetH = target.y.coerceAtLeast(1)
+    val out = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
+    val canvas = AndroidCanvas(out)
+    val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+    val colors = WallpaperColors.fromBitmap(src)
+    canvas.drawColor(colors.primaryColor.toArgb())
+
+    val fgScale =
+        min(targetW.toFloat() / src.width, targetH.toFloat() / src.height).coerceAtMost(1f)
+    val fgW = (src.width * fgScale).roundToInt().coerceAtLeast(1)
+    val fgH = (src.height * fgScale).roundToInt().coerceAtLeast(1)
+    val fgLeft = (targetW - fgW) / 2f
+    val fgTop = (targetH - fgH) / 2f
+    val matrix =
+        Matrix().apply {
+            postScale(fgScale, fgScale)
+            postTranslate(fgLeft, fgTop)
+        }
+    canvas.drawBitmap(src, matrix, paint)
+    return out
 }
 
 @Composable

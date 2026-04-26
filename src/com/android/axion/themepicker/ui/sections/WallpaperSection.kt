@@ -18,7 +18,6 @@
 
 package com.android.axion.themepicker.ui.sections
 
-import android.graphics.Bitmap
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
@@ -70,6 +69,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -133,22 +134,11 @@ fun WallpaperSection(
         }
     }
 
-    val wallpaperImages by
-        produceState<WallpaperImages?>(null) {
+    val wallpaperBitmap by
+        produceState<ImageBitmap?>(null) {
             value =
                 withContext(Dispatchers.IO) {
-                    getCurrentWallpaperBitmap(context, true)?.let { bmp ->
-                        val imageBitmap = bmp.asImageBitmap()
-                        val small =
-                            Bitmap.createScaledBitmap(
-                                bmp,
-                                (bmp.width / 6).coerceAtLeast(1),
-                                (bmp.height / 6).coerceAtLeast(1),
-                                true,
-                            )
-                        val blurBitmap = small.asImageBitmap()
-                        WallpaperImages(imageBitmap, blurBitmap)
-                    }
+                    getCurrentWallpaperBitmap(context, true)?.asImageBitmap()
                 }
         }
 
@@ -158,7 +148,7 @@ fun WallpaperSection(
             horizontalArrangement = Arrangement.spacedBy(design.spacing.large),
         ) {
             HeroCard(
-                wallpaperImages = wallpaperImages,
+                wallpaperBitmap = wallpaperBitmap,
                 onEditCurrent = onEditCurrent,
                 onOpenGallery = onOpenGallery,
                 onSelectPhoto = guardedSelectPhoto,
@@ -190,7 +180,7 @@ fun WallpaperSection(
         ) {
             item {
                 HeroCard(
-                    wallpaperImages = wallpaperImages,
+                    wallpaperBitmap = wallpaperBitmap,
                     onEditCurrent = onEditCurrent,
                     onOpenGallery = onOpenGallery,
                     onSelectPhoto = guardedSelectPhoto,
@@ -220,7 +210,7 @@ fun WallpaperSection(
 
 @Composable
 private fun HeroCard(
-    wallpaperImages: WallpaperImages?,
+    wallpaperBitmap: ImageBitmap?,
     onEditCurrent: () -> Unit,
     onOpenGallery: () -> Unit,
     onSelectPhoto: () -> Unit,
@@ -236,11 +226,13 @@ private fun HeroCard(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            wallpaperImages?.blurred?.let { blurBitmap ->
+            wallpaperBitmap?.let { bmp ->
                 Image(
-                    bitmap = blurBitmap,
+                    bitmap = bmp,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier =
+                        Modifier.fillMaxSize()
+                            .blur(20.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded),
                     contentScale = ContentScale.Crop,
                 )
             }
@@ -298,7 +290,7 @@ private fun HeroCard(
                     modifier = Modifier.weight(1f).fillMaxWidth().padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    wallpaperImages?.sharp?.let { sharpBitmap ->
+                    wallpaperBitmap?.let { sharpBitmap ->
                         Card(
                             modifier = Modifier.fillMaxHeight().aspectRatio(0.55f),
                             shape = RoundedCornerShape(16.dp),
@@ -485,4 +477,3 @@ private fun LoadingOverlayDialog(onDismissRequest: () -> Unit) {
     )
 }
 
-private data class WallpaperImages(val sharp: ImageBitmap, val blurred: ImageBitmap)

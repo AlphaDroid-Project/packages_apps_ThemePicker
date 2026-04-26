@@ -22,6 +22,7 @@ import android.Manifest
 import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
@@ -114,6 +115,7 @@ class WallpaperSetActivity : ComponentActivity() {
                     onApply = { imageUri, cropRect, multiCropHints, flags ->
                         applyWallpaper(imageUri, cropRect, multiCropHints, flags)
                     },
+                    onApplyBitmap = { bitmap, flags -> applyWallpaperBitmap(bitmap, flags) },
                     onCancel = { finish() },
                 )
             }
@@ -170,6 +172,34 @@ class WallpaperSetActivity : ComponentActivity() {
                 goHome()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to set wallpaper", e)
+                Toast.makeText(
+                        this@WallpaperSetActivity,
+                        getString(R.string.failed_to_load_image),
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+                goHome()
+            }
+        }
+    }
+
+    private fun applyWallpaperBitmap(bitmap: Bitmap, flags: Int) {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val wm = WallpaperManager.getInstance(this@WallpaperSetActivity)
+                    Log.d(TAG, "Applying fit-mode bitmap=${bitmap.width}x${bitmap.height}, flags=$flags")
+                    wm.setBitmap(bitmap, null, false, flags)
+                }
+                Toast.makeText(
+                        this@WallpaperSetActivity,
+                        getString(R.string.wallpaper_set_success),
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+                goHome()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set fit-mode wallpaper", e)
                 Toast.makeText(
                         this@WallpaperSetActivity,
                         getString(R.string.failed_to_load_image),
