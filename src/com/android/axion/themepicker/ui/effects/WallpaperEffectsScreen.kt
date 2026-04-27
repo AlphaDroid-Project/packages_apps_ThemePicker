@@ -183,6 +183,19 @@ fun WallpaperEffectsScreen(mainScreenViewModel: MainScreenViewModel = viewModel(
 
     LaunchedEffect(Unit) {
         if (!photoReady) {
+            val wm = WallpaperManager.getInstance(context)
+            val isEffectActive = wm.wallpaperInfo?.packageName == EFFECTS_PKG
+            
+            if (!isEffectActive) {
+                val success = withContext(Dispatchers.IO) {
+                    saveCurrentWallpaperForEffects(context)
+                }
+                if (success) {
+                    photoReady = true
+                    return@LaunchedEffect
+                }
+            }
+
             photoPickerLauncher.launch(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
             )
@@ -1364,5 +1377,34 @@ private fun saveSelectedPhotoForEffects(context: Context, uri: Uri) {
         Log.d(TAG, "Saved selected photo to ${file.absolutePath}")
     } catch (e: Exception) {
         Log.e(TAG, "Failed to save selected photo", e)
+    }
+}
+
+private fun saveCurrentWallpaperForEffects(context: Context): Boolean {
+    try {
+        val bitmap = getCurrentWallpaperBitmap(context, true) ?: return false
+        val effectsCtx = context.createPackageContext(EFFECTS_PKG, Context.CONTEXT_IGNORE_SECURITY)
+        val deCtx = effectsCtx.createDeviceProtectedStorageContext()
+        val filesDir = deCtx.filesDir
+        filesDir.mkdirs()
+
+        val file = File(filesDir, "wallpaper.jpg")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+
+        val wm = WallpaperManager.getInstance(context)
+        if (wm.wallpaperInfo == null) {
+            val originalFile = File(filesDir, "original_wallpaper.jpg")
+            if (!originalFile.exists()) {
+                file.copyTo(originalFile, overwrite = true)
+            }
+        }
+
+        File(filesDir, "effect_foreground.png").delete()
+        bitmap.recycle()
+        Log.d(TAG, "Saved current wallpaper for effects to ${file.absolutePath}")
+        return true
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to save current wallpaper for effects", e)
+        return false
     }
 }
