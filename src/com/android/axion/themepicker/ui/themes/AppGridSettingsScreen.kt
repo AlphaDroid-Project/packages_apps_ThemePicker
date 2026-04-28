@@ -265,7 +265,8 @@ private fun GridOptionItem(
 
     Column(
         modifier =
-            Modifier.clip(MaterialTheme.shapes.large)
+            Modifier.fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
                 .clickable(enabled = !isApplying) { onClick() }
                 .background(backgroundColor)
                 .padding(12.dp),
@@ -306,10 +307,13 @@ internal fun GridTileCanvas(
         val cellSize = size.width / longestSide
         val scaleFactor = (cellSize - 2 * SPACE_BETWEEN_ICONS * density) / PATH_SIZE
 
+        val xOffset = (size.width - cols * cellSize) / 2
+        val yOffset = (size.height - rows * cellSize) / 2
+
         for (r in 0 until rows) {
             for (c in 0 until cols) {
-                val x = c * cellSize + SPACE_BETWEEN_ICONS * density
-                val y = r * cellSize + SPACE_BETWEEN_ICONS * density
+                val x = xOffset + c * cellSize + SPACE_BETWEEN_ICONS * density
+                val y = yOffset + r * cellSize + SPACE_BETWEEN_ICONS * density
 
                 val transformedPath = Path(shapePath)
                 val scaleMatrix = Matrix()

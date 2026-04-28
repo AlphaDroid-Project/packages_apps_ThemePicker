@@ -252,7 +252,8 @@ private fun ShapeOptionItem(
 
     Column(
         modifier =
-            Modifier.clip(MaterialTheme.shapes.large)
+            Modifier.fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
                 .clickable(enabled = !isApplying) { onClick() }
                 .background(backgroundColor)
                 .padding(12.dp),
