@@ -38,6 +38,7 @@ import androidx.lifecycle.lifecycleScope
 import com.android.axion.themepicker.R
 import com.android.axion.themepicker.ui.theme.AxTheme
 import com.android.axion.themepicker.ui.wallpaperset.WallpaperCropScreen
+import com.android.axion.themepicker.utils.wallpaper.toCompressedStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -189,7 +190,7 @@ class WallpaperSetActivity : ComponentActivity() {
                 withContext(Dispatchers.IO) {
                     val wm = WallpaperManager.getInstance(this@WallpaperSetActivity)
                     Log.d(TAG, "Applying fit-mode bitmap=${bitmap.width}x${bitmap.height}, flags=$flags")
-                    wm.setBitmap(bitmap, null, false, flags)
+                    wm.setStream(bitmap.toCompressedStream(), null, false, flags)
                 }
                 Toast.makeText(
                         this@WallpaperSetActivity,

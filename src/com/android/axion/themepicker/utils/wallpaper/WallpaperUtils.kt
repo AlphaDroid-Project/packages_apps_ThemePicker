@@ -59,6 +59,7 @@ import com.android.axion.themepicker.data.model.WallpaperInfo
 import com.android.axion.themepicker.data.model.ZoomProperties
 import com.android.axion.themepicker.utils.effects.applyAtmosphereEffect
 import com.android.axion.themepicker.utils.effects.applyGlassEffect
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.coroutines.*
@@ -236,6 +237,12 @@ private fun readEffectsWallpaperBitmap(context: Context): Bitmap? {
     }
 }
 
+fun Bitmap.toCompressedStream(): ByteArrayInputStream {
+    val baos = ByteArrayOutputStream()
+    compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, baos)
+    return ByteArrayInputStream(baos.toByteArray())
+}
+
 fun applyWallpaper(
     context: Context,
     lockscreenBitmap: Bitmap?,
@@ -263,16 +270,20 @@ fun applyWallpaper(
 
                     if (cropHints != null && cropHints.isNotEmpty()) {
                         try {
-                            setBitmapWithCrops(bitmap, cropHints, true, flags)
+                            setStreamWithCrops(
+                                bitmap.toCompressedStream(), cropHints, true, flags
+                            )
                         } catch (e: NoSuchMethodError) {
                             Log.w(
                                 TAG,
-                                "setBitmapWithCrops not available, falling back to setBitmap",
+                                "setStreamWithCrops not available, falling back to setStream",
                             )
-                            setBitmap(bitmap, primaryCropHint, true, flags)
+                            setStream(
+                                bitmap.toCompressedStream(), primaryCropHint, true, flags
+                            )
                         }
                     } else {
-                        setBitmap(bitmap, null, false, flags)
+                        setStream(bitmap.toCompressedStream(), null, false, flags)
                     }
                 }
 
@@ -281,12 +292,21 @@ fun applyWallpaper(
                 ?.let { bitmap ->
                     if (cropHints != null && cropHints.isNotEmpty()) {
                         try {
-                            setBitmapWithCrops(bitmap, cropHints, true, WallpaperManager.FLAG_LOCK)
+                            setStreamWithCrops(
+                                bitmap.toCompressedStream(), cropHints, true,
+                                WallpaperManager.FLAG_LOCK
+                            )
                         } catch (e: NoSuchMethodError) {
-                            setBitmap(bitmap, primaryCropHint, true, WallpaperManager.FLAG_LOCK)
+                            setStream(
+                                bitmap.toCompressedStream(), primaryCropHint, true,
+                                WallpaperManager.FLAG_LOCK
+                            )
                         }
                     } else {
-                        setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
+                        setStream(
+                            bitmap.toCompressedStream(), null, false,
+                            WallpaperManager.FLAG_LOCK
+                        )
                     }
                 }
         } catch (e: Exception) {
