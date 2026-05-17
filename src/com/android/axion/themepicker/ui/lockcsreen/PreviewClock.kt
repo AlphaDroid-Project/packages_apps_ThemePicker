@@ -21,7 +21,6 @@ import android.database.ContentObserver
 import android.icu.util.TimeZone as IcuTimeZone
 import android.os.Handler
 import android.os.Looper
-import android.os.Vibrator
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -118,8 +117,6 @@ fun PreviewClock(isPreview: Boolean, isRegionDark: Boolean = true) {
         AxClockProvider(
             layoutInflater = LayoutInflater.from(context),
             resources = context.resources,
-            isClockReactiveVariantsEnabled = true,
-            vibrator = context.getSystemService(Vibrator::class.java),
         )
     }
 

@@ -59,10 +59,22 @@ fun applyColorSettings(context: Context, settings: ColorsSettingsData) {
         json.put("android.theme.customization.accent_color", color)
         json.put("android.theme.customization.color_source", "preset")
     }
-    json.put("_chroma_boost", settings.chromaBoost.toDouble())
+    if (settings.chromaBoost == 0f) {
+        json.remove("android.theme.customization.chroma_factor")
+    } else {
+        json.put("android.theme.customization.chroma_factor", 1.0 + settings.chromaBoost / 100.0)
+    }
+    json.remove("_chroma_boost")
     json.put("_contrast_level", settings.contrastLevel.toDouble())
     json.put("_fidelity_enabled", settings.fidelity)
+    json.put("android.theme.customization.fidelity", if (settings.fidelity) 1 else 0)
     json.put("android.theme.customization.theme_style", settings.style.systemValue)
+    // Sync luminance_factor for AlphaVisuals compatibility (stored as 1.0 + delta/100)
+    if (settings.luminance == 0) {
+        json.remove("android.theme.customization.luminance_factor")
+    } else {
+        json.put("android.theme.customization.luminance_factor", 1.0 + settings.luminance / 100.0)
+    }
     json.put("_applied_timestamp", System.currentTimeMillis())
     applyColorSettings(context, json)
 }
@@ -89,10 +101,23 @@ fun loadCurrentSettings(context: Context, defaultSeed: Color): ColorsSettingsDat
                     }
                     .getOrElse { defaultSeed }
 
-            val fidelity = json.optBoolean("_fidelity_enabled", true)
+            val fidelity = if (json.has("android.theme.customization.fidelity")) {
+                json.optInt("android.theme.customization.fidelity", 0) == 1
+            } else {
+                json.optBoolean("_fidelity_enabled", false)
+            }
 
             val contrast = json.optDouble("_contrast_level", 0.0).toFloat()
-            val chroma = json.optDouble("_chroma_boost", 0.0).toFloat()
+            val chromaFactor = json.optDouble("android.theme.customization.chroma_factor", 1.0)
+            val chroma = if (chromaFactor == 1.0 && json.has("_chroma_boost")) {
+                json.optDouble("_chroma_boost", 0.0).toFloat().coerceIn(-80f, 100f)
+            } else {
+                ((chromaFactor - 1.0) * 100.0).toFloat().coerceIn(-80f, 100f)
+            }
+
+            // Read luminance_factor (stored as 1.0 + delta/100 by AlphaVisuals)
+            val luminanceFactor = json.optDouble("android.theme.customization.luminance_factor", 1.0)
+            val luminance = ((luminanceFactor - 1.0) * 100.0).toInt()
 
             return ColorsSettingsData(
                 seedColor = seedColor,
@@ -101,6 +126,7 @@ fun loadCurrentSettings(context: Context, defaultSeed: Color): ColorsSettingsDat
                 contrastLevel = contrast,
                 fidelity = fidelity,
                 chromaBoost = chroma,
+                luminance = luminance,
             )
         }
         .getOrElse {

@@ -316,18 +316,18 @@ private fun FontsCard(
     val colors = MaterialTheme.colorScheme
 
     Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .clickable(onClick = onClick),
+        modifier = modifier.fillMaxWidth().bounceable(onClick = onClick, scale = 0.97f),
+        shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(containerColor = colors.surfaceBright),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Column(
-                modifier = Modifier.align(Alignment.BottomStart),
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
@@ -343,21 +343,20 @@ private fun FontsCard(
                 )
             }
 
-            Column(
-                modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp),
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Box(
+                modifier =
+                    Modifier.size(56.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(colors.primaryContainer),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "Aa",
-                    style = MaterialTheme.typography.displayLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = colors.primary,
-                )
-                Text(
-                    text = "A is for Axion :)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurfaceVariant,
+                    color = colors.onPrimaryContainer,
                 )
             }
         }

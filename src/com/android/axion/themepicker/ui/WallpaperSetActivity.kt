@@ -57,8 +57,10 @@ class WallpaperSetActivity : ComponentActivity() {
         val imageUri: Uri? = intent.data ?: intent.getParcelableExtra(Intent.EXTRA_STREAM)
 
         if (imageUri == null) {
-            Log.e(TAG, "No URI found in intent; finishing.")
-            Toast.makeText(this, getString(R.string.no_image_provided), Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "No URI found in intent; redirecting to MainActivity.")
+            startActivity(Intent(this, MainActivity::class.java).apply {
+                intent.extras?.let { putExtras(it) }
+            })
             finish()
             return
         }

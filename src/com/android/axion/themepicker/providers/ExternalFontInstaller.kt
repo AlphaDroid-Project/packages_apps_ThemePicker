@@ -137,7 +137,6 @@ class ExternalFontInstaller(private val context: Context) {
 
     private fun applyFontToSystem(fontFile: File, postScriptName: String): Boolean {
         return runCatching {
-                fontManager.clearUpdates()
                 val pfd = ParcelFileDescriptor.open(fontFile, ParcelFileDescriptor.MODE_READ_ONLY)
                 val fontFileUpdateRequest = FontFileUpdateRequest(pfd, ByteArray(0))
 
@@ -237,8 +236,6 @@ class ExternalFontInstaller(private val context: Context) {
     }
 
     fun resetFontUpdates() {
-        runCatching { fontManager.clearUpdates() }
-            .onFailure { Log.e(TAG, "Failed to clear font updates", it) }
         SystemProperties.set(PROP_OVERLAY_FONTS, "")
         cleanupPreviewFont()
     }

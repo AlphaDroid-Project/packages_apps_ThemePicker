@@ -83,6 +83,8 @@ import com.android.axion.themepicker.ui.theme.bounceable
 import com.android.axion.themepicker.utils.colors.toArgb
 import com.android.axion.themepicker.utils.settings.applyColorSettings
 import com.android.axion.themepicker.utils.settings.loadCurrentSettings
+import com.android.axion.compose.preferences.CustomSeekBar
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -132,6 +134,7 @@ fun BasicColorsSettings() {
             fidelity = settings.fidelity,
             contrastLevel = settings.contrastLevel,
             chromaBoost = settings.chromaBoost,
+            luminance = settings.luminance,
             onFidelityChange = { enabled ->
                 settings = settings.copy(fidelity = enabled)
                 applyColorSettings(context, settings)
@@ -142,6 +145,10 @@ fun BasicColorsSettings() {
             },
             onChromaChange = { value ->
                 settings = settings.copy(chromaBoost = value)
+                applyColorSettings(context, settings)
+            },
+            onLuminanceChange = { value ->
+                settings = settings.copy(luminance = value)
                 applyColorSettings(context, settings)
             },
         )
@@ -465,9 +472,11 @@ private fun AdvancedColorsCard(
     fidelity: Boolean,
     contrastLevel: Float,
     chromaBoost: Float,
+    luminance: Int,
     onFidelityChange: (Boolean) -> Unit,
     onContrastChange: (Float) -> Unit,
     onChromaChange: (Float) -> Unit,
+    onLuminanceChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
@@ -515,29 +524,52 @@ private fun AdvancedColorsCard(
                 onCheckedChange = onFidelityChange,
             )
 
-            HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.5f))
+            val contrastLow = stringResource(R.string.contrast_low)
+            val contrastHigh = stringResource(R.string.contrast_high)
+            val contrastNormal = stringResource(R.string.contrast_normal)
 
-            ExpressiveSlider(
+            CustomSeekBar(
                 title = stringResource(R.string.contrast_level_title),
-                value = contrastLevel,
-                onValueChange = onContrastChange,
-                valueRange = -1f..1f,
-                valueLabel =
+                value = (contrastLevel * 100).roundToInt(),
+                onValueChange = { onContrastChange(it / 100f) },
+                min = -100,
+                max = 100,
+                interval = 5,
+                defaultValue = 0,
+                formatValue = { v ->
+                    val contrastFloat = v / 100f
                     when {
-                        contrastLevel < -0.3f -> stringResource(R.string.contrast_low)
-                        contrastLevel > 0.3f -> stringResource(R.string.contrast_high)
-                        else -> stringResource(R.string.contrast_normal)
-                    },
+                        contrastFloat < -0.3f -> contrastLow
+                        contrastFloat > 0.3f -> contrastHigh
+                        else -> contrastNormal
+                    }
+                },
             )
 
             HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.5f))
 
-            ExpressiveSlider(
+            CustomSeekBar(
                 title = stringResource(R.string.chroma_boost_title),
-                value = chromaBoost,
-                onValueChange = onChromaChange,
-                valueRange = 0f..100f,
-                valueLabel = "${chromaBoost.toInt()}%",
+                value = chromaBoost.toInt(),
+                onValueChange = { onChromaChange(it.toFloat()) },
+                min = -80,
+                max = 100,
+                interval = 5,
+                defaultValue = 0,
+                formatValue = { v -> "${if (v > 0) "+" else ""}$v%" },
+            )
+
+            HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.5f))
+
+            CustomSeekBar(
+                title = stringResource(R.string.luminance_title),
+                value = luminance,
+                onValueChange = onLuminanceChange,
+                min = -60,
+                max = 60,
+                interval = 5,
+                defaultValue = 0,
+                formatValue = { v -> "${if (v > 0) "+" else ""}$v%" },
             )
         }
     }
@@ -574,54 +606,6 @@ private fun ExpressiveToggleRow(
     }
 }
 
-@Composable
-private fun ExpressiveSlider(
-    title: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float>,
-    valueLabel: String,
-    modifier: Modifier = Modifier,
-) {
-    val colors = MaterialTheme.colorScheme
-    var sliderValue by remember(value) { mutableStateOf(value) }
-
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-            )
-            Surface(shape = MaterialTheme.shapes.extraSmall, color = colors.primaryContainer) {
-                Text(
-                    text = valueLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.onPrimaryContainer,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                )
-            }
-        }
-
-        Slider(
-            value = sliderValue,
-            onValueChange = { sliderValue = it },
-            onValueChangeFinished = { onValueChange(sliderValue) },
-            valueRange = valueRange,
-            colors =
-                SliderDefaults.colors(
-                    thumbColor = colors.primary,
-                    activeTrackColor = colors.primary,
-                    inactiveTrackColor = colors.primaryContainer,
-                ),
-        )
-    }
-}
 
 @Composable
 private fun InfoFooter(modifier: Modifier = Modifier) {

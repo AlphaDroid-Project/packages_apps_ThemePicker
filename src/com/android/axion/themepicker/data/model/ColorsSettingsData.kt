@@ -23,6 +23,7 @@ data class ColorsSettingsData(
     val style: ThemeStyle = ThemeStyle.TONAL_SPOT,
     val useWallpaperColors: Boolean = true,
     val contrastLevel: Float = 0f,
-    val fidelity: Boolean = true,
+    val fidelity: Boolean = false,
     val chromaBoost: Float = 0f,
+    val luminance: Int = 0,
 )
