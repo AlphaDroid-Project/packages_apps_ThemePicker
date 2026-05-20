@@ -1,5 +1,5 @@
 android_app {
-    name: "AxThemePicker",
+    name: "AlphaThemePicker",
     manifest: "AndroidManifest.xml",
 
     defaults: [
@@ -17,7 +17,7 @@ android_app {
     system_ext_specific: true,
 
     required: [
-        "privapp-permissions-axthemepicker",
+        "privapp-permissions-alpha_themepicker",
         "AxWallpaperEffects",
     ],
 
@@ -74,9 +74,9 @@ android_app {
 }
 
 prebuilt_etc {
-    name: "privapp-permissions-axthemepicker",
+    name: "privapp-permissions-alpha_themepicker",
     system_ext_specific: true,
-    src: "privapp-permissions-axthemepicker.xml",
+    src: "privapp-permissions-alpha_themepicker.xml",
     sub_dir: "permissions",
     filename_from_src: true,
 }
